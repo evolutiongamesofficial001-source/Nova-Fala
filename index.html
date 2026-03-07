@@ -260,9 +260,9 @@ Nova-Fala
 
 <div id="postPopup">
 
-<textarea id="postText" placeholder="O que está acontecendo?" maxlength="200"></textarea>
+<textarea id="postText" placeholder="O que está acontecendo?" maxlength="500"></textarea>
 
-<div class="counter" id="contador">0 / 200</div>
+<div class="counter" id="contador">0 / 500</div>
 
 <div class="popupBtns">
 <button class="postBtn" onclick="postar()">Postar</button>
@@ -303,7 +303,7 @@ postPopup.style.bottom="-420px"
 }
 
 postText.addEventListener("input",()=>{
-contador.innerText=postText.value.length+" / 200"
+contador.innerText=postText.value.length+" / 500"
 })
 
 function postar(){
@@ -322,7 +322,7 @@ time:Date.now()
 db.ref("posts").push(post)
 
 postText.value=""
-contador.innerText="0 / 200"
+contador.innerText="0 / 500"
 
 fecharPost()
 
