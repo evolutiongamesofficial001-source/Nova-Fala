@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login • Nova-Fala</title>
+
+<style>
+
+body{
+margin:0;
+background:#000;
+font-family:Arial;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.card{
+width:90%;
+max-width:400px;
+background:#0a0a0a;
+border:1px solid #222;
+border-radius:12px;
+padding:25px;
+}
+
+.logo{
+text-align:center;
+font-size:28px;
+color:#1da1f2;
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:10px;
+background:#000;
+border:1px solid #333;
+color:white;
+border-radius:8px;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:15px;
+background:#1da1f2;
+border:none;
+border-radius:8px;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+.link{
+text-align:center;
+margin-top:15px;
+}
+
+a{
+color:#1da1f2;
+text-decoration:none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<div class="logo">Nova-Fala</div>
+
+<input id="user" placeholder="Usuário">
+<input id="pass" type="password" placeholder="Senha">
+
+<button onclick="login()">Entrar</button>
+
+<div class="link">
+<a href="registro.html">Criar conta</a>
+</div>
+
+</div>
+
+<script>
+
+const DB="https://contaevilution-default-rtdb.firebaseio.com/users"
+
+async function login(){
+
+let u=document.getElementById("user").value.trim()
+let p=document.getElementById("pass").value.trim()
+
+let r=await fetch(DB+"/"+u+".json")
+let data=await r.json()
+
+if(!data){
+alert("Conta não existe")
+return
+}
+
+if(data.senha!=p){
+alert("Senha errada")
+return
+}
+
+localStorage.setItem("user",u)
+
+location.href="index.html"
+
+}
+
+</script>
+
+</body>
+</html>
