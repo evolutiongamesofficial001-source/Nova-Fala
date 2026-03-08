@@ -71,6 +71,13 @@ margin-bottom:12px;
 animation:fade .3s;
 }
 
+.post img{
+width:100%;
+border-radius:10px;
+margin-top:10px;
+cursor:pointer;
+}
+
 @keyframes fade{
 from{opacity:0;transform:translateY(8px);}
 to{opacity:1;}
@@ -233,6 +240,23 @@ background:#1c1c1c;
 color:#bbb;
 }
 
+/* tela cheia */
+
+#viewer{
+position:fixed;
+inset:0;
+background:#000;
+display:none;
+align-items:center;
+justify-content:center;
+z-index:999;
+}
+
+#viewer img{
+max-width:95%;
+max-height:95%;
+}
+
 </style>
 </head>
 
@@ -253,6 +277,8 @@ Nova-Fala
 
 <textarea id="postText" placeholder="O que está acontecendo?" maxlength="1000"></textarea>
 
+<input type="file" id="fotoInput" accept="image/*">
+
 <div class="counter" id="contador">0 / 1000</div>
 
 <div class="popupBtns">
@@ -260,6 +286,10 @@ Nova-Fala
 <button class="cancelBtn" onclick="fecharPost()">Cancelar</button>
 </div>
 
+</div>
+
+<div id="viewer" onclick="this.style.display='none'">
+<img id="viewerImg">
 </div>
 
 <script>
@@ -270,6 +300,10 @@ databaseURL:"https://contaevilution-default-rtdb.firebaseio.com/"
 
 firebase.initializeApp(firebaseConfig)
 const db=firebase.database()
+
+const fotoDB=firebase.initializeApp({
+databaseURL:"https://bigtrio-ip-default-rtdb.firebaseio.com/"
+},"fotos").database()
 
 let user=localStorage.getItem("user") || sessionStorage.getItem("user")
 
@@ -309,14 +343,92 @@ return texto.replace(
 )
 }
 
+/* compressão */
+
+function comprimirImagem(file){
+
+return new Promise(resolve=>{
+
+let img=new Image()
+let reader=new FileReader()
+
+reader.onload=e=>{
+img.src=e.target.result
+}
+
+img.onload=()=>{
+
+let canvas=document.createElement("canvas")
+
+let max=800
+let scale=Math.min(max/img.width,max/img.height,1)
+
+canvas.width=img.width*scale
+canvas.height=img.height*scale
+
+let ctx=canvas.getContext("2d")
+ctx.drawImage(img,0,0,canvas.width,canvas.height)
+
+resolve(canvas.toDataURL("image/jpeg",0.6))
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+}
+
 function postar(){
+
 let texto=postText.value.trim()
-if(texto=="") return
-let post={user:user,text:texto,likes:0,time:Date.now()}
-db.ref("posts").push(post)
+let file=fotoInput.files[0]
+
+if(texto=="" && !file) return
+
+let id=db.ref("posts").push().key
+
+function salvarPost(foto){
+
+let post={
+user:user,
+text:texto,
+likes:0,
+time:Date.now(),
+photo:foto||null
+}
+
+db.ref("posts/"+id).set(post)
+
 postText.value=""
+fotoInput.value=""
 contador.innerText="0 / 1000"
+
 fecharPost()
+
+}
+
+if(file){
+
+if(!file.type.startsWith("image/")){
+alert("Apenas imagens")
+return
+}
+
+comprimirImagem(file).then(base64=>{
+
+fotoDB.ref("fotos/"+id).set(base64)
+
+salvarPost(id)
+
+})
+
+}else{
+
+salvarPost(null)
+
+}
+
 }
 
 function curtir(id,likes){
@@ -364,13 +476,28 @@ carregarRespostas(id,cid,document.getElementById("r"+cid))
 })
 }
 
-/* ================== FEED ================== */
-
 let feed=document.getElementById("feed")
 let postsArr=[]
 let postsCarregados=0
 const batchSize=10
 let scrollAtual=0
+
+const observer=new IntersectionObserver(entries=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+let img=entry.target
+img.src=img.dataset.src
+observer.unobserve(img)
+}
+})
+})
+
+function abrirImagem(src){
+
+viewer.style.display="flex"
+viewerImg.src=src
+
+}
 
 function carregarFeed(){
 
@@ -420,6 +547,7 @@ div.className="post"
 div.innerHTML=`
 <div class="user">@${p.user}</div>
 <div class="text" id="text-${p.id}">${linkificar(p.text)}</div>
+<div id="img-${p.id}"></div>
 
 <div class="actions">
 
@@ -438,6 +566,24 @@ ${p.user===user ? `
 `
 
 feed.appendChild(div)
+
+if(p.photo){
+
+fotoDB.ref("fotos/"+p.photo).once("value").then(s=>{
+
+let img=document.createElement("img")
+
+img.dataset.src=s.val()
+
+img.onclick=()=>abrirImagem(s.val())
+
+observer.observe(img)
+
+document.getElementById("img-"+p.id).appendChild(img)
+
+})
+
+}
 
 carregarComentarios(p.id,document.getElementById("c"+p.id))
 
@@ -464,6 +610,8 @@ if(confirm("Deseja realmente deletar este post?")){
 db.ref("posts/"+id).remove()
 db.ref("comments/"+id).remove()
 db.ref("replies/"+id).remove()
+
+fotoDB.ref("fotos/"+id).remove()
 
 document.getElementById("c"+id).parentElement.remove()
 
