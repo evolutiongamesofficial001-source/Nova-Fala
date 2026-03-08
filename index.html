@@ -88,12 +88,11 @@ font-size:16px;
 line-height:1.4;
 }
 
-/* ações */
-
 .actions{
 margin-top:12px;
 display:flex;
 gap:10px;
+flex-wrap:wrap;
 }
 
 .actions button{
@@ -132,8 +131,6 @@ color:#5ea2ff;
 background:#101826;
 }
 
-/* comentários */
-
 .comment-box{
 margin-top:10px;
 border-left:2px solid #1c1c1c;
@@ -151,8 +148,6 @@ margin-left:14px;
 font-size:12px;
 color:#777;
 }
-
-/* botão + */
 
 #plus{
 position:fixed;
@@ -176,16 +171,12 @@ transition:.2s;
 transform:scale(1.08);
 }
 
-/* overlay */
-
 .overlay{
 position:fixed;
 inset:0;
 background:#0009;
 display:none;
 }
-
-/* popup */
 
 #postPopup{
 position:fixed;
@@ -260,9 +251,9 @@ Nova-Fala
 
 <div id="postPopup">
 
-<textarea id="postText" placeholder="O que está acontecendo?" maxlength="500"></textarea>
+<textarea id="postText" placeholder="O que está acontecendo?" maxlength="1000"></textarea>
 
-<div class="counter" id="contador">0 / 500</div>
+<div class="counter" id="contador">0 / 1000</div>
 
 <div class="popupBtns">
 <button class="postBtn" onclick="postar()">Postar</button>
@@ -278,10 +269,14 @@ databaseURL:"https://contaevilution-default-rtdb.firebaseio.com/"
 }
 
 firebase.initializeApp(firebaseConfig)
-
 const db=firebase.database()
 
-let user=localStorage.getItem("user")
+let user=localStorage.getItem("user") || sessionStorage.getItem("user")
+
+if(user){
+localStorage.setItem("user",user)
+sessionStorage.setItem("user",user)
+}
 
 if(user===null){
 location.replace("login.html")
@@ -289,6 +284,7 @@ location.replace("login.html")
 
 function logout(){
 localStorage.removeItem("user")
+sessionStorage.removeItem("user")
 location.href="login.html"
 }
 
@@ -303,29 +299,24 @@ postPopup.style.bottom="-420px"
 }
 
 postText.addEventListener("input",()=>{
-contador.innerText=postText.value.length+" / 500"
+contador.innerText=postText.value.length+" / 1000"
 })
 
-function postar(){
-
-let texto=postText.value.trim()
-
-if(texto=="") return
-
-let post={
-user:user,
-text:texto,
-likes:0,
-time:Date.now()
+function linkificar(texto){
+return texto.replace(
+/(https?:\/\/[^\s]+)/g,
+'<a href="$1" target="_blank" style="color:#4da6ff">$1</a>'
+)
 }
 
+function postar(){
+let texto=postText.value.trim()
+if(texto=="") return
+let post={user:user,text:texto,likes:0,time:Date.now()}
 db.ref("posts").push(post)
-
 postText.value=""
-contador.innerText="0 / 500"
-
+contador.innerText="0 / 1000"
 fecharPost()
-
 }
 
 function curtir(id,likes){
@@ -333,122 +324,102 @@ db.ref("posts/"+id+"/likes").set((likes||0)+1)
 }
 
 function comentar(id){
-
 let c=prompt("Comentário")
-
 if(!c) return
-
-db.ref("comments/"+id).push({
-user:user,
-text:c
-})
-
+db.ref("comments/"+id).push({user:user,text:c})
 }
 
 function responder(postId,commentId){
-
 let r=prompt("Responder")
-
 if(!r) return
-
-db.ref("replies/"+postId+"/"+commentId).push({
-user:user,
-text:r
-})
-
+db.ref("replies/"+postId+"/"+commentId).push({user:user,text:r})
 }
 
 function carregarRespostas(postId,commentId,div){
-
 db.ref("replies/"+postId+"/"+commentId)
 .on("child_added",snap=>{
-
 let r=snap.val()
-
 let el=document.createElement("div")
-
 el.className="reply"
-
 el.innerText="↳ @"+r.user+" "+r.text
-
 div.appendChild(el)
-
 })
-
 }
 
 function carregarComentarios(id,div){
-
 db.ref("comments/"+id)
 .on("child_added",snap=>{
-
 let c=snap.val()
 let cid=snap.key
-
 let el=document.createElement("div")
-
 el.className="comment"
-
 el.innerHTML=`
-
-<b>@${c.user}</b> ${c.text}
+<b>@${c.user}</b> ${linkificar(c.text)}
 <br>
 <button onclick="responder('${id}','${cid}')">Responder</button>
-
 <div id="r${cid}"></div>
-
 `
-
 div.appendChild(el)
-
 carregarRespostas(id,cid,document.getElementById("r"+cid))
-
 })
-
 }
 
-/* FEED COM AUTO DELETE 2 MESES */
+/* ================== FEED ================== */
+
+let feed=document.getElementById("feed")
+let postsArr=[]
+let postsCarregados=0
+const batchSize=10
+let scrollAtual=0
 
 function carregarFeed(){
 
-db.ref("posts").on("value",snap=>{
+scrollAtual=window.scrollY
 
+db.ref("posts").once("value").then(snap=>{
 let data=snap.val()
 
-let feed=document.getElementById("feed")
-
-feed.innerHTML=""
-
-let arr=[]
+postsArr=[]
 
 for(let id in data){
 
 let p=data[id]
 
-/* 60 dias */
-
-if(Date.now() - p.time > 5184000000){
+if(Date.now()-p.time>5184000000){
 db.ref("posts/"+id).remove()
 continue
 }
 
-arr.push({id,...p})
+postsArr.push({id,...p})
 
 }
 
-arr.sort((a,b)=>b.time-a.time)
+postsArr.sort((a,b)=>b.time-a.time)
 
-arr.forEach(p=>{
+feed.innerHTML=""
+postsCarregados=0
+
+carregarProximoLote()
+
+setTimeout(()=>{
+window.scrollTo(0,scrollAtual)
+},50)
+
+})
+}
+
+function carregarProximoLote(){
+
+const lote=postsArr.slice(postsCarregados,postsCarregados+batchSize)
+
+lote.forEach(p=>{
 
 let div=document.createElement("div")
-
 div.className="post"
 
 div.innerHTML=`
-
 <div class="user">@${p.user}</div>
-
-<div class="text">${p.text}</div>
+<div class="text" id="text-${p.id}">${linkificar(p.text)}</div>
 
 <div class="actions">
 
@@ -456,10 +427,14 @@ div.innerHTML=`
 
 <button onclick="comentar('${p.id}')">💬 comentar</button>
 
+${p.user===user ? `
+<button onclick="editarPost('${p.id}')">✏️ Editar</button>
+<button onclick="deletarPost('${p.id}')">🗑️ Deletar</button>
+` : ""}
+
 </div>
 
 <div id="c${p.id}" class="comment-box"></div>
-
 `
 
 feed.appendChild(div)
@@ -468,7 +443,47 @@ carregarComentarios(p.id,document.getElementById("c"+p.id))
 
 })
 
+postsCarregados+=lote.length
+
+}
+
+window.addEventListener("scroll",()=>{
+
+if((window.innerHeight+window.scrollY)>=document.body.offsetHeight-100){
+
+carregarProximoLote()
+
+}
+
 })
+
+function deletarPost(id){
+
+if(confirm("Deseja realmente deletar este post?")){
+
+db.ref("posts/"+id).remove()
+db.ref("comments/"+id).remove()
+db.ref("replies/"+id).remove()
+
+document.getElementById("c"+id).parentElement.remove()
+
+}
+
+}
+
+function editarPost(id){
+
+let textoAtual=document.getElementById("text-"+id).innerText
+
+let novoTexto=prompt("Editar post",textoAtual)
+
+if(novoTexto && novoTexto.trim()!=""){
+
+db.ref("posts/"+id+"/text").set(novoTexto.trim())
+
+document.getElementById("text-"+id).innerHTML=linkificar(novoTexto.trim())
+
+}
 
 }
 
