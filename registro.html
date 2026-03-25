@@ -15,6 +15,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
+transition: background 0.5s;
 }
 
 .card{
@@ -24,6 +25,15 @@ background:#0a0a0a;
 border:1px solid #222;
 border-radius:12px;
 padding:25px;
+box-shadow: 0 0 20px rgba(29,161,242,0.3);
+transform: scale(0.95);
+opacity:0;
+animation: fadeIn 0.6s forwards;
+}
+
+@keyframes fadeIn{
+0%{opacity:0; transform:scale(0.95);}
+100%{opacity:1; transform:scale(1);}
 }
 
 .logo{
@@ -41,6 +51,13 @@ background:#000;
 border:1px solid #333;
 color:white;
 border-radius:8px;
+transition: 0.3s;
+}
+
+input:focus{
+border-color:#1da1f2;
+box-shadow:0 0 10px #1da1f2;
+outline:none;
 }
 
 button{
@@ -53,6 +70,12 @@ border-radius:8px;
 color:white;
 font-size:16px;
 cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+background:#0d95e8;
+box-shadow:0 0 10px #1da1f2;
 }
 
 .link{
@@ -77,6 +100,7 @@ text-decoration:none;
 <input id="email" placeholder="Email">
 <input id="pass" type="password" placeholder="Senha">
 <input id="pass2" type="password" placeholder="Confirmar senha">
+<input id="dob" type="date" placeholder="Data de nascimento">
 
 <button onclick="registrar()">Criar conta</button>
 
@@ -96,9 +120,23 @@ let u=document.getElementById("user").value.trim()
 let e=document.getElementById("email").value.trim().toLowerCase()
 let p=document.getElementById("pass").value.trim()
 let p2=document.getElementById("pass2").value.trim()
+let dob=document.getElementById("dob").value
 
-if(!u||!e||!p||!p2){
+if(!u||!e||!p||!p2||!dob){
 alert("Preencha tudo")
+return
+}
+
+// Validação idade >= 12 anos
+let hoje=new Date()
+let nascimento=new Date(dob)
+let idade=hoje.getFullYear() - nascimento.getFullYear()
+let m=hoje.getMonth() - nascimento.getMonth()
+if(m<0 || (m===0 && hoje.getDate() < nascimento.getDate())){
+idade--
+}
+if(idade<12){
+alert("Você precisa ter pelo menos 12 anos para criar conta")
 return
 }
 
@@ -137,7 +175,6 @@ criado:Date.now()
 })
 
 alert("Conta criada")
-
 location.href="login.html"
 
 }

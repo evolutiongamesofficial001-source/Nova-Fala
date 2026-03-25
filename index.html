@@ -318,20 +318,30 @@ databaseURL:"https://bigtrio-ip-default-rtdb.firebaseio.com/"
 
 let user=localStorage.getItem("user") || sessionStorage.getItem("user")
 
+// ✅ ADICIONADO (persistência)
 if(user){
-localStorage.setItem("user",user)
-sessionStorage.setItem("user",user)
+localStorage.setItem("user", user)
+sessionStorage.setItem("user", user)
 }
 
 if(user===null){
 location.replace("login.html")
 }
 
+// ✅ ALTERADO (confirmação)
 function logout(){
+if(confirm("Tem certeza que deseja sair da conta?")){
 localStorage.removeItem("user")
 sessionStorage.removeItem("user")
 location.href="login.html"
 }
+}
+
+// ✅ ADICIONADO (aviso ao sair)
+window.addEventListener("beforeunload", function (e) {
+e.preventDefault()
+e.returnValue = ""
+})
 
 function abrirPost(){
 overlay.style.display="block"
@@ -540,7 +550,13 @@ let id=snap.key
 let p=snap.val()
 
 if(Date.now()-p.time>5184000000){
+
 db.ref("posts/"+id).remove()
+db.ref("comments/"+id).remove()
+db.ref("replies/"+id).remove()
+
+fotoDB.ref("fotos/"+id).remove()
+
 return
 }
 
