@@ -89,29 +89,77 @@ text-decoration:none;
 
 const DB="https://contaevilution-default-rtdb.firebaseio.com/users"
 
+/* ================= SALVAR USUÁRIO ================= */
+
+function salvarUsuario(user){
+    localStorage.setItem("user", user)
+    sessionStorage.setItem("user", user)
+
+    let d = new Date()
+    d.setTime(d.getTime() + (30*24*60*60*1000)) // 30 dias
+
+    document.cookie = "user=" + user + ";expires=" + d.toUTCString() + ";path=/"
+}
+
+/* ================= LOGIN ================= */
+
 async function login(){
 
-let u=document.getElementById("user").value.trim()
-let p=document.getElementById("pass").value.trim()
+    let u = document.getElementById("user").value.trim()
+    let p = document.getElementById("pass").value.trim()
 
-let r=await fetch(DB+"/"+u+".json")
-let data=await r.json()
+    if(!u || !p){
+        alert("Preencha tudo")
+        return
+    }
 
-if(!data){
-alert("Conta não existe")
-return
+    try{
+
+        let r = await fetch(DB+"/"+u+".json")
+        let data = await r.json()
+
+        if(!data){
+            alert("Conta não existe")
+            return
+        }
+
+        if(data.senha != p){
+            alert("Senha errada")
+            return
+        }
+
+        // ✅ salva corretamente
+        salvarUsuario(u)
+
+        // ✅ remove bloqueio de logout manual
+        localStorage.removeItem("logoutManual")
+
+        // 🔥 entra direto
+        location.href="index.html"
+
+    }catch(e){
+        alert("Erro de conexão")
+    }
+
 }
 
-if(data.senha!=p){
-alert("Senha errada")
-return
-}
+/* ================= AUTO LOGIN ================= */
 
-localStorage.setItem("user",u)
+// entra automático se não tiver logout manual
+(function(){
 
-location.href="index.html"
+    let logoutManual = localStorage.getItem("logoutManual")
 
-}
+    let user =
+    localStorage.getItem("user") ||
+    sessionStorage.getItem("user") ||
+    (document.cookie.match(/(^| )user=([^;]+)/)?.[2])
+
+    if(user && logoutManual !== "true"){
+        location.href="index.html"
+    }
+
+})()
 
 </script>
 
