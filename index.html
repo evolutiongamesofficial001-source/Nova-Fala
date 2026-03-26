@@ -368,9 +368,32 @@ const fotoDB=firebase.initializeApp({
 databaseURL:"https://bigtrio-ip-default-rtdb.firebaseio.com/"
 },"fotos").database()
 
-let user=localStorage.getItem("user") || sessionStorage.getItem("user")
+/* ================= LOGIN PERSISTENTE ================= */
 
-if(!user) location.replace("login.html")
+function salvarUsuario(user){
+localStorage.setItem("user", user)
+sessionStorage.setItem("user", user)
+
+let d=new Date()
+d.setTime(d.getTime()+(30*24*60*60*1000))
+document.cookie="user="+user+";expires="+d.toUTCString()+";path=/"
+}
+
+function pegarCookie(nome){
+let match=document.cookie.match(new RegExp('(^| )'+nome+'=([^;]+)'))
+return match?match[2]:null
+}
+
+let user=
+localStorage.getItem("user") ||
+sessionStorage.getItem("user") ||
+pegarCookie("user")
+
+if(user){
+salvarUsuario(user)
+}else{
+location.replace("login.html")
+}
 
 /* ================= PROMPT & CONFIRM ================= */
 
@@ -481,7 +504,7 @@ if(texto=="" && !file) return
 
 let id=db.ref("posts").push().key
 
-function salvarPost(foto){
+function salvarPost(){
 
 let post={
 user:user,
@@ -686,6 +709,7 @@ if(!ok) return
 
 localStorage.removeItem("user")
 sessionStorage.removeItem("user")
+document.cookie="user=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;"
 location.href="login.html"
 })
 }
