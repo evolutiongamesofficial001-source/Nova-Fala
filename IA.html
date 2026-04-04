@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>S.A.R - Evolution Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="IA.css">
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <h3>Modo de Operação</h3>
+
+      <div class="modo-box">
+        <div class="modo-option" data-modo="rapido">🚀 Modo Normal/Fast</div>
+        <div class="modo-option" data-modo="especialista">💡 Modo Especialista</div>
+        <div class="modo-option" data-modo="pro">🧠 Modo Pro</div>
+      </div>
+
+      <!-- BOTÃO MODO VOZ ABAIXO DOS MODOS -->
+      <div style="margin-top:20px;">
+        
+      </div>
+
+    </div>
+
+    <!-- OVERLAY -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- HEADER -->
+    <header>
+      <button id="menuBtn">☰</button>
+
+      <div style="text-align:center">
+        <h2 id="tituloSAR">S.A.R</h2>
+        <div class="status-indicator">
+          <span class="dot"></span>SISTEMA ONLINE
+        </div>
+      </div>
+      <a href="index.html" class="back-btn">← Voltar</a>
+
+      <button id="clearBtn">✕</button>
+    </header>
+
+    <!-- CHAT -->
+    <div id="chat">
+      <div class="msg bot">Olá, como posso te ajudar hoje?</div>
+    </div>
+
+    
+
+    <!-- BARRA INPUT -->
+    <div class="bar">
+      <input id="input" placeholder="Digite aqui..." autocomplete="off">
+      <button class="send" id="btn">»</button>
+    </div>
+
+  </div>
+
+  <script src="IA.js"></script>
+
+</body>
+</html>
