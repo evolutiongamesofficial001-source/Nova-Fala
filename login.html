@@ -6,7 +6,6 @@
 <title>Login • Nova-Fala</title>
 
 <style>
-
 body{
 margin:0;
 background:#000;
@@ -25,6 +24,7 @@ background:#0a0a0a;
 border:1px solid #222;
 border-radius:12px;
 padding:25px;
+box-shadow:0 0 20px rgba(29,161,242,0.3);
 }
 
 .logo{
@@ -56,6 +56,10 @@ font-size:16px;
 cursor:pointer;
 }
 
+button:hover{
+background:#0d95e8;
+}
+
 .link{
 text-align:center;
 margin-top:15px;
@@ -65,9 +69,9 @@ a{
 color:#1da1f2;
 text-decoration:none;
 }
-
 </style>
 </head>
+
 <body>
 
 <div class="card">
@@ -87,16 +91,21 @@ text-decoration:none;
 
 <script>
 
-const DB="https://contaevilution-default-rtdb.firebaseio.com/users"
+const DB = "https://contaevilution-default-rtdb.firebaseio.com"
 
 /* ================= SALVAR USUÁRIO ================= */
 
 function salvarUsuario(user){
+
+    // local (persistente)
     localStorage.setItem("user", user)
+
+    // sessão (aba atual)
     sessionStorage.setItem("user", user)
 
+    // cookie (backup)
     let d = new Date()
-    d.setTime(d.getTime() + (30*24*60*60*1000)) // 30 dias
+    d.setTime(d.getTime() + (30*24*60*60*1000))
 
     document.cookie = "user=" + user + ";expires=" + d.toUTCString() + ";path=/"
 }
@@ -105,58 +114,76 @@ function salvarUsuario(user){
 
 async function login(){
 
-    let u = document.getElementById("user").value.trim()
-    let p = document.getElementById("pass").value.trim()
-
-    if(!u || !p){
-        alert("Preencha tudo")
-        return
-    }
-
     try{
 
-        let r = await fetch(DB+"/"+u+".json")
-        let data = await r.json()
+        let u = document.getElementById("user").value.trim().toLowerCase()
+        let p = document.getElementById("pass").value.trim()
+
+        if(!u || !p){
+            alert("Preencha tudo")
+            return
+        }
+
+        // valida caracteres inválidos
+        if(/[.#$/\[\]]/.test(u)){
+            alert("Usuário inválido")
+            return
+        }
+
+        // busca no firebase
+        let res = await fetch(DB + "/users/" + u + ".json")
+
+        if(!res.ok){
+            let erro = await res.text()
+            alert("Erro Firebase: " + erro)
+            return
+        }
+
+        let data = await res.json()
+
+        console.log("Dados recebidos:", data)
 
         if(!data){
             alert("Conta não existe")
             return
         }
 
-        if(data.senha != p){
-            alert("Senha errada")
+        if(data.senha !== p){
+            alert("Senha incorreta")
             return
         }
 
-        // ✅ salva corretamente
+        // salvar sessão
         salvarUsuario(u)
 
-        // ✅ remove bloqueio de logout manual
         localStorage.removeItem("logoutManual")
 
-        // 🔥 entra direto
-        location.href="index.html"
+        alert("Login realizado 🔥")
 
-    }catch(e){
+        location.href = "index.html"
+
+    }catch(err){
+
+        console.error(err)
         alert("Erro de conexão")
+
     }
 
 }
 
 /* ================= AUTO LOGIN ================= */
 
-// entra automático se não tiver logout manual
 (function(){
 
     let logoutManual = localStorage.getItem("logoutManual")
 
     let user =
-    localStorage.getItem("user") ||
-    sessionStorage.getItem("user") ||
-    (document.cookie.match(/(^| )user=([^;]+)/)?.[2])
+        localStorage.getItem("user") ||
+        sessionStorage.getItem("user") ||
+        (document.cookie.match(/(^| )user=([^;]+)/)?.[2])
 
     if(user && logoutManual !== "true"){
-        location.href="index.html"
+        location.href = "index.html"
     }
 
 })()
