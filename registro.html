@@ -15,7 +15,6 @@ display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
-transition: background 0.5s;
 }
 
 .card{
@@ -25,15 +24,13 @@ background:#0a0a0a;
 border:1px solid #222;
 border-radius:12px;
 padding:25px;
-box-shadow: 0 0 20px rgba(29,161,242,0.3);
-transform: scale(0.95);
-opacity:0;
-animation: fadeIn 0.6s forwards;
+box-shadow:0 0 20px rgba(29,161,242,0.3);
+animation:fadeIn .6s forwards;
 }
 
 @keyframes fadeIn{
-0%{opacity:0; transform:scale(0.95);}
-100%{opacity:1; transform:scale(1);}
+from{opacity:0;transform:scale(.95);}
+to{opacity:1;transform:scale(1);}
 }
 
 .logo{
@@ -51,7 +48,6 @@ background:#000;
 border:1px solid #333;
 color:white;
 border-radius:8px;
-transition: 0.3s;
 }
 
 input:focus{
@@ -70,7 +66,6 @@ border-radius:8px;
 color:white;
 font-size:16px;
 cursor:pointer;
-transition:0.3s;
 }
 
 button:hover{
@@ -88,8 +83,8 @@ color:#1da1f2;
 text-decoration:none;
 }
 </style>
-
 </head>
+
 <body>
 
 <div class="card">
@@ -100,7 +95,7 @@ text-decoration:none;
 <input id="email" placeholder="Email">
 <input id="pass" type="password" placeholder="Senha">
 <input id="pass2" type="password" placeholder="Confirmar senha">
-<input id="dob" type="date" placeholder="Data de nascimento">
+<input id="dob" type="date">
 
 <button onclick="registrar()">Criar conta</button>
 
@@ -112,61 +107,76 @@ text-decoration:none;
 
 <script>
 
-const DB="https://contaevilution-default-rtdb.firebaseio.com/users"
+const DB = "https://contaevilution-default-rtdb.firebaseio.com"
 
 async function registrar(){
 
-let u=document.getElementById("user").value.trim()
-let e=document.getElementById("email").value.trim().toLowerCase()
-let p=document.getElementById("pass").value.trim()
-let p2=document.getElementById("pass2").value.trim()
-let dob=document.getElementById("dob").value
+try{
 
-if(!u||!e||!p||!p2||!dob){
-alert("Preencha tudo")
+let u = document.getElementById("user").value.trim().toLowerCase()
+let e = document.getElementById("email").value.trim().toLowerCase()
+let p = document.getElementById("pass").value.trim()
+let p2 = document.getElementById("pass2").value.trim()
+let dob = document.getElementById("dob").value
+
+// validação
+if(!u || !e || !p || !p2 || !dob){
+alert("Preencha todos os campos")
 return
 }
 
-// Validação idade >= 12 anos
-let hoje=new Date()
-let nascimento=new Date(dob)
-let idade=hoje.getFullYear() - nascimento.getFullYear()
-let m=hoje.getMonth() - nascimento.getMonth()
-if(m<0 || (m===0 && hoje.getDate() < nascimento.getDate())){
-idade--
-}
-if(idade<12){
-alert("Você precisa ter pelo menos 12 anos para criar conta")
+// caracteres inválidos no Firebase
+if(/[.#$/\[\]]/.test(u)){
+alert("Usuário inválido (não use . # $ [ ] / )")
 return
 }
 
-if(p!=p2){
+// idade mínima
+let hoje = new Date()
+let nasc = new Date(dob)
+let idade = hoje.getFullYear() - nasc.getFullYear()
+let m = hoje.getMonth() - nasc.getMonth()
+if(m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--
+
+if(idade < 12){
+alert("Você precisa ter pelo menos 12 anos")
+return
+}
+
+// senha
+if(p !== p2){
 alert("Senhas diferentes")
 return
 }
 
-let r=await fetch(DB+"/"+u+".json")
-let existe=await r.json()
+// verifica usuário
+let checkUser = await fetch(DB + "/users/" + u + ".json")
+let userData = await checkUser.json()
 
-if(existe){
+if(userData){
 alert("Usuário já existe")
 return
 }
 
-let r2=await fetch(DB+".json")
-let data=await r2.json()
+// verifica email
+let checkAll = await fetch(DB + "/users.json")
+let allUsers = await checkAll.json()
 
-if(data){
-for(let nome in data){
-if(data[nome].email==e){
-alert("Email já usado")
+if(allUsers){
+for(let key in allUsers){
+if(allUsers[key].email === e){
+alert("Email já cadastrado")
 return
 }
 }
 }
 
-await fetch(DB+"/"+u+".json",{
+// salvar
+let salvar = await fetch(DB + "/users/" + u + ".json",{
 method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
 body:JSON.stringify({
 email:e,
 senha:p,
@@ -174,8 +184,22 @@ criado:Date.now()
 })
 })
 
-alert("Conta criada")
+// debug
+let resposta = await salvar.text()
+console.log("Firebase:", resposta)
+
+if(!salvar.ok){
+alert("Erro ao salvar: " + resposta)
+return
+}
+
+alert("Conta criada com sucesso 🔥")
 location.href="login.html"
+
+}catch(err){
+alert("Erro: " + err.message)
+console.error(err)
+}
 
 }
 
