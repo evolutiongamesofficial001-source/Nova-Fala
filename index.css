@@ -1,0 +1,484 @@
+:root{
+    --bg:#0b0b0b;
+    --card:#121212;
+    --border:#1f1f1f;
+    --blue:#1da1f2;
+    --text:#e8e8e8;
+    --sub:#9e9e9e;
+}
+
+*{box-sizing:border-box;}
+
+body{
+    margin:0;
+    font-family:system-ui;
+    background:var(--bg);
+    color:var(--text);
+    transition: all 0.3s ease;
+}
+
+header{
+    position:sticky;
+    top:0;
+    background:#0f0f0f;
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:20px;
+    font-weight:bold;
+    color:var(--blue);
+    z-index:10;
+    transition:background 0.3s, border-color 0.3s;
+}
+
+.logout{
+    font-size:13px;
+    background:#161616;
+    border:1px solid var(--border);
+    padding:6px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    color:#ccc;
+    transition:all 0.3s;
+}
+
+.logout:hover{
+    background:var(--border);
+}
+
+#feed{
+    padding:10px;
+    padding-bottom:120px;
+}
+
+.post{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:12px;
+    animation:fade .3s;
+    transition:all 0.3s;
+}
+
+.post:hover{
+    border-color:var(--blue);
+}
+
+.post img{
+    width:100%;
+    border-radius:10px;
+    margin-top:10px;
+    cursor:pointer;
+    transition:transform 0.3s;
+}
+
+.post img:hover{
+    transform:scale(1.02);
+}
+
+@keyframes fade{
+    from{opacity:0;transform:translateY(8px);}
+    to{opacity:1;}
+}
+
+.user{
+    font-weight:bold;
+    color:#2ee6a6;
+    font-size:15px;
+}
+
+.text{
+    margin-top:6px;
+    font-size:16px;
+    line-height:1.4;
+}
+
+.actions{
+    margin-top:12px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.actions button{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:#151515;
+    border:1px solid #262626;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:13px;
+    color:#d0d0d0;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.actions button:hover{
+    background:#1d1d1d;
+    transform:scale(1.05);
+}
+
+.actions button:first-child{
+    color:#ff6b81;
+    border-color:#2a1a1e;
+}
+
+#plus{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    background:var(--blue);
+    color:white;
+    font-size:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:0 8px 25px #000;
+    transition:.2s;
+}
+
+.overlay{
+    position:fixed;
+    inset:0;
+    background:#0009;
+    display:none;
+    z-index:100;
+}
+
+#postPopup{
+    position:fixed;
+    bottom:-420px;
+    left:0;
+    right:0;
+    background:#111;
+    border-top:1px solid var(--border);
+    padding:18px;
+    transition:.35s;
+    border-radius:18px 18px 0 0;
+    z-index:101;
+}
+
+#postPopup textarea{
+    width:100%;
+    height:90px;
+    background:#0c0c0c;
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:white;
+    padding:10px;
+    font-size:15px;
+    resize:none;
+    transition:border 0.3s;
+}
+
+#postPopup textarea:focus{
+    border-color:var(--blue);
+}
+
+.counter{
+    font-size:12px;
+    color:#666;
+    margin-top:5px;
+    text-align:right;
+}
+
+.popupBtns{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.popupBtns button{
+    flex:1;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    font-size:14px;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+
+.postBtn{
+    background:var(--blue);
+    color:white;
+}
+
+.postBtn:hover{
+    opacity:0.85;
+}
+
+.cancelBtn{
+    background:#1c1c1c;
+    color:#bbb;
+}
+
+.cancelBtn:hover{
+    background:#2a2a2a;
+}
+
+#viewer{
+    position:fixed;
+    inset:0;
+    background:#000;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+    flex-direction:column;
+}
+
+#viewer img{
+    max-width:95%;
+    max-height:95%;
+    border-radius:10px;
+}
+
+#closeViewer{
+    position:absolute;
+    top:20px;
+    right:20px;
+    background:#111;
+    border:1px solid #333;
+    color:white;
+    font-size:18px;
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+
+#closeViewer:hover{
+    background:#1a1a1a;
+}
+
+#customConfirm, #customPrompt{
+    position:fixed;
+    inset:0;
+    background:#000a;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+
+.confirmBox{
+    background:#121212;
+    border:1px solid #2a2a2a;
+    border-radius:14px;
+    padding:20px;
+    width:85%;
+    max-width:320px;
+    color:white;
+    animation:fade .2s;
+    transition:all 0.3s;
+}
+
+.confirmText{
+    font-size:15px;
+    line-height:1.5;
+    white-space:pre-line;
+}
+
+.confirmBox textarea{
+    width:100%;
+    height:80px;
+    margin-top:10px;
+    background:#0c0c0c;
+    border:1px solid #333;
+    border-radius:8px;
+    color:white;
+    padding:10px;
+    transition:border 0.3s;
+}
+
+.confirmBox textarea:focus{
+    border-color:var(--blue);
+}
+
+.confirmBtns{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:20px;
+}
+
+.confirmBtns button{
+    padding:8px 14px;
+    border-radius:8px;
+    border:none;
+    background:#1c1c1c;
+    color:#ccc;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+
+.confirmBtns button:hover{
+    background:#2a2a2a;
+}
+
+.confirmBtns .okBtn{
+    background:#1da1f2;
+    color:white;
+}
+
+.confirmBtns .okBtn:hover{
+    background:#1a91da;
+}
+
+.comment{
+    margin-top:6px;
+    font-size:11px;
+    color:var(--sub);
+}
+
+.reply{
+    margin-left:14px;
+    font-size:10px;
+    color:#777;
+}
+
+#menuOverlay{
+    position:fixed;
+    inset:0;
+    background:#0008;
+    display:none;
+    z-index:200;
+}
+
+#menuLateral{
+    position:fixed;
+    top:0;
+    left:-260px;
+    width:260px;
+    height:100%;
+    background:#111;
+    border-right:1px solid #222;
+    z-index:201;
+    transition:.3s;
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.menuHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:18px;
+    margin-bottom:10px;
+}
+
+#menuLateral button{
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#1c1c1c;
+    color:#ccc;
+    cursor:pointer;
+    text-align:left;
+    transition:all 0.3s;
+}
+
+#menuLateral button:hover{
+    background:#2a2a2a;
+    color:white;
+}
+
+#configOverlay{
+    position:fixed;
+    inset:0;
+    background:#0008;
+    display:none;
+    z-index:300;
+}
+
+#configBox{
+    position:fixed;
+    bottom:-300px;
+    left:0;
+    right:0;
+    background:#111;
+    border-top:1px solid #222;
+    border-radius:18px 18px 0 0;
+    padding:18px;
+    z-index:301;
+    transition:.3s;
+}
+
+.temaOpcoes{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.temaOpcoes button{
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#1c1c1c;
+    color:#ccc;
+    cursor:pointer;
+    transition:all 0.3s;
+    border:2px solid transparent;
+}
+
+.temaOpcoes button:hover{
+    background:#2a2a2a;
+    color:white;
+}
+
+.temaOpcoes button.ativo{
+    border-color:var(--blue);
+    background:rgba(29, 161, 242, 0.1);
+    color:var(--blue);
+}
+
+body.claro{
+    --bg:#f5f5f5;
+    --card:#ffffff;
+    --border:#ddd;
+    --text:#111;
+    --sub:#555;
+}
+/* Botão responder estilizado */
+.comment button{
+    margin-top:4px;
+    background:linear-gradient(135deg, #1da1f2, #0d8ddb);
+    border:none;
+    color:white;
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:20px;
+    cursor:pointer;
+    transition:all 0.25s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+}
+
+/* Hover bonito */
+.comment button:hover{
+    transform:scale(1.08);
+    box-shadow:0 0 10px rgba(29,161,242,0.5);
+}
+
+/* Clique */
+.comment button:active{
+    transform:scale(0.95);
+}
+
+/* Ícone mais suave */
+.comment button::before{
+    content:"↩";
+    font-size:12px;
+}
