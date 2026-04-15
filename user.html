@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:system-ui;
+    background:#0b0b0b;
+    color:#e8e8e8;
+}
+
+header{
+    padding:14px;
+    border-bottom:1px solid #222;
+    font-size:18px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+#perfil{
+    padding:20px;
+    text-align:center;
+}
+
+.avatar{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:#1da1f2;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    margin:auto;
+    overflow:hidden;
+    cursor:pointer;
+}
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.nome{
+    margin-top:10px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.stats{
+    margin-top:6px;
+    color:#888;
+    font-size:14px;
+}
+
+button{
+    margin-top:12px;
+    padding:10px 16px;
+    border:none;
+    border-radius:20px;
+    background:#1da1f2;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button.seguindo{
+    background:#2ee6a6;
+    color:#000;
+}
+
+#posts{
+    padding:10px;
+}
+
+.post{
+    background:#121212;
+    border:1px solid #1f1f1f;
+    border-radius:12px;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+.post img{
+    width:100%;
+    border-radius:10px;
+    margin-top:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <span onclick="voltar()" style="cursor:pointer;">⬅</span>
+    Perfil
+</header>
+
+<div id="perfil">
+    <input type="file" id="fotoPerfilInput" accept="image/*" hidden>
+
+    <div class="avatar" id="avatar" onclick="trocarFoto()"></div>
+
+    <div class="nome" id="nome"></div>
+
+    <div class="stats">
+        <span id="seguidores"></span> • 
+        <span id="seguindo"></span>
+    </div>
+
+    <button id="btnSeguir" onclick="seguir()">Seguir</button>
+</div>
+
+<div id="posts"></div>
+
+<script>
+const firebaseConfig = {
+    databaseURL: "https://contaevilution-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* ================= USUÁRIO ================= */
+
+let user = localStorage.getItem("user");
+let perfil = localStorage.getItem("perfil");
+
+if(!perfil) location.href = "index.html";
+
+nome.innerText = "@" + perfil;
+
+/* ================= VOLTAR ================= */
+
+function voltar(){
+    history.back();
+}
+
+/* ================= FOTO PERFIL ================= */
+
+function trocarFoto(){
+    if(user !== perfil) return;
+    document.getElementById("fotoPerfilInput").click();
+}
+
+function comprimirImagem(file){
+    return new Promise(resolve=>{
+        let img = new Image();
+        let reader = new FileReader();
+
+        reader.onload = e => img.src = e.target.result;
+
+        img.onload = ()=>{
+            let canvas = document.createElement("canvas");
+            let max = 300;
+
+            let scale = Math.min(max / img.width, max / img.height, 1);
+
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            let ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            resolve(canvas.toDataURL("image/jpeg", 0.5));
+        }
+
+        reader.readAsDataURL(file);
+    });
+}
+
+fotoPerfilInput.addEventListener("change", ()=>{
+    let file = fotoPerfilInput.files[0];
+    if(!file) return;
+
+    comprimirImagem(file).then(base64=>{
+        db.ref("fotosPerfil/" + user).set(base64);
+    });
+});
+
+function carregarFotoPerfil(){
+    db.ref("fotosPerfil/" + perfil)
+    .on("value", snap=>{
+        let avatar = document.getElementById("avatar");
+
+        if(snap.exists()){
+            avatar.innerHTML = `<img src="${snap.val()}">`;
+        } else {
+            avatar.innerText = perfil.charAt(0).toUpperCase();
+        }
+    });
+}
+
+/* ================= SEGUIR ================= */
+
+function seguir(){
+    let refSeguidor = db.ref("seguidores/" + perfil + "/" + user);
+    let refSeguindo = db.ref("seguindo/" + user + "/" + perfil);
+
+    refSeguidor.once("value").then(snap => {
+
+        if(snap.exists()){
+            refSeguidor.remove();
+            refSeguindo.remove();
+        } else {
+            refSeguidor.set(true);
+            refSeguindo.set(true);
+        }
+
+    });
+}
+
+function atualizarBotao(){
+    db.ref("seguidores/" + perfil + "/" + user)
+    .on("value", snap => {
+        if(snap.exists()){
+            btnSeguir.innerText = "Seguindo";
+            btnSeguir.classList.add("seguindo");
+        } else {
+            btnSeguir.innerText = "Seguir";
+            btnSeguir.classList.remove("seguindo");
+        }
+    });
+}
+
+/* ================= CONTADORES ================= */
+
+function carregarSeguidores(){
+    db.ref("seguidores/" + perfil)
+    .on("value", snap => {
+        seguidores.innerText = snap.numChildren() + " seguidores";
+    });
+}
+
+function carregarSeguindo(){
+    db.ref("seguindo/" + perfil)
+    .on("value", snap => {
+        seguindo.innerText = snap.numChildren() + " seguindo";
+    });
+}
+
+/* ================= POSTS ================= */
+
+function carregarPosts(){
+    db.ref("posts")
+    .orderByChild("user")
+    .equalTo(perfil)
+    .on("value", snap => {
+
+        posts.innerHTML = "";
+
+        let lista = [];
+
+        snap.forEach(child => {
+            lista.push(child.val());
+        });
+
+        lista.reverse();
+
+        lista.forEach(p => {
+            let div = document.createElement("div");
+            div.className = "post";
+
+            div.innerHTML = `<div>${p.text}</div>`;
+
+            if(p.photoBase64){
+                let img = document.createElement("img");
+                img.src = p.photoBase64;
+                div.appendChild(img);
+            }
+
+            posts.appendChild(div);
+        });
+    });
+}
+
+/* ================= INIT ================= */
+
+carregarFotoPerfil();
+atualizarBotao();
+carregarSeguidores();
+carregarSeguindo();
+carregarPosts();
+</script>
+
+</body>
+</html>

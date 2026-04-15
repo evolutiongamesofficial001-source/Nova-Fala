@@ -482,3 +482,152 @@ body.claro{
     content:"↩";
     font-size:12px;
 }
+.uploadBox{
+    display:block;
+    margin-top:10px;
+    cursor:pointer;
+}
+
+#uploadVisual{
+    background:#1c1c1c;
+    border:2px dashed #333;
+    border-radius:12px;
+    padding:14px;
+    text-align:center;
+    color:#aaa;
+    font-size:14px;
+    transition:all 0.3s;
+}
+
+#uploadVisual:hover{
+    border-color:var(--blue);
+    color:white;
+    background:#222;
+}
+
+/* Quando tiver imagem */
+#uploadVisual.selected{
+    border-style:solid;
+    border-color:#2ee6a6;
+    color:#2ee6a6;
+}
+
+/* Preview da imagem */
+#previewImg{
+    width:100%;
+    border-radius:10px;
+    margin-top:10px;
+    max-height:200px;
+    object-fit:cover;
+}
+/* ================= ADIÇÕES PERFIL ================= */
+
+/* Nome clicável */
+.user{
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.user:hover{
+    text-decoration:underline;
+    opacity:0.8;
+}
+
+/* Avatar (caso use no feed depois) */
+.avatar{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:#1da1f2;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:14px;
+    flex-shrink:0;
+}
+
+/* Layout estilo rede social (opcional, não quebra nada) */
+.post .top{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+}
+
+/* Tempo do post */
+.post .time{
+    font-size:11px;
+    color:#777;
+    margin-left:5px;
+}
+
+/* Botão seguir (para user.html) */
+.followBtn{
+    margin-top:10px;
+    padding:10px 16px;
+    border:none;
+    border-radius:20px;
+    background:var(--blue);
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+.followBtn:hover{
+    opacity:0.85;
+}
+
+/* Estado seguindo */
+.followBtn.seguindo{
+    background:#2ee6a6;
+    color:#000;
+}
+
+/* Contadores perfil */
+.perfil-stats{
+    margin-top:8px;
+    font-size:14px;
+    color:var(--sub);
+}
+/* ================= LIKE ANIMAÇÃO ================= */
+
+.actions button.liked{
+    animation:likePop 0.35s ease;
+}
+
+.actions button.liked .emoji{
+    display:inline-block;
+    animation:heartBeat 0.4s ease;
+}
+
+@keyframes likePop{
+    0%{transform:scale(1);}
+    50%{transform:scale(1.25);}
+    100%{transform:scale(1);}
+}
+
+@keyframes heartBeat{
+    0%{transform:scale(1);}
+    50%{transform:scale(1.6);}
+    100%{transform:scale(1);}
+}
+/* ================= PARTÍCULAS DE LIKE ================= */
+
+.heart-particle{
+    position:absolute;
+    font-size:16px;
+    pointer-events:none;
+    animation:floatUp 1s ease forwards;
+}
+
+@keyframes floatUp{
+    0%{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+    100%{
+        opacity:0;
+        transform:translateY(-60px) scale(1.6);
+    }
+}

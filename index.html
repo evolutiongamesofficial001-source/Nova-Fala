@@ -16,7 +16,7 @@
 <header>
     <div style="display:flex;align-items:center;gap:10px;">
         <div onclick="abrirMenu()" style="cursor:pointer;font-size:22px;">☰</div>
-        Nova-Fala
+        <span>Nova-Fala</span>
     </div>
     
     <div class="logout" onclick="logout()">Sair</div>
@@ -30,8 +30,16 @@
 
 <div id="postPopup">
     <textarea id="postText" placeholder="O que está acontecendo?" maxlength="1000"></textarea>
-    <input type="file" id="fotoInput" accept="image/*">
+
+    <label class="uploadBox">
+        <input type="file" id="fotoInput" accept="image/*" hidden>
+        <div id="uploadVisual">📷 Escolher foto</div>
+    </label>
+
+    <img id="previewImg" style="display:none;">
+
     <div class="counter" id="contador">0 / 1000</div>
+
     <div class="popupBtns">
         <button class="postBtn" onclick="postar()">Postar</button>
         <button class="cancelBtn" onclick="fecharPost()">Cancelar</button>
@@ -73,6 +81,7 @@
     </div>
 
     <button onclick="abrirConfig()">⚙️ Configurações</button>
+    <button onclick="abrirMeuPerfil()">👤 Meu Perfil</button>
     <button onclick="abrirSAR()">🤖 S.A.R</button>
 </div>
 
@@ -92,5 +101,6 @@
 </div>
 
 <script src="index.js"></script>
+
 </body>
 </html>
