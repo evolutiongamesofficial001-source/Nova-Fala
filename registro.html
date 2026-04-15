@@ -6,10 +6,15 @@
 <title>Registro • Nova-Fala</title>
 
 <style>
+
+*{
+box-sizing:border-box;
+}
+
 body{
 margin:0;
-background:#000;
-font-family:Arial;
+background:linear-gradient(180deg,#000,#050505,#000);
+font-family:Arial, sans-serif;
 color:white;
 display:flex;
 justify-content:center;
@@ -17,71 +22,90 @@ align-items:center;
 height:100vh;
 }
 
+/* CARD */
 .card{
 width:90%;
 max-width:400px;
-background:#0a0a0a;
-border:1px solid #222;
-border-radius:12px;
-padding:25px;
-box-shadow:0 0 20px rgba(29,161,242,0.3);
-animation:fadeIn .6s forwards;
+background:rgba(10,10,10,0.95);
+border:1px solid #1f1f1f;
+border-radius:16px;
+padding:28px;
+box-shadow:0 0 30px rgba(29,161,242,0.25);
+animation:fadeIn .6s ease forwards;
+backdrop-filter:blur(10px);
 }
 
 @keyframes fadeIn{
-from{opacity:0;transform:scale(.95);}
+from{opacity:0;transform:scale(.9);}
 to{opacity:1;transform:scale(1);}
 }
 
+/* LOGO */
 .logo{
 text-align:center;
-font-size:28px;
+font-size:30px;
+font-weight:bold;
 color:#1da1f2;
 margin-bottom:20px;
+letter-spacing:1px;
 }
 
+/* INPUTS */
 input{
 width:100%;
-padding:12px;
+padding:13px;
 margin-top:10px;
 background:#000;
-border:1px solid #333;
+border:1px solid #2a2a2a;
 color:white;
-border-radius:8px;
+border-radius:10px;
+transition:.2s;
+font-size:14px;
 }
 
 input:focus{
 border-color:#1da1f2;
-box-shadow:0 0 10px #1da1f2;
+box-shadow:0 0 12px #1da1f2;
 outline:none;
+transform:scale(1.02);
 }
 
+/* BOTÃO */
 button{
 width:100%;
-padding:12px;
-margin-top:15px;
-background:#1da1f2;
+padding:13px;
+margin-top:18px;
+background:linear-gradient(45deg,#1da1f2,#0d95e8);
 border:none;
-border-radius:8px;
+border-radius:10px;
 color:white;
 font-size:16px;
+font-weight:bold;
 cursor:pointer;
+transition:.25s;
 }
 
 button:hover{
-background:#0d95e8;
-box-shadow:0 0 10px #1da1f2;
+transform:translateY(-2px);
+box-shadow:0 0 15px #1da1f2;
 }
 
+/* LINK */
 .link{
 text-align:center;
-margin-top:15px;
+margin-top:18px;
+font-size:14px;
 }
 
 a{
 color:#1da1f2;
 text-decoration:none;
 }
+
+a:hover{
+text-decoration:underline;
+}
+
 </style>
 </head>
 
@@ -125,7 +149,7 @@ alert("Preencha todos os campos")
 return
 }
 
-// caracteres inválidos no Firebase
+// caracteres inválidos Firebase
 if(/[.#$/\[\]]/.test(u)){
 alert("Usuário inválido (não use . # $ [ ] / )")
 return
@@ -149,18 +173,24 @@ alert("Senhas diferentes")
 return
 }
 
-// verifica usuário
+// verificar usuário
 let checkUser = await fetch(DB + "/users/" + u + ".json")
-let userData = await checkUser.json()
+let userData = null
+try{
+userData = await checkUser.json()
+}catch{}
 
 if(userData){
 alert("Usuário já existe")
 return
 }
 
-// verifica email
+// verificar email
 let checkAll = await fetch(DB + "/users.json")
-let allUsers = await checkAll.json()
+let allUsers = null
+try{
+allUsers = await checkAll.json()
+}catch{}
 
 if(allUsers){
 for(let key in allUsers){
@@ -184,9 +214,7 @@ criado:Date.now()
 })
 })
 
-// debug
 let resposta = await salvar.text()
-console.log("Firebase:", resposta)
 
 if(!salvar.ok){
 alert("Erro ao salvar: " + resposta)
