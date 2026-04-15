@@ -631,3 +631,16 @@ body.claro{
         transform:translateY(-60px) scale(1.6);
     }
 }
+.verificado{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-left:6px;
+}
+
+.verificado svg{
+    width:18px;
+    height:18px;
+    display:block;
+    transform: translateY(1px);
+}

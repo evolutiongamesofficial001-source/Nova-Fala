@@ -15,6 +15,7 @@ const palavrasProibidas = [
     "Pedofilo",
     "Suicidio"
 ];
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -22,10 +23,21 @@ const fotoDB = firebase.initializeApp({
     databaseURL: "https://bigtrio-ip-default-rtdb.firebaseio.com/"
 }, "fotos").database();
 
+/* ================= VERIFICADO ================= */
+
+const usuariosVerificados = [
+    "Macedo",
+    "Evolution Studio Official",
+    "João Antônio"
+];
+
+function usuarioVerificado(nome){
+    return usuariosVerificados.includes(nome);
+}
+
 /* ================= PERFIL ================= */
 
 function abrirPerfil(nome){
-    // Se clicar no próprio usuário, abre seu perfil
     if(nome === user){
         localStorage.setItem("perfil", user);
     } else {
@@ -274,8 +286,8 @@ function curtir(id) {
             if (btn) {
                 btn.classList.add("liked");
                 setTimeout(()=>{
-    btn.classList.remove("liked");
-}, 400);
+                    btn.classList.remove("liked");
+                }, 400);
             }
         }
     });
@@ -325,7 +337,7 @@ function carregarComentarios(id, div) {
             let el = document.createElement("div");
             el.className = "comment";
             el.innerHTML = `
-            <b>@${c.user}</b> ${linkificar(c.text)}
+            <b>@${c.user}${usuarioVerificado(c.user) ? ' ✔️' : ''}</b> ${linkificar(c.text)}
             <br>
             <button onclick="responder('${id}','${cid}')">Responder</button>
             <div id="r${cid}"></div>
@@ -350,7 +362,16 @@ function renderPost(id, p) {
         let isLiked = snap.exists();
 
         div.innerHTML = `
-        <div class="user" style="cursor:pointer" onclick="abrirPerfil('${p.user}')">@${p.user}</div>
+        <div class="user" onclick="abrirPerfil('${p.user}')">
+            @${p.user}${usuarioVerificado(p.user) ? `
+<span class="verificado">
+<svg viewBox="0 0 24 24" aria-label="Verificado">
+<path fill="#0095F6" d="M22 12l-2.2-2.2.5-3-3-.5L15 3l-3 1-3-1-2.3 3.3-3 .5.5 3L2 12l2.2 2.2-.5 3 3 .5L9 21l3-1 3 1 2.3-3.3 3-.5-.5-3z"/>
+<path fill="#fff" d="M9.5 12.5l2 2 4-4-1.2-1.2-2.8 2.8-0.8-0.8z"/>
+</svg>
+</span>
+` : ''}
+        </div>
         <div class="text" id="text-${id}">${linkificar(p.text)}</div>
         <div id="img-${id}"></div>
 
@@ -420,7 +441,7 @@ function carregarFeed() {
         let id = snap.key;
         let p = snap.val();
         let btn = document.getElementById("like-" + id);
-        if (btn) btn.innerHTML = "❤️ " + (p.likes || 0);
+        if (btn) btn.innerHTML = `<span class="emoji">❤️</span> ${p.likes || 0}`;
     });
 }
 
@@ -530,6 +551,7 @@ function verificarPalavras(texto) {
     }
     return null;
 }
+
 function soltarCoracoes(botao){
     let rect = botao.getBoundingClientRect();
 
