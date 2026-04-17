@@ -28,9 +28,38 @@
 
 <div class="overlay" id="overlay" onclick="fecharPost()"></div>
 
+<!-- ================= POPUP POST ================= -->
 <div id="postPopup">
+
     <textarea id="postText" placeholder="O que está acontecendo?" maxlength="1000"></textarea>
 
+    <!-- ================= ENQUETE ================= -->
+    <div id="pollBox" style="margin-top:10px;">
+        <button onclick="togglePoll()">📊 Criar enquete</button>
+
+        <!-- opções -->
+        <div id="pollOptions" style="display:none;margin-top:10px;">
+            <input type="text" class="pollInput" placeholder="Opção 1">
+            <input type="text" class="pollInput" placeholder="Opção 2">
+            <input type="text" class="pollInput" placeholder="Opção 3">
+            <input type="text" class="pollInput" placeholder="Opção 4">
+            <input type="text" class="pollInput" placeholder="Opção 5">
+        </div>
+
+        <!-- tempo -->
+        <div id="pollTimeBox" style="margin-top:8px;display:none;">
+            <select id="pollTime">
+                <option value="3600000">1 hora</option>
+                <option value="21600000">6 horas</option>
+                <option value="86400000" selected>24 horas</option>
+                <option value="259200000">3 dias</option>
+                <option value="604800000">7 dias</option>
+            </select>
+        </div>
+    </div>
+    <!-- ================= FIM ENQUETE ================= -->
+
+    <!-- upload -->
     <label class="uploadBox">
         <input type="file" id="fotoInput" accept="image/*" hidden>
         <div id="uploadVisual">📷 Escolher foto</div>
@@ -45,12 +74,15 @@
         <button class="cancelBtn" onclick="fecharPost()">Cancelar</button>
     </div>
 </div>
+<!-- ================= FIM POPUP ================= -->
 
+<!-- ================= VIEWER ================= -->
 <div id="viewer">
     <button id="closeViewer" onclick="fecharImagem()">✕</button>
     <img id="viewerImg">
 </div>
 
+<!-- ================= CONFIRM ================= -->
 <div id="customConfirm">
     <div class="confirmBox">
         <div class="confirmText" id="confirmText"></div>
@@ -61,6 +93,7 @@
     </div>
 </div>
 
+<!-- ================= PROMPT ================= -->
 <div id="customPrompt">
     <div class="confirmBox">
         <div class="confirmText" id="promptText"></div>
@@ -72,6 +105,7 @@
     </div>
 </div>
 
+<!-- ================= MENU ================= -->
 <div id="menuOverlay" onclick="fecharMenu()"></div>
 
 <div id="menuLateral">
@@ -85,6 +119,7 @@
     <button onclick="abrirSAR()">🤖 S.A.R</button>
 </div>
 
+<!-- ================= CONFIG ================= -->
 <div id="configOverlay" onclick="fecharConfig()"></div>
 
 <div id="configBox">
