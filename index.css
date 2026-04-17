@@ -761,3 +761,13 @@ body.claro{
     color:#1da1f2;
     font-weight:500;
 }
+ ANIMAÇÃO AO VOTAR */
+@keyframes pollPulse{
+    0%  { transform:scale(1); box-shadow:0 0 0 0 rgba(29,161,242,0.5); }
+    50% { transform:scale(1.03); box-shadow:0 0 0 6px rgba(29,161,242,0); }
+    100%{ transform:scale(1); box-shadow:0 0 0 0 rgba(29,161,242,0); }
+}
+
+.pollBtn.poll-pulse{
+    animation:pollPulse 0.35s ease;
+}

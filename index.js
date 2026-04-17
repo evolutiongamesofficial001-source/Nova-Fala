@@ -458,50 +458,7 @@ function renderPost(id, p) {
 
         // Render enquete
         if (p.poll) {
-            let pollDiv = document.createElement("div");
-            pollDiv.className = "pollBox";
-
-            let restante = p.poll.expiraEm - Date.now();
-            let tempo = document.createElement("div");
-            tempo.style.fontSize = "12px";
-            tempo.style.color = "#888";
-            tempo.style.marginBottom = "6px";
-
-            if (restante <= 0) {
-                tempo.innerText = "⛔ Enquete encerrada";
-            } else {
-                let min = Math.floor(restante / 60000);
-                tempo.innerText = "⏳ " + min + " min restantes";
-            }
-
-            pollDiv.appendChild(tempo);
-
-            let total = p.poll.opcoes.reduce((s, o) => s + o.votos, 0);
-
-            p.poll.opcoes.forEach((op, index) => {
-                let porcentagem = total ? Math.round((op.votos / total) * 100) : 0;
-
-                let btn = document.createElement("button");
-                btn.className = "pollBtn";
-                btn.innerHTML = `<span>${op.text} (${op.votos} • ${porcentagem}%)</span>`;
-
-                if (p.poll.votosPorUsuario && p.poll.votosPorUsuario[user] === index) {
-                    btn.classList.add("voted");
-                    btn.style.setProperty("--pct", porcentagem + "%");
-                    btn.querySelector("::before") // barra de progresso via CSS var
-                    btn.style.cssText += `--pct:${porcentagem}%`;
-                }
-
-                if (Date.now() > p.poll.expiraEm) {
-                    btn.disabled = true;
-                    btn.style.opacity = "0.6";
-                }
-
-                btn.onclick = () => votarEnquete(id, index);
-                pollDiv.appendChild(btn);
-            });
-
-            document.getElementById("poll-" + id).appendChild(pollDiv);
+            renderEnquete(id, p.poll);
         }
 
         // Render imagem
@@ -657,25 +614,133 @@ function soltarCoracoes(botao) {
     }
 }
 
-/* ================= ENQUETE — VOTAR ================= */
+/* ================= ENQUETE — RENDER ================= */
 
+function renderEnquete(postId, poll) {
+    let container = document.getElementById("poll-" + postId);
+    if (!container) return;
+    container.innerHTML = "";
+
+    let pollDiv = document.createElement("div");
+    pollDiv.className = "pollBox";
+
+    // Timer
+    let restante = poll.expiraEm - Date.now();
+    let tempoEl = document.createElement("div");
+    tempoEl.style.cssText = "font-size:12px;color:#888;margin-bottom:6px;";
+
+    if (restante <= 0) {
+        tempoEl.innerText = "⛔ Enquete encerrada";
+    } else {
+        let min = Math.floor(restante / 60000);
+        tempoEl.innerText = "⏳ " + min + " min restantes";
+    }
+    pollDiv.appendChild(tempoEl);
+
+    let total = poll.opcoes.reduce((s, o) => s + o.votos, 0);
+    let votoAtual = (poll.votosPorUsuario && poll.votosPorUsuario[user] != null)
+        ? poll.votosPorUsuario[user]
+        : undefined;
+    let encerrada = Date.now() > poll.expiraEm;
+
+    poll.opcoes.forEach((op, index) => {
+        let porcentagem = total ? Math.round((op.votos / total) * 100) : 0;
+        let isVotada = votoAtual === index;
+
+        let btn = document.createElement("button");
+        btn.className = "pollBtn" + (isVotada ? " voted" : "");
+        btn.dataset.index = index;
+
+        // Barra de progresso inline via CSS variable
+        btn.style.setProperty("--pct", porcentagem + "%");
+
+        btn.innerHTML = `
+            <span class="poll-label">${op.text}</span>
+            <span class="poll-pct">${porcentagem}%</span>
+        `;
+
+        if (encerrada) {
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+        } else {
+            btn.onclick = () => votarEnquete(postId, index);
+        }
+
+        pollDiv.appendChild(btn);
+    });
+
+    container.appendChild(pollDiv);
+
+    // Agendar limpeza automática se ainda não expirou
+    if (restante > 0) {
+        setTimeout(() => limparEnqueteExpirada(postId), restante);
+    }
+}
+
+/* ================= ENQUETE — LIMPAR QUANDO EXPIRAR ================= */
+
+function limparEnqueteExpirada(postId) {
+    db.ref("posts/" + postId + "/poll/expiraEm").once("value").then(snap => {
+        if (!snap.exists()) return;
+        let expiraEm = snap.val();
+
+        // Só remove se realmente expirou (evita race condition)
+        if (Date.now() < expiraEm) return;
+
+        db.ref("posts/" + postId + "/poll").remove().then(() => {
+            let container = document.getElementById("poll-" + postId);
+            if (container) container.innerHTML = "";
+        });
+    });
+}
+
+/* ================= ENQUETE — VOTAR ================= */
 function votarEnquete(postId, index) {
     let ref = db.ref("posts/" + postId);
 
     ref.transaction(post => {
         if (!post || !post.poll) return post;
-
-        if (Date.now() > post.poll.expiraEm) return;
+        if (Date.now() > post.poll.expiraEm) return post;
 
         if (!post.poll.votosPorUsuario) post.poll.votosPorUsuario = {};
 
-        if (post.poll.votosPorUsuario[user] !== undefined) return;
+        let votoAnterior = (post.poll.votosPorUsuario && post.poll.votosPorUsuario[user] != null)
+            ? post.poll.votosPorUsuario[user]
+            : undefined;
 
-        post.poll.opcoes[index].votos++;
-        post.poll.votosPorUsuario[user] = index;
+        // Clicou na mesma opção → remover voto
+        if (votoAnterior === index) {
+            post.poll.opcoes[index].votos = Math.max((post.poll.opcoes[index].votos || 1) - 1, 0);
+            post.poll.votosPorUsuario[user] = null;
+
+        // Clicou em opção diferente → trocar voto
+        } else if (votoAnterior !== undefined) {
+            post.poll.opcoes[votoAnterior].votos = Math.max((post.poll.opcoes[votoAnterior].votos || 1) - 1, 0);
+            post.poll.opcoes[index].votos = (post.poll.opcoes[index].votos || 0) + 1;
+            post.poll.votosPorUsuario[user] = index;
+
+        // Sem voto anterior → votar
+        } else {
+            post.poll.opcoes[index].votos = (post.poll.opcoes[index].votos || 0) + 1;
+            post.poll.votosPorUsuario[user] = index;
+        }
 
         return post;
-    }).then(() => carregarFeed());
+    }).then(result => {
+        if (!result.committed) return;
+        let poll = result.snapshot.val().poll;
+        if (!poll) return;
+
+        // Animação no botão clicado
+        let btn = document.querySelector(`#poll-${postId} .pollBtn[data-index="${index}"]`);
+        if (btn) {
+            btn.classList.add("poll-pulse");
+            setTimeout(() => btn.classList.remove("poll-pulse"), 350);
+        }
+
+        // Re-renderiza só a enquete, sem recarregar o feed todo
+        renderEnquete(postId, poll);
+    });
 }
 
 /* ================= INIT ================= */
