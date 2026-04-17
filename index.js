@@ -1,6 +1,7 @@
 const firebaseConfig = {
     databaseURL: "https://contaevilution-default-rtdb.firebaseio.com/"
 };
+
 const palavrasProibidas = [
     "prostituta",
     "vagabunda",
@@ -12,8 +13,8 @@ const palavrasProibidas = [
     "nazismo",
     "nazista",
     "hitler",
-    "Pedofilo",
-    "Suicidio"
+    "pedofilo",
+    "suicidio"
 ];
 
 firebase.initializeApp(firebaseConfig);
@@ -31,36 +32,43 @@ const usuariosVerificados = [
     "João Antônio"
 ];
 
-function usuarioVerificado(nome){
+function usuarioVerificado(nome) {
     return usuariosVerificados.includes(nome);
+}
+
+/* ================= FILTRO DE PALAVRAS ================= */
+
+function verificarPalavras(texto) {
+    let lower = texto.toLowerCase();
+    for (let palavra of palavrasProibidas) {
+        if (lower.includes(palavra.toLowerCase())) {
+            return palavra;
+        }
+    }
+    return null;
 }
 
 /* ================= PERFIL ================= */
 
-function abrirPerfil(nome){
-    if(nome === user){
-        localStorage.setItem("perfil", user);
-    } else {
-        localStorage.setItem("perfil", nome);
-    }
-
+function abrirPerfil(nome) {
+    localStorage.setItem("perfil", nome);
     location.href = "user.html";
 }
 
-function abrirMeuPerfil(){
+function abrirMeuPerfil() {
     localStorage.setItem("perfil", user);
     location.href = "user.html";
 }
 
 /* ================= LOGIN ================= */
 
-function salvarUsuario(user) {
-    localStorage.setItem("user", user);
-    sessionStorage.setItem("user", user);
+function salvarUsuario(u) {
+    localStorage.setItem("user", u);
+    sessionStorage.setItem("user", u);
 
     let d = new Date();
     d.setTime(d.getTime() + (30 * 24 * 60 * 60 * 1000));
-    document.cookie = "user=" + user + ";expires=" + d.toUTCString() + ";path=/";
+    document.cookie = "user=" + u + ";expires=" + d.toUTCString() + ";path=/";
 }
 
 function pegarCookie(nome) {
@@ -87,8 +95,8 @@ let confirmResolve = null;
 function customPrompt(msg) {
     return new Promise(res => {
         promptResolve = res;
-        promptText.innerText = msg;
-        promptInput.value = "";
+        document.getElementById("promptText").innerText = msg;
+        document.getElementById("promptInput").value = "";
         document.getElementById("customPrompt").style.display = "flex";
     });
 }
@@ -104,7 +112,7 @@ function fecharPrompt(v) {
 function customConfirm(msg) {
     return new Promise(res => {
         confirmResolve = res;
-        confirmText.innerText = msg;
+        document.getElementById("confirmText").innerText = msg;
         document.getElementById("customConfirm").style.display = "flex";
     });
 }
@@ -120,31 +128,31 @@ function fecharConfirm(v) {
 /* ================= UI ================= */
 
 function abrirPost() {
-    postPopup.style.display = "block";
-    overlay.style.display = "block";
+    document.getElementById("postPopup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
 
     setTimeout(() => {
-        postPopup.style.bottom = "0";
+        document.getElementById("postPopup").style.bottom = "0";
     }, 10);
 }
 
 function fecharPost() {
-    overlay.style.display = "none";
-    postPopup.style.bottom = "-420px";
+    document.getElementById("overlay").style.display = "none";
+    document.getElementById("postPopup").style.bottom = "-420px";
 
     setTimeout(() => {
-        postPopup.style.display = "none";
+        document.getElementById("postPopup").style.display = "none";
     }, 300);
 }
 
 function abrirImagem(src) {
-    viewer.style.display = "flex";
-    viewerImg.src = src;
+    document.getElementById("viewer").style.display = "flex";
+    document.getElementById("viewerImg").src = src;
 }
 
 function fecharImagem() {
-    viewer.style.display = "none";
-    viewerImg.src = "";
+    document.getElementById("viewer").style.display = "none";
+    document.getElementById("viewerImg").src = "";
 }
 
 /* ================= TEXTO ================= */
@@ -177,17 +185,35 @@ function comprimirImagem(file) {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
             resolve(canvas.toDataURL("image/jpeg", 0.4));
-        }
+        };
 
         reader.readAsDataURL(file);
     });
 }
 
-/* ================= POST ================= */
+/* ================= ENQUETE ================= */
 
 let fotoBase64 = null;
+let pollAtiva = false;
+
 const uploadVisual = document.getElementById("uploadVisual");
 const previewImg = document.getElementById("previewImg");
+const fotoInput = document.getElementById("fotoInput");
+const postText = document.getElementById("postText");
+const contador = document.getElementById("contador");
+
+function togglePoll() {
+    pollAtiva = !pollAtiva;
+    document.getElementById("pollOptions").style.display = pollAtiva ? "block" : "none";
+    document.getElementById("pollTimeBox").style.display = pollAtiva ? "block" : "none";
+}
+
+function resetarPoll() {
+    pollAtiva = false;
+    document.getElementById("pollOptions").style.display = "none";
+    document.getElementById("pollTimeBox").style.display = "none";
+    document.querySelectorAll(".pollInput").forEach(i => i.value = "");
+}
 
 fotoInput.addEventListener("change", () => {
     const file = fotoInput.files[0];
@@ -200,9 +226,8 @@ fotoInput.addEventListener("change", () => {
         reader.onload = e => {
             previewImg.src = e.target.result;
             previewImg.style.display = "block";
-        }
+        };
         reader.readAsDataURL(file);
-
     } else {
         uploadVisual.innerText = "📷 Escolher foto";
         uploadVisual.classList.remove("selected");
@@ -210,30 +235,64 @@ fotoInput.addEventListener("change", () => {
     }
 });
 
+/* ================= POST ================= */
+
 function postar() {
-
     let texto = postText.value.trim();
-    let palavraErrada = verificarPalavras(texto);
 
+    // Verificar palavras proibidas
+    let palavraErrada = verificarPalavras(texto);
     if (palavraErrada) {
         alert("❌ Palavra inapropriada detectada: " + palavraErrada);
         return;
     }
-    let file = fotoInput.files[0];
 
-    if (texto == "" && !file) return;
+    let file = fotoInput.files[0];
+    if (texto === "" && !file && !pollAtiva) return;
+
+    // Montar dados da enquete
+    let pollData = null;
+
+    if (pollAtiva) {
+        let inputs = document.querySelectorAll(".pollInput");
+        let opcoes = [];
+
+        inputs.forEach(i => {
+            let v = i.value.trim();
+            if (v) opcoes.push({ text: v, votos: 0 });
+        });
+
+        if (opcoes.length < 2) {
+            alert("A enquete precisa de pelo menos 2 opções.");
+            return;
+        }
+
+        let select = document.getElementById("pollTime");
+        let tempo = parseInt(select.value);
+
+        if (isNaN(tempo) || tempo <= 0) {
+            alert("Defina um tempo válido para a enquete.");
+            return;
+        }
+
+        pollData = {
+            opcoes: opcoes,
+            votosPorUsuario: {},
+            expiraEm: Date.now() + tempo
+        };
+    }
 
     let id = db.ref("posts").push().key;
 
     function salvarPost() {
-
         let post = {
             user: user,
             text: texto,
             likes: 0,
             time: Date.now(),
-            photoBase64: fotoBase64 || null
-        }
+            photoBase64: fotoBase64 || null,
+            poll: pollData || null
+        };
 
         db.ref("posts/" + id).set(post);
 
@@ -241,31 +300,32 @@ function postar() {
         fotoInput.value = "";
         contador.innerText = "0 / 1000";
         fotoBase64 = null;
+        uploadVisual.innerText = "📷 Escolher foto";
+        uploadVisual.classList.remove("selected");
+        previewImg.style.display = "none";
+        previewImg.src = "";
 
+        resetarPoll();
         fecharPost();
         carregarFeed();
     }
 
     if (file) {
-
         if (!file.type.startsWith("image/")) {
-            alert("Apenas imagens");
+            alert("Apenas imagens são permitidas.");
             return;
         }
 
         comprimirImagem(file).then(base64 => {
             fotoBase64 = base64;
-            fotoDB.ref("fotos/" + id).set(base64);
             salvarPost();
-        })
-
+        });
     } else {
         salvarPost();
     }
-
 }
 
-/* ================= LIKE (1 POR USUÁRIO) ================= */
+/* ================= LIKE ================= */
 
 function curtir(id) {
     db.ref("posts/" + id + "/likedBy/" + user).once("value").then(snap => {
@@ -275,19 +335,15 @@ function curtir(id) {
             db.ref("posts/" + id + "/likedBy/" + user).remove();
             db.ref("posts/" + id + "/likes").transaction(n => Math.max((n || 1) - 1, 0));
 
-            if (btn) {
-                btn.classList.remove("liked");
-            }
-
+            if (btn) btn.classList.remove("liked");
         } else {
             db.ref("posts/" + id + "/likedBy/" + user).set(true);
             db.ref("posts/" + id + "/likes").transaction(n => (n || 0) + 1);
 
             if (btn) {
+                soltarCoracoes(btn);
                 btn.classList.add("liked");
-                setTimeout(()=>{
-                    btn.classList.remove("liked");
-                }, 400);
+                setTimeout(() => btn.classList.remove("liked"), 400);
             }
         }
     });
@@ -337,10 +393,10 @@ function carregarComentarios(id, div) {
             let el = document.createElement("div");
             el.className = "comment";
             el.innerHTML = `
-            <b>@${c.user}${usuarioVerificado(c.user) ? ' ✔️' : ''}</b> ${linkificar(c.text)}
-            <br>
-            <button onclick="responder('${id}','${cid}')">Responder</button>
-            <div id="r${cid}"></div>
+                <b>@${c.user}${usuarioVerificado(c.user) ? ' ✔️' : ''}</b> ${linkificar(c.text)}
+                <br>
+                <button onclick="responder('${id}','${cid}')">Responder</button>
+                <div id="r${cid}"></div>
             `;
 
             div.appendChild(el);
@@ -353,7 +409,6 @@ function carregarComentarios(id, div) {
 let feed = document.getElementById("feed");
 
 function renderPost(id, p) {
-
     let div = document.createElement("div");
     div.className = "post";
     div.id = "post-" + id;
@@ -361,45 +416,95 @@ function renderPost(id, p) {
     db.ref("posts/" + id + "/likedBy/" + user).once("value").then(snap => {
         let isLiked = snap.exists();
 
+        const badgeVerificado = `
+            <span class="verificado">
+            <svg viewBox="0 0 24 24" aria-label="Verificado">
+            <path fill="#0095F6" d="M22 12l-2.2-2.2.5-3-3-.5L15 3l-3 1-3-1-2.3 3.3-3 .5.5 3L2 12l2.2 2.2-.5 3 3 .5L9 21l3-1 3 1 2.3-3.3 3-.5-.5-3z"/>
+            <path fill="#fff" d="M9.5 12.5l2 2 4-4-1.2-1.2-2.8 2.8-0.8-0.8z"/>
+            </svg>
+            </span>`;
+
         div.innerHTML = `
-        <div class="user" onclick="abrirPerfil('${p.user}')">
-            @${p.user}${usuarioVerificado(p.user) ? `
-<span class="verificado">
-<svg viewBox="0 0 24 24" aria-label="Verificado">
-<path fill="#0095F6" d="M22 12l-2.2-2.2.5-3-3-.5L15 3l-3 1-3-1-2.3 3.3-3 .5.5 3L2 12l2.2 2.2-.5 3 3 .5L9 21l3-1 3 1 2.3-3.3 3-.5-.5-3z"/>
-<path fill="#fff" d="M9.5 12.5l2 2 4-4-1.2-1.2-2.8 2.8-0.8-0.8z"/>
-</svg>
-</span>
-` : ''}
-        </div>
-        <div class="text" id="text-${id}">${linkificar(p.text)}</div>
-        <div id="img-${id}"></div>
+            <div class="user" onclick="abrirPerfil('${p.user}')">
+                @${p.user}${usuarioVerificado(p.user) ? badgeVerificado : ''}
+            </div>
+            <div class="text" id="text-${id}">${linkificar(p.text)}</div>
+            <div id="img-${id}"></div>
+            <div id="poll-${id}"></div>
 
-        <div class="actions">
-        <button id="like-${id}" onclick="curtir('${id}')"
-        style="${isLiked ? 'color:#ff6b81;border-color:#2a1a1e;' : ''}">
-        <span class="emoji">❤️</span> ${p.likes || 0}
-        </button>
+            <div class="actions">
+                <button id="like-${id}" onclick="curtir('${id}')"
+                    style="${isLiked ? 'color:#ff6b81;border-color:#2a1a1e;' : ''}">
+                    <span class="emoji">❤️</span> ${p.likes || 0}
+                </button>
 
-        <button onclick="comentar('${id}')">
-        <span class="emoji">💬</span> comentar
-        </button>
+                <button onclick="comentar('${id}')">
+                    <span class="emoji">💬</span> comentar
+                </button>
 
-        ${p.user === user ? `
-        <button onclick="editarPost('${id}')">
-        <span class="emoji">✏️</span> Editar
-        </button>
-        <button onclick="deletarPost('${id}')">
-        <span class="emoji">🗑️</span> Deletar
-        </button>
-        ` : ""}
-        </div>
+                ${p.user === user ? `
+                <button onclick="editarPost('${id}')">
+                    <span class="emoji">✏️</span> Editar
+                </button>
+                <button onclick="deletarPost('${id}')">
+                    <span class="emoji">🗑️</span> Deletar
+                </button>` : ""}
+            </div>
 
-        <div id="c${id}" class="comment-box"></div>
+            <div id="c${id}" class="comment-box"></div>
         `;
 
         feed.appendChild(div);
 
+        // Render enquete
+        if (p.poll) {
+            let pollDiv = document.createElement("div");
+            pollDiv.className = "pollBox";
+
+            let restante = p.poll.expiraEm - Date.now();
+            let tempo = document.createElement("div");
+            tempo.style.fontSize = "12px";
+            tempo.style.color = "#888";
+            tempo.style.marginBottom = "6px";
+
+            if (restante <= 0) {
+                tempo.innerText = "⛔ Enquete encerrada";
+            } else {
+                let min = Math.floor(restante / 60000);
+                tempo.innerText = "⏳ " + min + " min restantes";
+            }
+
+            pollDiv.appendChild(tempo);
+
+            let total = p.poll.opcoes.reduce((s, o) => s + o.votos, 0);
+
+            p.poll.opcoes.forEach((op, index) => {
+                let porcentagem = total ? Math.round((op.votos / total) * 100) : 0;
+
+                let btn = document.createElement("button");
+                btn.className = "pollBtn";
+                btn.innerHTML = `<span>${op.text} (${op.votos} • ${porcentagem}%)</span>`;
+
+                if (p.poll.votosPorUsuario && p.poll.votosPorUsuario[user] === index) {
+                    btn.classList.add("voted");
+                    btn.style.setProperty("--pct", porcentagem + "%");
+                    btn.querySelector("::before") // barra de progresso via CSS var
+                    btn.style.cssText += `--pct:${porcentagem}%`;
+                }
+
+                if (Date.now() > p.poll.expiraEm) {
+                    btn.disabled = true;
+                    btn.style.opacity = "0.6";
+                }
+
+                btn.onclick = () => votarEnquete(id, index);
+                pollDiv.appendChild(btn);
+            });
+
+            document.getElementById("poll-" + id).appendChild(pollDiv);
+        }
+
+        // Render imagem
         if (p.photoBase64) {
             let img = document.createElement("img");
             img.src = p.photoBase64;
@@ -420,21 +525,14 @@ function carregarFeed() {
         .orderByChild("time")
         .limitToLast(15)
         .once("value", snap => {
-
             let posts = [];
 
             snap.forEach(child => {
-                posts.push({
-                    id: child.key,
-                    data: child.val()
-                });
+                posts.push({ id: child.key, data: child.val() });
             });
 
             posts.sort((a, b) => b.data.time - a.data.time);
-
-            posts.forEach(p => {
-                renderPost(p.id, p.data);
-            });
+            posts.forEach(p => renderPost(p.id, p.data));
         });
 
     db.ref("posts").on("child_changed", snap => {
@@ -448,40 +546,136 @@ function carregarFeed() {
 /* ================= AÇÕES ================= */
 
 function deletarPost(id) {
-    customConfirm("Deseja deletar este post?")
-        .then(ok => {
-            if (!ok) return;
+    customConfirm("Deseja deletar este post?").then(ok => {
+        if (!ok) return;
 
-            db.ref("posts/" + id).remove();
-            db.ref("comments/" + id).remove();
-            db.ref("replies/" + id).remove();
-            fotoDB.ref("fotos/" + id).remove();
+        db.ref("posts/" + id).remove();
+        db.ref("comments/" + id).remove();
+        db.ref("replies/" + id).remove();
+        fotoDB.ref("fotos/" + id).remove();
 
-            carregarFeed();
-        });
+        carregarFeed();
+    });
 }
 
 async function editarPost(id) {
     let atual = document.getElementById("text-" + id).innerText;
-
     let novo = await customPrompt("Editar post:\n\n" + atual);
 
     if (novo) {
+        let palavraErrada = verificarPalavras(novo);
+        if (palavraErrada) {
+            alert("❌ Palavra inapropriada: " + palavraErrada);
+            return;
+        }
         db.ref("posts/" + id + "/text").set(novo);
         document.getElementById("text-" + id).innerHTML = linkificar(novo);
     }
 }
 
 function logout() {
-    customConfirm("Deseja sair da conta?")
-        .then(ok => {
-            if (!ok) return;
+    customConfirm("Deseja sair da conta?").then(ok => {
+        if (!ok) return;
 
-            localStorage.removeItem("user");
-            sessionStorage.removeItem("user");
-            document.cookie = "user=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
-            location.href = "login.html";
-        });
+        localStorage.removeItem("user");
+        sessionStorage.removeItem("user");
+        document.cookie = "user=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
+        location.href = "login.html";
+    });
+}
+
+/* ================= MENU / CONFIG ================= */
+
+function abrirMenu() {
+    document.getElementById("menuOverlay").style.display = "block";
+    document.getElementById("menuLateral").style.left = "0";
+}
+
+function fecharMenu() {
+    document.getElementById("menuOverlay").style.display = "none";
+    document.getElementById("menuLateral").style.left = "-260px";
+}
+
+function abrirConfig() {
+    fecharMenu();
+    document.getElementById("configOverlay").style.display = "block";
+    document.getElementById("configBox").style.bottom = "0";
+}
+
+function fecharConfig() {
+    document.getElementById("configOverlay").style.display = "none";
+    document.getElementById("configBox").style.bottom = "-300px";
+}
+
+function abrirSAR() {
+    fecharMenu();
+    setTimeout(() => { location.href = "IA.html"; }, 200);
+}
+
+/* ================= TEMA ================= */
+
+function atualizarBotoesAtivos() {
+    document.getElementById("btnEscuro").classList.remove("ativo");
+    document.getElementById("btnClaro").classList.remove("ativo");
+
+    let tema = localStorage.getItem("tema") || "escuro";
+    if (tema === "claro") {
+        document.getElementById("btnClaro").classList.add("ativo");
+    } else {
+        document.getElementById("btnEscuro").classList.add("ativo");
+    }
+}
+
+function setTema(tipo) {
+    localStorage.setItem("tema", tipo);
+
+    if (tipo === "claro") {
+        document.body.classList.add("claro");
+    } else {
+        document.body.classList.remove("claro");
+    }
+
+    atualizarBotoesAtivos();
+}
+
+/* ================= PARTÍCULAS DE LIKE ================= */
+
+function soltarCoracoes(botao) {
+    let rect = botao.getBoundingClientRect();
+
+    for (let i = 0; i < 6; i++) {
+        let heart = document.createElement("div");
+        heart.className = "heart-particle";
+        heart.innerText = "❤️";
+
+        heart.style.position = "fixed";
+        heart.style.left = (rect.left + rect.width / 2 + (Math.random() * 20 - 10)) + "px";
+        heart.style.top = (rect.top + window.scrollY) + "px";
+
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 1000);
+    }
+}
+
+/* ================= ENQUETE — VOTAR ================= */
+
+function votarEnquete(postId, index) {
+    let ref = db.ref("posts/" + postId);
+
+    ref.transaction(post => {
+        if (!post || !post.poll) return post;
+
+        if (Date.now() > post.poll.expiraEm) return;
+
+        if (!post.poll.votosPorUsuario) post.poll.votosPorUsuario = {};
+
+        if (post.poll.votosPorUsuario[user] !== undefined) return;
+
+        post.poll.opcoes[index].votos++;
+        post.poll.votosPorUsuario[user] = index;
+
+        return post;
+    }).then(() => carregarFeed());
 }
 
 /* ================= INIT ================= */
@@ -490,83 +684,6 @@ postText.addEventListener("input", () => {
     contador.innerText = postText.value.length + " / 1000";
 });
 
-function abrirMenu() {
-    menuOverlay.style.display = "block";
-    menuLateral.style.left = "0";
-}
-
-function fecharMenu() {
-    menuOverlay.style.display = "none";
-    menuLateral.style.left = "-260px";
-}
-
-function abrirConfig() {
-    fecharMenu();
-    configOverlay.style.display = "block";
-    configBox.style.bottom = "0";
-}
-
-function fecharConfig() {
-    configOverlay.style.display = "none";
-    configBox.style.bottom = "-300px";
-}
-
-function atualizarBotoesAtivos() {
-    document.getElementById('btnEscuro').classList.remove('ativo');
-    document.getElementById('btnClaro').classList.remove('ativo');
-
-    let tema = localStorage.getItem('tema') || 'escuro';
-    if (tema === 'claro') {
-        document.getElementById('btnClaro').classList.add('ativo');
-    } else {
-        document.getElementById('btnEscuro').classList.add('ativo');
-    }
-}
-
-function setTema(tipo) {
-    localStorage.setItem("tema", tipo);
-    atualizarBotoesAtivos();
-}
-
-let temaSalvo = localStorage.getItem("tema");
-if (temaSalvo) {
-    setTema(temaSalvo);
-} else {
-    atualizarBotoesAtivos();
-}
-
-function abrirSAR() {
-    fecharMenu();
-    setTimeout(() => {
-        location.href = "IA.html";
-    }, 200);
-}
-
-function verificarPalavras(texto) {
-    let textoLower = texto.toLowerCase();
-    for (let palavra of palavrasProibidas) {
-        if (textoLower.includes(palavra)) {
-            return palavra;
-        }
-    }
-    return null;
-}
-
-function soltarCoracoes(botao){
-    let rect = botao.getBoundingClientRect();
-
-    for(let i=0;i<6;i++){
-        let heart = document.createElement("div");
-        heart.className = "heart-particle";
-        heart.innerText = "❤️";
-
-        heart.style.left = (rect.left + rect.width/2 + (Math.random()*20-10)) + "px";
-        heart.style.top = (rect.top + window.scrollY) + "px";
-
-        document.body.appendChild(heart);
-
-        setTimeout(()=> heart.remove(), 1000);
-    }
-}
+setTema(localStorage.getItem("tema") || "escuro");
 
 carregarFeed();
