@@ -644,3 +644,120 @@ body.claro{
     display:block;
     transform: translateY(1px);
 }
+/* ================= BOTÃO CRIAR ENQUETE ================= */
+
+#pollBox button{
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(135deg, #1da1f2, #0d8ddb);
+    color:white;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    transition:all 0.25s ease;
+}
+
+#pollBox button:hover{
+    transform:scale(1.03);
+    box-shadow:0 0 12px rgba(29,161,242,0.5);
+}
+
+#pollBox button:active{
+    transform:scale(0.96);
+}
+
+
+/* ================= INPUTS DA ENQUETE ================= */
+
+#pollOptions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.pollInput{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #333;
+    background:#0c0c0c;
+    color:white;
+    font-size:14px;
+    transition:all 0.25s;
+}
+
+.pollInput:focus{
+    border-color:#1da1f2;
+    box-shadow:0 0 6px rgba(29,161,242,0.3);
+}
+
+
+/* ================= ENQUETE NO POST ================= */
+
+.pollBox{
+    margin-top:12px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+
+/* BOTÕES DAS OPÇÕES */
+.pollBtn{
+    position:relative;
+    overflow:hidden;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #2a2a2a;
+    background:#151515;
+    color:#ddd;
+    font-size:14px;
+    cursor:pointer;
+    text-align:left;
+    transition:all 0.25s ease;
+}
+
+/* Hover */
+.pollBtn:hover{
+    background:#1f1f1f;
+    transform:scale(1.02);
+}
+
+/* Clique */
+.pollBtn:active{
+    transform:scale(0.97);
+}
+
+
+/* ================= BARRA DE VOTOS (FUTURO) ================= */
+
+.pollBtn::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, rgba(29,161,242,0.25), rgba(29,161,242,0.1));
+    z-index:0;
+    transition:width 0.4s ease;
+}
+
+/* TEXTO NA FRENTE */
+.pollBtn span{
+    position:relative;
+    z-index:1;
+}
+
+
+/* ================= OPÇÃO VOTADA ================= */
+
+.pollBtn.voted{
+    border-color:#1da1f2;
+    background:#16222f;
+    color:#1da1f2;
+    font-weight:500;
+}
