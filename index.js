@@ -14,8 +14,7 @@ const palavrasProibidas = [
     "nazista",
     "hitler",
     "pedofilo",
-    "suicidio",
-    "cu"
+    "suicidio"
 ];
 
 firebase.initializeApp(firebaseConfig);
