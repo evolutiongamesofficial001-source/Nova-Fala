@@ -61,13 +61,15 @@ header{
     margin-bottom:12px;
     animation:fade .3s;
     transition:all 0.3s;
+    overflow:hidden;
+    word-break:break-word;
 }
 
 .post:hover{
     border-color:var(--blue);
 }
 
-.post img{
+.post img:not(.feed-avatar){
     width:100%;
     border-radius:10px;
     margin-top:10px;
@@ -75,7 +77,7 @@ header{
     transition:transform 0.3s;
 }
 
-.post img:hover{
+.post img:not(.feed-avatar):hover{
     transform:scale(1.02);
 }
 
@@ -94,6 +96,9 @@ header{
     margin-top:6px;
     font-size:16px;
     line-height:1.4;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    white-space:pre-wrap;
 }
 
 .actions{
@@ -520,6 +525,81 @@ body.claro{
     max-height:200px;
     object-fit:cover;
 }
+/* ================= FOTO NO FEED ================= */
+
+.post-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:6px;
+}
+
+.feed-avatar{
+    width:40px;
+    height:40px;
+    min-width:40px;
+    border-radius:50%;
+    object-fit:cover;
+    flex-shrink:0;
+    border:2px solid #222;
+    display:block;
+    overflow:hidden;
+}
+
+.feed-avatar-placeholder{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#1da1f2,#0d8ddb);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:15px;
+    color:white;
+    flex-shrink:0;
+    border:2px solid #222;
+    cursor:pointer;
+}
+
+/* ================= BUSCA ================= */
+
+.busca-resultado{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background 0.2s;
+}
+
+.busca-resultado:hover{
+    background:#1c1c1c;
+}
+
+.busca-avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    object-fit:cover;
+    background:#1da1f2;
+}
+
+.busca-avatar-placeholder{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#1da1f2,#0d8ddb);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:15px;
+    color:white;
+    flex-shrink:0;
+}
+
 /* ================= ADIÇÕES PERFIL ================= */
 
 /* Nome clicável */

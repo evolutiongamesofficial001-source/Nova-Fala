@@ -113,6 +113,11 @@ button.seguindo{
 
     <div class="nome" id="nome"></div>
 
+    <div id="bioEl" style="margin-top:6px;font-size:14px;color:#aaa;max-width:300px;margin-left:auto;margin-right:auto;word-break:break-word;"></div>
+    <div id="editBioBtn" style="display:none;margin-top:4px;">
+        <span onclick="editarBio()" style="font-size:12px;color:#1da1f2;cursor:pointer;">✏️ Editar bio</span>
+    </div>
+
     <div class="stats">
         <span id="seguidores"></span> • 
         <span id="seguindo"></span>
@@ -143,6 +148,34 @@ nome.innerText = "@" + perfil;
 
 function voltar(){
     history.back();
+}
+
+/* ================= BIO ================= */
+
+function carregarBio() {
+    db.ref("bios/" + perfil).on("value", snap => {
+        let bioEl = document.getElementById("bioEl");
+        let editBioBtn = document.getElementById("editBioBtn");
+
+        if (snap.exists()) {
+            bioEl.innerText = snap.val();
+        } else {
+            bioEl.innerText = user === perfil ? "Toque em ✏️ para adicionar uma bio" : "";
+            bioEl.style.color = "#555";
+        }
+
+        if (user === perfil) {
+            editBioBtn.style.display = "block";
+        }
+    });
+}
+
+function editarBio() {
+    let atual = document.getElementById("bioEl").innerText;
+    let nova = prompt("Editar bio (máx. 150 caracteres):", atual === "Toque em ✏️ para adicionar uma bio" ? "" : atual);
+    if (nova === null) return;
+    nova = nova.trim().substring(0, 150);
+    db.ref("bios/" + user).set(nova || null);
 }
 
 /* ================= FOTO PERFIL ================= */
@@ -285,6 +318,7 @@ function carregarPosts(){
 
 /* ================= INIT ================= */
 
+carregarBio();
 carregarFotoPerfil();
 atualizarBotao();
 carregarSeguidores();

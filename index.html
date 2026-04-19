@@ -19,8 +19,25 @@
         <span>Nova-Fala</span>
     </div>
     
-    <div class="logout" onclick="logout()">Sair</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+        <div onclick="abrirBusca()" style="cursor:pointer;font-size:20px;" title="Buscar usuários">🔍</div>
+        <div class="logout" onclick="logout()">Sair</div>
+    </div>
 </header>
+
+<!-- ================= BUSCA ================= -->
+<div id="buscaOverlay" onclick="fecharBusca()" style="display:none;position:fixed;inset:0;background:#0009;z-index:500;"></div>
+<div id="buscaBox" style="display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);width:90%;max-width:400px;background:#111;border:1px solid #222;border-radius:14px;padding:16px;z-index:501;animation:fade .2s;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:18px;">🔍</span>
+        <input id="buscaInput" type="text" placeholder="Buscar usuário..." oninput="buscarUsuarios(this.value)"
+            style="flex:1;background:#0c0c0c;border:1px solid #333;border-radius:8px;padding:9px 12px;color:white;font-size:14px;outline:none;">
+        <span onclick="fecharBusca()" style="cursor:pointer;color:#888;font-size:18px;line-height:1;">✕</span>
+    </div>
+    <div id="buscaResultados" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+        <div style="color:#555;font-size:13px;text-align:center;">Digite para buscar...</div>
+    </div>
+</div>
 
 <div id="feed"></div>
 

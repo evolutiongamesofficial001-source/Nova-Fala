@@ -14,7 +14,8 @@ const palavrasProibidas = [
     "nazista",
     "hitler",
     "pedofilo",
-    "suicidio"
+    "suicidio",
+    "cu"
 ];
 
 firebase.initializeApp(firebaseConfig);
@@ -413,8 +414,15 @@ function renderPost(id, p) {
     div.className = "post";
     div.id = "post-" + id;
 
-    db.ref("posts/" + id + "/likedBy/" + user).once("value").then(snap => {
+    // Adiciona ANTES do async para garantir a ordem
+    feed.appendChild(div);
+
+    Promise.all([
+        db.ref("posts/" + id + "/likedBy/" + user).once("value"),
+        db.ref("fotosPerfil/" + p.user).once("value")
+    ]).then(([snap, fotoSnap]) => {
         let isLiked = snap.exists();
+        let fotoUrl = fotoSnap.val();
 
         const badgeVerificado = `
             <span class="verificado">
@@ -424,9 +432,20 @@ function renderPost(id, p) {
             </svg>
             </span>`;
 
+        let avatarHtml = fotoUrl
+            ? `<img class="feed-avatar" src="${fotoUrl}" onclick="abrirPerfil('${p.user}')" alt="${p.user}">`
+            : `<div class="feed-avatar-placeholder" onclick="abrirPerfil('${p.user}')">
+                <svg viewBox="0 0 24 24" fill="white" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+               </div>`;
+
         div.innerHTML = `
-            <div class="user" onclick="abrirPerfil('${p.user}')">
-                @${p.user}${usuarioVerificado(p.user) ? badgeVerificado : ''}
+            <div class="post-header">
+                ${avatarHtml}
+                <div class="user" onclick="abrirPerfil('${p.user}')">
+                    @${p.user}${usuarioVerificado(p.user) ? badgeVerificado : ''}
+                </div>
             </div>
             <div class="text" id="text-${id}">${linkificar(p.text)}</div>
             <div id="img-${id}"></div>
@@ -453,8 +472,6 @@ function renderPost(id, p) {
 
             <div id="c${id}" class="comment-box"></div>
         `;
-
-        feed.appendChild(div);
 
         // Render enquete
         if (p.poll) {
@@ -671,7 +688,7 @@ function renderEnquete(postId, poll) {
 
     container.appendChild(pollDiv);
 
-    // Agendar limpeza automática se ainda não expirou
+    // Agendar limpeza automática se ainda não ex
     if (restante > 0) {
         setTimeout(() => limparEnqueteExpirada(postId), restante);
     }
@@ -741,6 +758,91 @@ function votarEnquete(postId, index) {
         // Re-renderiza só a enquete, sem recarregar o feed todo
         renderEnquete(postId, poll);
     });
+}
+
+/* ================= BUSCA DE USUÁRIOS ================= */
+
+function abrirBusca() {
+    document.getElementById("buscaOverlay").style.display = "block";
+    document.getElementById("buscaBox").style.display = "block";
+    setTimeout(() => document.getElementById("buscaInput").focus(), 100);
+}
+
+function fecharBusca() {
+    document.getElementById("buscaOverlay").style.display = "none";
+    document.getElementById("buscaBox").style.display = "none";
+    document.getElementById("buscaInput").value = "";
+    document.getElementById("buscaResultados").innerHTML = `<div style="color:#555;font-size:13px;text-align:center;">Digite para buscar...</div>`;
+}
+
+let buscaTimer = null;
+
+function buscarUsuarios(query) {
+    clearTimeout(buscaTimer);
+    let resultados = document.getElementById("buscaResultados");
+
+    query = query.trim().toLowerCase();
+
+    if (!query) {
+        resultados.innerHTML = `<div style="color:#555;font-size:13px;text-align:center;">Digite para buscar...</div>`;
+        return;
+    }
+
+    resultados.innerHTML = `<div style="color:#555;font-size:13px;text-align:center;">Buscando...</div>`;
+
+    buscaTimer = setTimeout(() => {
+        // Coletar usuários únicos a partir dos posts
+        db.ref("posts").orderByChild("user").once("value").then(snap => {
+            let usuariosUnicos = new Set();
+            snap.forEach(child => {
+                let nome = child.val().user;
+                if (nome) usuariosUnicos.add(nome);
+            });
+
+            let encontrados = [...usuariosUnicos].filter(nome =>
+                nome.toLowerCase().includes(query)
+            );
+
+            if (encontrados.length === 0) {
+                resultados.innerHTML = `<div style="color:#555;font-size:13px;text-align:center;">Nenhum usuário encontrado.</div>`;
+                return;
+            }
+
+            resultados.innerHTML = "";
+
+            let promises = encontrados.slice(0, 10).map(nome =>
+                Promise.all([
+                    db.ref("fotosPerfil/" + nome).once("value"),
+                    db.ref("bios/" + nome).once("value")
+                ]).then(([fotoSnap, bioSnap]) => ({ nome, foto: fotoSnap.val(), bio: bioSnap.val() }))
+            );
+
+            Promise.all(promises).then(lista => {
+                lista.forEach(({ nome, foto, bio }) => {
+                    let el = document.createElement("div");
+                    el.className = "busca-resultado";
+                    el.onclick = () => { fecharBusca(); abrirPerfil(nome); };
+
+                    let avatarHtml = foto
+                        ? `<img class="busca-avatar" src="${foto}" alt="${nome}">`
+                        : `<div class="busca-avatar-placeholder">${nome.charAt(0).toUpperCase()}</div>`;
+
+                    let bioHtml = bio
+                        ? `<div style="font-size:12px;color:#777;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">${bio}</div>`
+                        : "";
+
+                    el.innerHTML = `
+                        ${avatarHtml}
+                        <div>
+                            <div style="font-weight:bold;color:#2ee6a6;font-size:14px;">@${nome}</div>
+                            ${bioHtml}
+                        </div>
+                    `;
+                    resultados.appendChild(el);
+                });
+            });
+        });
+    }, 300);
 }
 
 /* ================= INIT ================= */
