@@ -51,20 +51,98 @@ header{
     object-fit:cover;
 }
 
-.nome{
+/* Nome + badge na linha */
+.nome-linha{
     margin-top:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
+.nome{
     font-size:20px;
     font-weight:bold;
 }
 
+/* Badge verificado SVG */
+.badge-verificado svg{
+    width:20px;
+    height:20px;
+    display:block;
+}
+
+/* ===== STATS CLICÁVEIS ===== */
 .stats{
-    margin-top:6px;
-    color:#888;
-    font-size:14px;
+    margin-top:12px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+}
+
+.stat-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    cursor:pointer;
+    padding:10px 18px 10px;
+    border-radius:16px;
+    border:1px solid #252525;
+    background:#141414;
+    transition:background 0.18s, border-color 0.18s, transform 0.13s;
+    -webkit-tap-highlight-color:transparent;
+    min-width:96px;
+    position:relative;
+}
+
+.stat-item:hover{
+    border-color:#1da1f2;
+    background:#181818;
+}
+
+.stat-item:active{
+    transform:scale(0.91);
+    background:rgba(29,161,242,0.1);
+    border-color:#1da1f2;
+}
+
+.stat-num{
+    font-size:19px;
+    font-weight:700;
+    color:#e8e8e8;
+    line-height:1;
+}
+
+.stat-label{
+    font-size:11px;
+    color:#777;
+    letter-spacing:0.3px;
+}
+
+.stat-item::after{
+    content:"›";
+    position:absolute;
+    bottom:6px;
+    right:9px;
+    font-size:13px;
+    color:#1da1f2;
+    opacity:0.65;
+    line-height:1;
+    transition:opacity 0.2s;
+}
+
+.stat-item:hover::after{ opacity:1; }
+
+.stat-dot{
+    color:#2a2a2a;
+    font-size:22px;
 }
 
 button{
-    margin-top:12px;
+    margin-top:14px;
     padding:10px 16px;
     border:none;
     border-radius:20px;
@@ -79,9 +157,7 @@ button.seguindo{
     color:#000;
 }
 
-#posts{
-    padding:10px;
-}
+#posts{ padding:10px; }
 
 .post{
     background:#121212;
@@ -89,12 +165,169 @@ button.seguindo{
     border-radius:12px;
     padding:10px;
     margin-bottom:10px;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    white-space:pre-wrap;
 }
+
+.post a{ color:#4da6ff; text-decoration:none; }
+.post a:hover{ text-decoration:underline; }
 
 .post img{
     width:100%;
     border-radius:10px;
     margin-top:8px;
+}
+
+/* ===== MODAL BALÃO ===== */
+
+#modalOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.72);
+    display:none;
+    z-index:500;
+    backdrop-filter:blur(5px);
+    -webkit-backdrop-filter:blur(5px);
+    animation:fadeIn 0.2s ease;
+}
+
+#modalBalao{
+    position:fixed;
+    bottom:-100%;
+    left:0;
+    right:0;
+    background:linear-gradient(180deg,#181818 0%,#111 100%);
+    border-top:1px solid #2a2a2a;
+    border-radius:24px 24px 0 0;
+    z-index:501;
+    transition:bottom 0.38s cubic-bezier(0.34,1.45,0.64,1);
+    max-height:78vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    box-shadow:0 -10px 50px rgba(0,0,0,0.7);
+}
+
+#modalBalao.aberto{ bottom:0; }
+
+.modal-handle{
+    width:44px;
+    height:4px;
+    background:#2e2e2e;
+    border-radius:4px;
+    margin:13px auto 0;
+    flex-shrink:0;
+}
+
+.modal-titulo{
+    font-size:16px;
+    font-weight:700;
+    text-align:center;
+    padding:14px 20px 12px;
+    color:#e8e8e8;
+    border-bottom:1px solid #1f1f1f;
+    flex-shrink:0;
+}
+
+.modal-lista{
+    overflow-y:auto;
+    flex:1;
+    padding:6px 0 28px;
+}
+
+.modal-lista::-webkit-scrollbar{ width:3px; }
+.modal-lista::-webkit-scrollbar-thumb{ background:#2a2a2a; border-radius:3px; }
+
+.modal-user-item{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    padding:13px 20px;
+    cursor:pointer;
+    transition:background 0.15s;
+    -webkit-tap-highlight-color:transparent;
+}
+
+.modal-user-item:active{ background:rgba(255,255,255,0.05); }
+.modal-user-item:hover{ background:#1a1a1a; }
+
+.modal-avatar{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#1da1f2,#0d8ddb);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size:19px;
+    color:white;
+    flex-shrink:0;
+    overflow:hidden;
+    border:2px solid #222;
+}
+
+.modal-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.modal-user-info{
+    flex:1;
+    min-width:0;
+}
+
+/* Nome + badge dentro do modal */
+.modal-nome-linha{
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+.modal-user-nome{
+    font-size:15px;
+    font-weight:600;
+    color:#e8e8e8;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.modal-badge svg{
+    width:16px;
+    height:16px;
+    display:block;
+    flex-shrink:0;
+}
+
+.modal-user-bio{
+    font-size:12px;
+    color:#666;
+    margin-top:3px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.modal-vazio{
+    text-align:center;
+    color:#555;
+    padding:50px 20px;
+    font-size:14px;
+}
+
+.modal-loading{
+    text-align:center;
+    color:#555;
+    padding:50px 20px;
+    font-size:14px;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
 }
 </style>
 </head>
@@ -111,7 +344,16 @@ button.seguindo{
 
     <div class="avatar" id="avatar" onclick="trocarFoto()"></div>
 
-    <div class="nome" id="nome"></div>
+    <!-- Nome + badge verificado -->
+    <div class="nome-linha">
+        <span class="nome" id="nome"></span>
+        <span class="badge-verificado" id="badgePerfil" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="12" fill="#1da1f2"/>
+                <path d="M6.5 12.5L10 16L17.5 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+    </div>
 
     <div id="bioEl" style="margin-top:6px;font-size:14px;color:#aaa;max-width:300px;margin-left:auto;margin-right:auto;word-break:break-word;"></div>
     <div id="editBioBtn" style="display:none;margin-top:4px;">
@@ -119,14 +361,32 @@ button.seguindo{
     </div>
 
     <div class="stats">
-        <span id="seguidores"></span> • 
-        <span id="seguindo"></span>
+        <div class="stat-item" onclick="abrirModal('seguidores')">
+            <span class="stat-num" id="seguidoresNum">0</span>
+            <span class="stat-label">seguidores</span>
+        </div>
+        <span class="stat-dot">·</span>
+        <div class="stat-item" onclick="abrirModal('seguindo')">
+            <span class="stat-num" id="seguindoNum">0</span>
+            <span class="stat-label">seguindo</span>
+        </div>
     </div>
 
     <button id="btnSeguir" onclick="seguir()">Seguir</button>
 </div>
 
 <div id="posts"></div>
+
+<!-- MODAL BALÃO -->
+<div id="modalOverlay" onclick="fecharModal()"></div>
+
+<div id="modalBalao">
+    <div class="modal-handle"></div>
+    <div class="modal-titulo" id="modalTitulo"></div>
+    <div class="modal-lista" id="modalLista">
+        <div class="modal-loading">Carregando...</div>
+    </div>
+</div>
 
 <script>
 const firebaseConfig = {
@@ -135,6 +395,23 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+/* ================= VERIFICADO ================= */
+
+const usuariosVerificados = [
+    "Macedo",
+    "Evolution Studio Official",
+    "João Antônio"
+];
+
+function eVerificado(nome) {
+    return usuariosVerificados.includes(nome);
+}
+
+const SVG_BADGE = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="12" fill="#1da1f2"/>
+    <path d="M6.5 12.5L10 16L17.5 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
 /* ================= USUÁRIO ================= */
 
 let user = localStorage.getItem("user");
@@ -142,12 +419,29 @@ let perfil = localStorage.getItem("perfil");
 
 if(!perfil) location.href = "index.html";
 
-nome.innerText = "@" + perfil;
+document.getElementById("nome").innerText = "@" + perfil;
+
+// Mostrar badge no perfil se verificado
+if (eVerificado(perfil)) {
+    document.getElementById("badgePerfil").style.display = "inline-flex";
+}
 
 /* ================= VOLTAR ================= */
 
-function voltar(){
-    history.back();
+function voltar(){ history.back(); }
+
+/* ================= LINKS ================= */
+
+function linkificar(texto) {
+    if (!texto) return "";
+    let escaped = texto
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+    return escaped.replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
 }
 
 /* ================= BIO ================= */
@@ -158,15 +452,14 @@ function carregarBio() {
         let editBioBtn = document.getElementById("editBioBtn");
 
         if (snap.exists()) {
-            bioEl.innerText = snap.val();
+            bioEl.innerHTML = linkificar(snap.val());
+            bioEl.style.color = "#aaa";
         } else {
             bioEl.innerText = user === perfil ? "Toque em ✏️ para adicionar uma bio" : "";
             bioEl.style.color = "#555";
         }
 
-        if (user === perfil) {
-            editBioBtn.style.display = "block";
-        }
+        if (user === perfil) editBioBtn.style.display = "block";
     });
 }
 
@@ -189,24 +482,17 @@ function comprimirImagem(file){
     return new Promise(resolve=>{
         let img = new Image();
         let reader = new FileReader();
-
         reader.onload = e => img.src = e.target.result;
-
         img.onload = ()=>{
             let canvas = document.createElement("canvas");
             let max = 300;
-
             let scale = Math.min(max / img.width, max / img.height, 1);
-
             canvas.width = img.width * scale;
             canvas.height = img.height * scale;
-
             let ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
             resolve(canvas.toDataURL("image/jpeg", 0.5));
-        }
-
+        };
         reader.readAsDataURL(file);
     });
 }
@@ -214,17 +500,14 @@ function comprimirImagem(file){
 fotoPerfilInput.addEventListener("change", ()=>{
     let file = fotoPerfilInput.files[0];
     if(!file) return;
-
     comprimirImagem(file).then(base64=>{
         db.ref("fotosPerfil/" + user).set(base64);
     });
 });
 
 function carregarFotoPerfil(){
-    db.ref("fotosPerfil/" + perfil)
-    .on("value", snap=>{
+    db.ref("fotosPerfil/" + perfil).on("value", snap=>{
         let avatar = document.getElementById("avatar");
-
         if(snap.exists()){
             avatar.innerHTML = `<img src="${snap.val()}">`;
         } else {
@@ -238,9 +521,7 @@ function carregarFotoPerfil(){
 function seguir(){
     let refSeguidor = db.ref("seguidores/" + perfil + "/" + user);
     let refSeguindo = db.ref("seguindo/" + user + "/" + perfil);
-
     refSeguidor.once("value").then(snap => {
-
         if(snap.exists()){
             refSeguidor.remove();
             refSeguindo.remove();
@@ -248,13 +529,15 @@ function seguir(){
             refSeguidor.set(true);
             refSeguindo.set(true);
         }
-
     });
 }
 
 function atualizarBotao(){
-    db.ref("seguidores/" + perfil + "/" + user)
-    .on("value", snap => {
+    if(user === perfil){
+        btnSeguir.style.display = "none";
+        return;
+    }
+    db.ref("seguidores/" + perfil + "/" + user).on("value", snap => {
         if(snap.exists()){
             btnSeguir.innerText = "Seguindo";
             btnSeguir.classList.add("seguindo");
@@ -268,17 +551,117 @@ function atualizarBotao(){
 /* ================= CONTADORES ================= */
 
 function carregarSeguidores(){
-    db.ref("seguidores/" + perfil)
-    .on("value", snap => {
-        seguidores.innerText = snap.numChildren() + " seguidores";
+    db.ref("seguidores/" + perfil).on("value", snap => {
+        document.getElementById("seguidoresNum").innerText = snap.numChildren();
     });
 }
 
 function carregarSeguindo(){
-    db.ref("seguindo/" + perfil)
-    .on("value", snap => {
-        seguindo.innerText = snap.numChildren() + " seguindo";
+    db.ref("seguindo/" + perfil).on("value", snap => {
+        document.getElementById("seguindoNum").innerText = snap.numChildren();
     });
+}
+
+/* ================= MODAL BALÃO ================= */
+
+async function abrirModal(tipo) {
+    const overlay = document.getElementById("modalOverlay");
+    const balao   = document.getElementById("modalBalao");
+    const titulo  = document.getElementById("modalTitulo");
+    const lista   = document.getElementById("modalLista");
+
+    titulo.innerText = tipo === "seguidores" ? "👥 Seguidores" : "➡️ Seguindo";
+    lista.innerHTML  = `<div class="modal-loading">⏳ Carregando...</div>`;
+
+    overlay.style.display = "block";
+    setTimeout(() => balao.classList.add("aberto"), 10);
+
+    const ref = tipo === "seguidores"
+        ? db.ref("seguidores/" + perfil)
+        : db.ref("seguindo/" + perfil);
+
+    const snap = await ref.once("value");
+
+    if (!snap.exists() || snap.numChildren() === 0) {
+        lista.innerHTML = `<div class="modal-vazio">${
+            tipo === "seguidores"
+                ? "Nenhum seguidor ainda 😶"
+                : "Não segue ninguém ainda 😶"
+        }</div>`;
+        return;
+    }
+
+    const usernames = Object.keys(snap.val());
+    lista.innerHTML = "";
+
+    for (const username of usernames) {
+        // Somente foto e bio — sem posts
+        const [fotoSnap, bioSnap] = await Promise.all([
+            db.ref("fotosPerfil/" + username).once("value"),
+            db.ref("bios/" + username).once("value")
+        ]);
+
+        const item = document.createElement("div");
+        item.className = "modal-user-item";
+        item.onclick = () => irParaPerfil(username);
+
+        // Avatar
+        const avatarDiv = document.createElement("div");
+        avatarDiv.className = "modal-avatar";
+        if (fotoSnap.exists()) {
+            avatarDiv.innerHTML = `<img src="${fotoSnap.val()}" alt="${username}">`;
+        } else {
+            avatarDiv.innerText = username.charAt(0).toUpperCase();
+        }
+
+        // Info
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "modal-user-info";
+
+        // Linha do nome + badge
+        const nomeLinha = document.createElement("div");
+        nomeLinha.className = "modal-nome-linha";
+
+        const nomeSpan = document.createElement("span");
+        nomeSpan.className = "modal-user-nome";
+        nomeSpan.innerText = "@" + username;
+        nomeLinha.appendChild(nomeSpan);
+
+        // Badge verificado no modal
+        if (eVerificado(username)) {
+            const badgeSpan = document.createElement("span");
+            badgeSpan.className = "modal-badge";
+            badgeSpan.innerHTML = SVG_BADGE;
+            nomeLinha.appendChild(badgeSpan);
+        }
+
+        infoDiv.appendChild(nomeLinha);
+
+        // Bio (sem post, só bio)
+        if (bioSnap.exists() && bioSnap.val().trim()) {
+            const bioDiv = document.createElement("div");
+            bioDiv.className = "modal-user-bio";
+            bioDiv.innerText = bioSnap.val();
+            infoDiv.appendChild(bioDiv);
+        }
+
+        item.appendChild(avatarDiv);
+        item.appendChild(infoDiv);
+        lista.appendChild(item);
+    }
+}
+
+function fecharModal() {
+    const overlay = document.getElementById("modalOverlay");
+    const balao   = document.getElementById("modalBalao");
+    balao.classList.remove("aberto");
+    setTimeout(() => { overlay.style.display = "none"; }, 370);
+}
+
+function irParaPerfil(username) {
+    fecharModal();
+    localStorage.setItem("perfil", username);
+    setTimeout(() => location.reload(), 390);
 }
 
 /* ================= POSTS ================= */
@@ -288,29 +671,19 @@ function carregarPosts(){
     .orderByChild("user")
     .equalTo(perfil)
     .on("value", snap => {
-
         posts.innerHTML = "";
-
         let lista = [];
-
-        snap.forEach(child => {
-            lista.push(child.val());
-        });
-
+        snap.forEach(child => { lista.push(child.val()); });
         lista.reverse();
-
         lista.forEach(p => {
             let div = document.createElement("div");
             div.className = "post";
-
-            div.innerHTML = `<div>${p.text}</div>`;
-
+            div.innerHTML = `<div>${linkificar(p.text || "")}</div>`;
             if(p.photoBase64){
                 let img = document.createElement("img");
                 img.src = p.photoBase64;
                 div.appendChild(img);
             }
-
             posts.appendChild(div);
         });
     });
