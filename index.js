@@ -585,6 +585,11 @@ function abrirSAR() {
     setTimeout(() => { location.href = "IA.html"; }, 200);
 }
 
+function abrirchat() {
+    fecharMenu();
+    setTimeout(() => { location.href = "chat.html"; }, 200);
+}
+
 /* ================= TEMA ================= */
 
 function atualizarBotoesAtivos() {
