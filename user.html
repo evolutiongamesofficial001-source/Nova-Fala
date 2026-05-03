@@ -325,6 +325,134 @@ button.seguindo{
     font-size:14px;
 }
 
+/* ===== BOTÃO LÁPIS PERSONALIZAR ===== */
+.btn-personalizar{
+    position:absolute;
+    top:12px;
+    right:14px;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.15);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:all 0.2s;
+    color:white;
+    font-size:15px;
+    backdrop-filter:blur(6px);
+}
+.btn-personalizar:hover{
+    background:rgba(255,255,255,0.16);
+    transform:scale(1.08);
+}
+
+/* ===== PAINEL PERSONALIZAR ===== */
+#personalizarOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.72);
+    display:none;
+    z-index:600;
+    backdrop-filter:blur(4px);
+}
+#personalizarBox{
+    position:fixed;
+    bottom:-100%;
+    left:0;right:0;
+    background:linear-gradient(180deg,#181818 0%,#111 100%);
+    border-top:1px solid #2a2a2a;
+    border-radius:24px 24px 0 0;
+    z-index:601;
+    transition:bottom 0.38s cubic-bezier(0.34,1.45,0.64,1);
+    padding:0 0 32px;
+    box-shadow:0 -10px 50px rgba(0,0,0,0.7);
+}
+#personalizarBox.aberto{ bottom:0; }
+.perso-handle{
+    width:44px;height:4px;
+    background:#2e2e2e;
+    border-radius:4px;
+    margin:13px auto 0;
+}
+.perso-titulo{
+    font-size:16px;font-weight:700;
+    text-align:center;
+    padding:14px 20px 16px;
+    color:#e8e8e8;
+    border-bottom:1px solid #1f1f1f;
+}
+.perso-corpo{
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+.perso-grupo{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+.perso-label{
+    font-size:12px;
+    color:#777;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+}
+.perso-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+.perso-row input[type="color"]{
+    width:44px;height:36px;
+    border:1px solid #2a2a2a;
+    border-radius:8px;
+    background:#1c1c1c;
+    cursor:pointer;
+    padding:2px;
+}
+.perso-row select{
+    flex:1;
+    padding:9px 12px;
+    border-radius:8px;
+    border:1px solid #2a2a2a;
+    background:#1c1c1c;
+    color:#e8e8e8;
+    font-size:13px;
+    outline:none;
+    cursor:pointer;
+}
+.perso-preview-text{
+    font-size:13px;
+    color:#888;
+    padding:10px 14px;
+    border-radius:8px;
+    background:#0f0f0f;
+    border:1px solid #1f1f1f;
+    text-align:center;
+    transition:all 0.2s;
+}
+.perso-btns{
+    display:flex;
+    gap:10px;
+    padding:0 20px;
+    margin-top:4px;
+}
+.perso-btns button{
+    flex:1;padding:11px;
+    border-radius:10px;border:none;
+    font-size:14px;font-weight:600;
+    cursor:pointer;transition:all 0.2s;
+    margin-top:0;
+}
+.perso-salvar{ background:#1da1f2;color:white; }
+.perso-salvar:hover{ opacity:0.85; }
+.perso-cancelar{ background:#1c1c1c;color:#bbb; }
+.perso-cancelar:hover{ background:#2a2a2a; }
+
 @keyframes fadeIn{
     from{opacity:0;}
     to{opacity:1;}
@@ -339,8 +467,11 @@ button.seguindo{
     Perfil
 </header>
 
-<div id="perfil">
+<div id="perfil" style="position:relative;">
     <input type="file" id="fotoPerfilInput" accept="image/*" hidden>
+
+    <!-- Botão lápis personalizar - só aparece no próprio perfil -->
+    <div id="btnPersonalizar" class="btn-personalizar" onclick="abrirPersonalizar()" style="display:none;" title="Personalizar perfil">✏️</div>
 
     <div class="avatar" id="avatar" onclick="trocarFoto()"></div>
 
@@ -388,12 +519,59 @@ button.seguindo{
     </div>
 </div>
 
+<!-- MODAL PERSONALIZAR PERFIL -->
+<div id="personalizarOverlay" onclick="fecharPersonalizar()"></div>
+<div id="personalizarBox">
+    <div class="perso-handle"></div>
+    <div class="perso-titulo">✏️ Personalizar Perfil</div>
+    <div class="perso-corpo">
+        <div class="perso-grupo">
+            <div class="perso-label">Cor de fundo do perfil</div>
+            <div class="perso-row">
+                <input type="color" id="persoCorFundo" value="#0b0b0b">
+                <span style="font-size:12px;color:#666;">Cor do fundo</span>
+            </div>
+        </div>
+        <div class="perso-grupo">
+            <div class="perso-label">Cor do texto da bio</div>
+            <div class="perso-row">
+                <input type="color" id="persoCorBio" value="#aaaaaa">
+                <span style="font-size:12px;color:#666;">Cor da bio</span>
+            </div>
+        </div>
+        <div class="perso-grupo">
+            <div class="perso-label">Fonte do nome e bio</div>
+            <select id="persoFonte" onchange="atualizarPreview()">
+                <option value="system-ui">Padrão (System)</option>
+                <option value="'Georgia', serif">Georgia (Serifada)</option>
+                <option value="'Courier New', monospace">Courier New (Mono)</option>
+                <option value="'Arial', sans-serif">Arial</option>
+                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                <option value="cursive">Cursiva</option>
+                <option value="fantasy">Fantasy</option>
+            </select>
+        </div>
+        <div class="perso-grupo">
+            <div class="perso-label">Pré-visualização</div>
+            <div class="perso-preview-text" id="persoPreview">@SeuNome — bio aqui...</div>
+        </div>
+    </div>
+    <div class="perso-btns">
+        <button class="perso-cancelar" onclick="fecharPersonalizar()">Cancelar</button>
+        <button class="perso-salvar" onclick="salvarPersonalizar()">Salvar</button>
+    </div>
+</div>
+
 <script>
 const firebaseConfig = {
     databaseURL: "https://contaevilution-default-rtdb.firebaseio.com/"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+const aparenciasDB = firebase.initializeApp({
+    databaseURL: "https://coins-301c2-default-rtdb.firebaseio.com/"
+}, "aparencias").database();
 
 /* ================= VERIFICADO ================= */
 
@@ -459,7 +637,11 @@ function carregarBio() {
             bioEl.style.color = "#555";
         }
 
-        if (user === perfil) editBioBtn.style.display = "block";
+        if (user === perfil) {
+            editBioBtn.style.display = "block";
+            // Mostrar botão lápis de personalização
+            document.getElementById("btnPersonalizar").style.display = "flex";
+        }
     });
 }
 
@@ -689,6 +871,82 @@ function carregarPosts(){
     });
 }
 
+/* ================= PERSONALIZAR PERFIL ================= */
+
+function aplicarPersonalizacao(dados) {
+    if (!dados) return;
+    let perfilEl = document.getElementById("perfil");
+    if (dados.corFundo) {
+        perfilEl.style.background = dados.corFundo;
+        document.body.style.background = dados.corFundo;
+    }
+    let bioEl = document.getElementById("bioEl");
+    if (dados.corBio && bioEl) bioEl.style.color = dados.corBio;
+    let nomeEl = document.getElementById("nome");
+    if (dados.fonte) {
+        if (nomeEl) nomeEl.style.fontFamily = dados.fonte;
+        if (bioEl) bioEl.style.fontFamily = dados.fonte;
+    }
+}
+
+function carregarPersonalizacao() {
+    aparenciasDB.ref("aparencias/" + perfil).on("value", snap => {
+        if (snap.exists()) {
+            aplicarPersonalizacao(snap.val());
+        }
+    });
+}
+
+function abrirPersonalizar() {
+    // Pré-carregar valores atuais do Firebase
+    aparenciasDB.ref("aparencias/" + user).once("value").then(snap => {
+        let salvo = snap.exists() ? snap.val() : {};
+        document.getElementById("persoCorFundo").value = salvo.corFundo || "#0b0b0b";
+        document.getElementById("persoCorBio").value = salvo.corBio || "#aaaaaa";
+        if (salvo.fonte) document.getElementById("persoFonte").value = salvo.fonte;
+        atualizarPreview();
+    });
+
+    document.getElementById("personalizarOverlay").style.display = "block";
+    setTimeout(() => document.getElementById("personalizarBox").classList.add("aberto"), 10);
+}
+
+function fecharPersonalizar() {
+    document.getElementById("personalizarBox").classList.remove("aberto");
+    setTimeout(() => {
+        document.getElementById("personalizarOverlay").style.display = "none";
+    }, 400);
+}
+
+function atualizarPreview() {
+    let fonte = document.getElementById("persoFonte").value;
+    let corBio = document.getElementById("persoCorBio").value;
+    let corFundo = document.getElementById("persoCorFundo").value;
+    let prev = document.getElementById("persoPreview");
+    prev.style.fontFamily = fonte;
+    prev.style.color = corBio;
+    prev.style.background = corFundo;
+}
+
+function salvarPersonalizar() {
+    let dados = {
+        corFundo: document.getElementById("persoCorFundo").value,
+        corBio: document.getElementById("persoCorBio").value,
+        fonte: document.getElementById("persoFonte").value
+    };
+    // Salvar no Firebase — visível para todos
+    aparenciasDB.ref("aparencias/" + user).set(dados).then(() => {
+        fecharPersonalizar();
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    ["persoCorFundo","persoCorBio"].forEach(id => {
+        let el = document.getElementById(id);
+        if (el) el.addEventListener("input", atualizarPreview);
+    });
+});
+
 /* ================= INIT ================= */
 
 carregarBio();
@@ -697,6 +955,9 @@ atualizarBotao();
 carregarSeguidores();
 carregarSeguindo();
 carregarPosts();
+
+// Carregar personalização do Firebase (visível para todos)
+carregarPersonalizacao();
 </script>
 
 </body>

@@ -848,6 +848,245 @@ body.claro{
     100%{ transform:scale(1); box-shadow:0 0 0 0 rgba(29,161,242,0); }
 }
 
-.pollBtn.poll-pulse{
-    animation:pollPulse 0.35s ease;
+/* ================= SKELETON AVATAR ================= */
+
+@keyframes skeletonPulse {
+    0%   { opacity: 0.5; }
+    50%  { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+.skeleton-avatar {
+    animation: skeletonPulse 1.2s ease-in-out infinite;
+    background: linear-gradient(135deg, #222, #333) !important;
+}
+
+/* ================= CONFIG CONTA ================= */
+
+.config-section-title{
+    margin-top:18px;
+    margin-bottom:8px;
+    font-weight:bold;
+    font-size:14px;
+    color:#888;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+}
+
+.contaOpcoes{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.contaOpcoes button{
+    width:100%;
+    padding:11px 14px;
+    border:1px solid #2a2a2a;
+    border-radius:10px;
+    background:#1c1c1c;
+    color:#ccc;
+    cursor:pointer;
+    text-align:left;
+    font-size:14px;
+    transition:all 0.2s;
+}
+
+.contaOpcoes button:hover{
+    background:#252525;
+    border-color:#1da1f2;
+    color:white;
+}
+
+.config-input{
+    display:block;
+    width:100%;
+    margin-bottom:10px;
+    padding:11px 12px;
+    border-radius:9px;
+    border:1px solid #2a2a2a;
+    background:#0c0c0c;
+    color:white;
+    font-size:14px;
+    transition:border 0.25s;
+    outline:none;
+}
+
+.config-input:focus{
+    border-color:#1da1f2;
+    box-shadow:0 0 6px rgba(29,161,242,0.25);
+}
+
+/* ================= COMENTÁRIOS — MOSTRAR MAIS ================= */
+
+.btn-ver-mais-comentarios{
+    display:block;
+    width:100%;
+    margin-top:8px;
+    padding:7px;
+    border:1px solid #2a2a2a;
+    border-radius:8px;
+    background:#151515;
+    color:#1da1f2;
+    font-size:12px;
+    cursor:pointer;
+    text-align:center;
+    transition:all 0.2s;
+}
+
+.btn-ver-mais-comentarios:hover{
+    background:#1a1a1a;
+    border-color:#1da1f2;
+}
+
+/* ================= SIDEBAR — SEJA VERIFICADO / SUPORTE ================= */
+
+.btn-verificado-menu{
+    width:100%;
+    padding:11px 14px;
+    border-radius:10px;
+    border:1px solid #2a2a2a !important;
+    background:#1c1c1c !important;
+    color:#ccc !important;
+    cursor:pointer;
+    text-align:left;
+    font-size:14px;
+    font-weight:normal;
+    display:flex;
+    align-items:center;
+    transition:all 0.2s;
+}
+
+.btn-verificado-menu:hover{
+    background:#252525 !important;
+    border-color:#1da1f2 !important;
+    color:white !important;
+    box-shadow:none;
+}
+
+.btn-suporte-menu{
+    width:100%;
+    padding:11px 14px;
+    border-radius:10px;
+    border:1px solid #2a2a2a !important;
+    background:#1a1a1a !important;
+    color:#aaa !important;
+    cursor:pointer;
+    text-align:left;
+    font-size:14px;
+    transition:all 0.2s;
+}
+
+.btn-suporte-menu:hover{
+    background:#222 !important;
+    border-color:#aaa !important;
+    color:white !important;
+}
+
+/* ================= NOTIFICAÇÃO DE LIKE ================= */
+
+.like-toast{
+    position:fixed;
+    bottom:90px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:#1c1c1c;
+    border:1px solid #2a2a2a;
+    border-radius:30px;
+    padding:8px 18px;
+    font-size:13px;
+    color:#ff6b81;
+    opacity:0;
+    pointer-events:none;
+    z-index:9999;
+    transition:opacity 0.3s, transform 0.3s;
+    white-space:nowrap;
+}
+
+.like-toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+}
+
+/* ================= COMENTÁRIO — NOME DESTACADO ================= */
+
+.comment-user{
+    font-weight:700;
+    color:#2ee6a6;
+    font-size:12px;
+    cursor:pointer;
+    margin-right:5px;
+    transition:opacity 0.2s;
+}
+
+.comment-user:hover{
+    opacity:0.75;
+    text-decoration:underline;
+}
+
+.comment-text{
+    font-size:12px;
+    color:var(--sub);
+}
+
+/* ================= BOTÃO DOWNLOAD IMAGEM ================= */
+
+.btn-download-img{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin-top:6px;
+    padding:5px 12px;
+    border-radius:20px;
+    border:1px solid #2a2a2a;
+    background:#151515;
+    color:#aaa;
+    font-size:12px;
+    cursor:pointer;
+    transition:all 0.2s;
+}
+
+.btn-download-img:hover{
+    background:#1c1c1c;
+    border-color:#1da1f2;
+    color:#1da1f2;
+}
+
+/* ================= FEED LOADING SPINNER ================= */
+
+.feed-spinner{
+    width:36px;
+    height:36px;
+    border:3px solid #222;
+    border-top-color:#1da1f2;
+    border-radius:50%;
+    animation:spinFeed 0.7s linear infinite;
+}
+
+@keyframes spinFeed{
+    to{transform:rotate(360deg);}
+}
+
+/* ================= BTN VER TODOS COMENTÁRIOS ================= */
+
+.btn-ver-todos-comentarios{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin-top:6px;
+    padding:5px 12px;
+    border:1px solid #252525;
+    border-radius:20px;
+    background:transparent;
+    color:#666;
+    font-size:11px;
+    cursor:pointer;
+    transition:all 0.2s;
+    letter-spacing:0.2px;
+}
+
+.btn-ver-todos-comentarios:hover{
+    color:#1da1f2;
+    border-color:#1da1f2;
+    background:rgba(29,161,242,0.05);
 }

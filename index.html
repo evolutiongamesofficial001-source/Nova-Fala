@@ -21,6 +21,7 @@
     
     <div style="display:flex;align-items:center;gap:8px;">
         <div onclick="abrirBusca()" style="cursor:pointer;font-size:20px;" title="Buscar usuários">🔍</div>
+        <div onclick="abrirchat()" style="cursor:pointer;font-size:20px;" title="EVChat">💬</div>
         <div class="logout" onclick="logout()">Sair</div>
     </div>
 </header>
@@ -37,6 +38,11 @@
     <div id="buscaResultados" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
         <div style="color:#555;font-size:13px;text-align:center;">Digite para buscar...</div>
     </div>
+</div>
+
+<div id="feedLoading" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:14px;">
+    <div class="feed-spinner"></div>
+    <div style="font-size:13px;color:#666;letter-spacing:0.3px;">Carregando posts...</div>
 </div>
 
 <div id="feed"></div>

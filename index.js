@@ -385,11 +385,17 @@ function carregarRespostas(postId, commentId, div) {
 }
 
 function carregarComentarios(id, div) {
-    db.ref("comments/" + id)
-        .on("child_added", snap => {
-            let c = snap.val();
-            let cid = snap.key;
+    let todosComentarios = [];
+    let modoExpandido = false;
 
+    function renderComentarios() {
+        // Limpar comentários anteriores (mantém btn se houver)
+        div.innerHTML = "";
+
+        let limite = modoExpandido ? todosComentarios.length : 3;
+        let visiveis = todosComentarios.slice(0, limite);
+
+        visiveis.forEach(({ c, cid, respostas }) => {
             let el = document.createElement("div");
             el.className = "comment";
             el.innerHTML = `
@@ -398,17 +404,54 @@ function carregarComentarios(id, div) {
                 <button onclick="responder('${id}','${cid}')">Responder</button>
                 <div id="r${cid}"></div>
             `;
-
             div.appendChild(el);
-            carregarRespostas(id, cid, document.getElementById("r" + cid));
+
+            // Renderizar respostas já carregadas
+            let rDiv = document.getElementById("r" + cid);
+            if (rDiv) {
+                respostas.forEach(r => {
+                    let rel = document.createElement("div");
+                    rel.className = "reply";
+                    rel.innerText = "↳ @" + r.user + " " + r.text;
+                    rDiv.appendChild(rel);
+                });
+
+                // Continuar ouvindo novas respostas
+                carregarRespostas(id, cid, rDiv);
+            }
         });
+
+        // Botão "ver todos" aparece quando há mais de 3 e não expandido
+        if (todosComentarios.length > 3 && !modoExpandido) {
+            let btn = document.createElement("button");
+            btn.className = "btn-ver-todos-comentarios";
+            btn.innerHTML = `··· ver todos ${todosComentarios.length} comentários`;
+            btn.onclick = () => { modoExpandido = true; renderComentarios(); };
+            div.appendChild(btn);
+        }
+    }
+
+    db.ref("comments/" + id).on("child_added", snap => {
+        let c = snap.val();
+        let cid = snap.key;
+
+        // Buscar respostas existentes
+        db.ref("replies/" + id + "/" + cid).once("value").then(rSnap => {
+            let respostas = [];
+            if (rSnap.exists()) {
+                rSnap.forEach(r => respostas.push(r.val()));
+            }
+            todosComentarios.push({ c, cid, respostas });
+            renderComentarios();
+        });
+    });
 }
 
 /* ================= RENDER ================= */
 
 let feed = document.getElementById("feed");
 
-function renderPost(id, p) {
+function renderPost(id, p, fotosMap) {
     let div = document.createElement("div");
     div.className = "post";
     div.id = "post-" + id;
@@ -416,12 +459,16 @@ function renderPost(id, p) {
     // Adiciona ANTES do async para garantir a ordem
     feed.appendChild(div);
 
+    // Usar foto do mapa pré-carregado se disponível, senão buscar individualmente
+    let fotoPromise = (fotosMap && fotosMap[p.user] !== undefined)
+        ? Promise.resolve(fotosMap[p.user])
+        : db.ref("fotosPerfil/" + p.user).once("value").then(s => s.val());
+
     Promise.all([
         db.ref("posts/" + id + "/likedBy/" + user).once("value"),
-        db.ref("fotosPerfil/" + p.user).once("value")
-    ]).then(([snap, fotoSnap]) => {
+        fotoPromise
+    ]).then(([snap, fotoUrl]) => {
         let isLiked = snap.exists();
-        let fotoUrl = fotoSnap.val();
 
         const badgeVerificado = `
             <span class="verificado">
@@ -494,18 +541,35 @@ function renderPost(id, p) {
 function carregarFeed() {
     feed.innerHTML = "";
 
+    // Mostrar loading
+    const loadingEl = document.getElementById("feedLoading");
+    if (loadingEl) { loadingEl.style.display = "flex"; }
+
     db.ref("posts")
         .orderByChild("time")
         .limitToLast(15)
         .once("value", snap => {
-            let posts = [];
+            // Esconder loading
+            if (loadingEl) { loadingEl.style.display = "none"; }
 
+            let posts = [];
             snap.forEach(child => {
                 posts.push({ id: child.key, data: child.val() });
             });
 
             posts.sort((a, b) => b.data.time - a.data.time);
-            posts.forEach(p => renderPost(p.id, p.data));
+
+            // Pré-buscar fotos de perfil de todos de uma vez para maior velocidade
+            let nomesUnicos = [...new Set(posts.map(p => p.data.user).filter(Boolean))];
+            let fotosPromise = Promise.all(
+                nomesUnicos.map(nome =>
+                    db.ref("fotosPerfil/" + nome).once("value").then(s => [nome, s.val()])
+                )
+            ).then(entries => Object.fromEntries(entries));
+
+            fotosPromise.then(fotosMap => {
+                posts.forEach(p => renderPost(p.id, p.data, fotosMap));
+            });
         });
 
     db.ref("posts").on("child_changed", snap => {
@@ -754,7 +818,7 @@ function votarEnquete(postId, index) {
 
         // Animação no botão clicado
         let btn = document.querySelector(`#poll-${postId} .pollBtn[data-index="${index}"]`);
-        if (btn) {
+         if (btn) {
             btn.classList.add("poll-pulse");
             setTimeout(() => btn.classList.remove("poll-pulse"), 350);
         }
