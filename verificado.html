@@ -6,32 +6,39 @@
 <title>Verificação</title>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
 :root {
-  --bg: #0b0b0f;
-  --card: #15151c;
-  --text: #fff;
-  --sub: #a0a0aa;
-  --grad: linear-gradient(135deg, #7b2cff, #c77dff);
+  --bg: #080810;
+  --card: #111118;
+  --card2: #16161f;
+  --text: #f0f0ff;
+  --sub: #888899;
+  --accent: #7b2cff;
+  --accent2: #c77dff;
+  --blue: #1DA1F2;
+  --green: #22c55e;
+  --red: #ff4d4d;
+  --gold: #f5c542;
+  --border: rgba(123,44,255,0.18);
+  --grad: linear-gradient(135deg, #7b2cff 0%, #c77dff 100%);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   background: var(--bg);
   display: flex;
   justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
 }
 
 .app {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   min-height: 100vh;
-  padding: 20px;
+  padding: 20px 16px 40px;
   color: var(--text);
 }
 
@@ -39,221 +46,543 @@ body {
 .header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .back {
-  width: 36px;
-  height: 36px;
+  width: 38px; height: 38px;
   border-radius: 12px;
-  background: #1c1c25;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  color: white;
-  font-size: 18px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; color: white; font-size: 18px;
+  transition: background .2s;
 }
+.back:hover { background: #1e1e2a; }
 
-/* CARD */
-.card {
-  background: var(--card);
-  border-radius: 20px;
-  padding: 22px;
+.header-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .3px;
 }
 
 /* BADGE */
 .badge-wrap {
   display: flex;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+  position: relative;
 }
 
-.badge {
-  width: 70px;
-  height: 70px;
+.badge-glow {
+  width: 72px; height: 72px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.badge-glow::before {
+  content: '';
+  position: absolute;
+  width: 72px; height: 72px;
+  background: var(--grad);
+  border-radius: 50%;
+  opacity: .25;
+  filter: blur(12px);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity: .25; }
+  50%      { transform: scale(1.3); opacity: .4; }
 }
 
-/* TEXTO */
+.badge-svg { width: 64px; height: 64px; position: relative; z-index: 1; }
+
+/* TITLES */
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 6px;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .desc {
   text-align: center;
   font-size: 13px;
   color: var(--sub);
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+
+/* CARD */
+.card {
+  background: var(--card);
+  border-radius: 22px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+/* SECTION LABEL */
+.section-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--sub);
+  margin-bottom: 12px;
 }
 
 /* INPUT */
+.input-wrap { position: relative; margin-bottom: 6px; }
 .input {
   width: 100%;
-  padding: 14px;
+  padding: 13px 14px;
   border-radius: 12px;
-  border: none;
+  border: 1.5px solid transparent;
   outline: none;
-  background: #1c1c25;
+  background: #1a1a24;
   color: white;
-  margin-bottom: 15px;
   font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color .2s;
+}
+.input:focus { border-color: var(--accent); }
+.input::placeholder { color: var(--sub); }
+.input-hint {
+  font-size: 11px;
+  color: var(--sub);
+  margin-bottom: 18px;
+  margin-top: 4px;
+  padding-left: 2px;
 }
 
-/* LISTA */
-.list {
+/* CONDITIONS */
+.conditions-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+.or-divider span { font-size: 11px; color: var(--sub); font-weight: 600; white-space: nowrap; }
+.or-divider::before, .or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* CONDITION BLOCK */
+.cond-block {
+  background: #1a1a24;
+  border-radius: 14px;
+  padding: 14px;
+  border: 1.5px solid transparent;
+  transition: border-color .2s, background .2s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.cond-block:hover { border-color: rgba(123,44,255,.3); background: #1d1d28; }
+.cond-block.selected { border-color: var(--accent); background: rgba(123,44,255,.07); }
+
+.cond-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cond-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.cond-icon.purple { background: rgba(123,44,255,.2); }
+.cond-icon.blue   { background: rgba(29,161,242,.18); }
+.cond-icon.gold   { background: rgba(245,197,66,.15); }
+
+.cond-block-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+.cond-block-sub {
+  font-size: 11px;
+  color: var(--sub);
+  margin-top: 1px;
+}
+
+.cond-radio {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .2s;
+}
+.cond-block.selected .cond-radio {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.cond-block.selected .cond-radio::after {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* ITEM LIST */
+.req-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 7px;
+}
+.req-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  color: #c8c8d8;
+}
+.req-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+  flex-shrink: 0;
 }
 
-.item {
-  background: #1c1c25;
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 13px;
-}
+/* EXTRA INPUT (partner code / social link) */
+.extra-input-wrap { margin-top: 12px; }
 
-/* ALERTA */
+/* ALERT */
 .alert {
   font-size: 12px;
-  color: #ff5a5a;
-  margin-bottom: 20px;
+  color: var(--red);
+  background: rgba(255,77,77,.08);
+  border: 1px solid rgba(255,77,77,.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 16px 0 18px;
+  line-height: 1.5;
 }
 
-/* BOTÃO */
+/* ERROR / SUCCESS */
+.error {
+  color: var(--red);
+  font-size: 12px;
+  display: none;
+  margin-bottom: 10px;
+  padding: 9px 12px;
+  background: rgba(255,77,77,.07);
+  border-radius: 10px;
+}
+
+.success-box {
+  display: none;
+  margin-top: 16px;
+  background: rgba(34,197,94,.08);
+  border: 1px solid rgba(34,197,94,.25);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+}
+.success-icon { font-size: 28px; margin-bottom: 6px; }
+.success-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+.success-sub { font-size: 12px; color: var(--sub); }
+
+/* BUTTON */
 .btn {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   border-radius: 14px;
   border: none;
   background: var(--grad);
   color: white;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 15px;
+  font-family: 'Syne', sans-serif;
   cursor: pointer;
+  letter-spacing: .3px;
+  transition: opacity .2s, transform .1s;
+  position: relative;
+  overflow: hidden;
 }
+.btn:hover { opacity: .92; }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
 
-.error {
-  color: #ff5a5a;
-  font-size: 12px;
+.btn-loader {
   display: none;
-  margin-bottom: 10px;
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.success {
-  margin-top: 15px;
+/* FOOTER */
+.footer-note {
   text-align: center;
-  color: #7dffb3;
-  display: none;
+  font-size: 11.5px;
+  color: var(--sub);
+  margin-top: 18px;
+  line-height: 1.5;
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
 
   <div class="header">
     <a href="index.html" class="back">←</a>
-    <div>Verificação</div>
+    <div class="header-title">Solicitar Verificação</div>
   </div>
+
+  <div class="badge-wrap">
+    <div class="badge-glow">
+      <svg class="badge-svg" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7b2cff"/>
+            <stop offset="100%" stop-color="#c77dff"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#bg)" d="M12 2L14.8 4.2L18.5 5L19.8 8.5L22 12L19.8 15.5L18.5 19L14.8 19.8L12 22L9.2 19.8L5.5 19L4.2 15.5L2 12L4.2 8.5L5.5 5L9.2 4.2Z"/>
+        <path fill="#fff" d="M9.5 13.5L7.5 11.5L6.3 12.7L9.5 16L17.7 7.8L16.5 6.6Z"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="page-title">Conta Verificada</div>
+  <p class="desc">Prove que sua conta é autêntica e confiável.<br>Escolha uma das condições abaixo.</p>
 
   <div class="card">
 
-    <div class="badge-wrap">
-      <!-- selo mais equilibrado -->
-      <svg class="badge" viewBox="0 0 24 24">
-        <!-- forma mais simétrica -->
-        <path fill="#1DA1F2" d="
-        M12 2
-        L14.8 4.2
-        L18.5 5
-        L19.8 8.5
-        L22 12
-        L19.8 15.5
-        L18.5 19
-        L14.8 19.8
-        L12 22
-        L9.2 19.8
-        L5.5 19
-        L4.2 15.5
-        L2 12
-        L4.2 8.5
-        L5.5 5
-        L9.2 4.2
-        Z"/>
-        
-        <!-- check central -->
-        <path fill="#fff" d="
-        M9.5 13.5
-        L7.5 11.5
-        L6.3 12.7
-        L9.5 16
-        L17.7 7.8
-        L16.5 6.6
-        Z"/>
-      </svg>
+    <div class="section-label">Seu Usuário</div>
+    <div class="input-wrap">
+      <input type="text" class="input" id="user" placeholder="@seu_usuario" maxlength="50">
+    </div>
+    <div class="input-hint">Digite seu @ exatamente como aparece no perfil</div>
+
+    <!-- CONDIÇÕES BASE (sempre obrigatórias) -->
+    <div class="conditions-title">Requisitos obrigatórios</div>
+    <div class="req-list" style="margin-bottom:18px">
+      <div class="req-item"><div class="req-dot"></div>Nome ou apelido original</div>
+      <div class="req-item"><div class="req-dot"></div>Foto própria, autoral ou logo oficial</div>
+      <div class="req-item"><div class="req-dot"></div>Mínimo de 10 posts publicados</div>
+      <div class="req-item"><div class="req-dot"></div>Bio preenchida</div>
+      <div class="req-item"><div class="req-dot"></div>Conta ativa na rede</div>
     </div>
 
-    <p class="desc">
-      Conta autêntica e confiável.
-    </p>
+    <!-- CONDIÇÕES DE ELEGIBILIDADE -->
+    <div class="conditions-title">Condição de elegibilidade <span style="color:var(--sub);font-weight:400;font-size:12px">(escolha uma)</span></div>
 
-    <!-- INPUT USUÁRIO -->
-    <input 
-      type="text" 
-      class="input" 
-      id="user"
-      placeholder="@seu usuario"
-    >
-
-    <div class="error" id="erro">
-      Digite seu usuário no formato correto (ex: @nome)
+    <!-- OPÇÃO 1: 6 seguidores + organização -->
+    <div class="cond-block selected" onclick="selectCond(this,'cond1')" id="bloco1">
+      <div class="cond-header">
+        <div class="cond-icon purple">👥</div>
+        <div>
+          <div class="cond-block-title">Organização &amp; Seguidores</div>
+          <div class="cond-block-sub">Conta organizada com audiência mínima</div>
+        </div>
+        <div class="cond-radio"></div>
+      </div>
+      <div class="req-list">
+        <div class="req-item"><div class="req-dot"></div>Mínimo de 6 seguidores</div>
+        <div class="req-item"><div class="req-dot"></div>Perfil organizado e com identidade visual</div>
+        <div class="req-item"><div class="req-dot"></div>Conteúdo consistente com a conta</div>
+      </div>
     </div>
 
-    <div class="list">
-      <div class="item">Nome ou Apelido Original</div>
-      <div class="item">Foto própria ou autoral de pessonagem ou Logo</div>
-      <div class="item">Mínimo de 10 posts</div>
-      <div class="item">Bio preenchida</div>
-      <div class="item">Conta ativa na rede</div>
+    <div class="or-divider"><span>OU</span></div>
+
+    <!-- OPÇÃO 2: Empresa parceira -->
+    <div class="cond-block" onclick="selectCond(this,'cond2')" id="bloco2">
+      <div class="cond-header">
+        <div class="cond-icon gold">🏢</div>
+        <div>
+          <div class="cond-block-title">Empresa Parceira</div>
+          <div class="cond-block-sub">Evolution Studio — parceiro oficial</div>
+        </div>
+        <div class="cond-radio"></div>
+      </div>
+      <div class="req-list">
+        <div class="req-item"><div class="req-dot"></div>Membro ou representante da Evolution Studio</div>
+        <div class="req-item"><div class="req-dot"></div>Informe o código de parceiro abaixo</div>
+      </div>
+      <div class="extra-input-wrap" id="codeWrap" style="display:none">
+        <input type="text" class="input" id="partnerCode" placeholder="Código Evolution Studio" style="margin-top:10px;margin-bottom:0">
+      </div>
     </div>
 
-    <div class="alert">
-      Conteúdos ilegais ou ofensivos removem o selo.
+    <div class="or-divider"><span>OU</span></div>
+
+    <!-- OPÇÃO 3: Verificado em outra rede -->
+    <div class="cond-block" onclick="selectCond(this,'cond3')" id="bloco3">
+      <div class="cond-header">
+        <div class="cond-icon blue">✅</div>
+        <div>
+          <div class="cond-block-title">Verificado em Outra Rede</div>
+          <div class="cond-block-sub">Instagram, YouTube, TikTok, X, etc.</div>
+        </div>
+        <div class="cond-radio"></div>
+      </div>
+      <div class="req-list">
+        <div class="req-item"><div class="req-dot"></div>Conta verificada (selo oficial) em outra plataforma</div>
+        <div class="req-item"><div class="req-dot"></div>Cole o link do perfil verificado abaixo</div>
+      </div>
+      <div class="extra-input-wrap" id="socialWrap" style="display:none">
+        <input type="text" class="input" id="socialLink" placeholder="https://instagram.com/seu_perfil" style="margin-top:10px;margin-bottom:0">
+      </div>
     </div>
 
-    <button class="btn" onclick="enviar()">
-      Pedir análise para verificação
-    </button>
+  </div><!-- /card -->
 
-    <div class="success" id="ok">
-      ✔ Solicitação enviada aguarde de 24 a 72 horas
-    </div>
-
+  <!-- AVISO -->
+  <div class="alert">
+    ⚠️ Conteúdos ilegais, ofensivos ou que violem as regras da plataforma resultam em remoção imediata do selo e possível banimento da conta.
   </div>
 
-</div>
+  <div class="error" id="erro">Corrija os campos e tente novamente.</div>
+
+  <button class="btn" onclick="enviar()" id="btnEnviar">
+    <span id="btnText">Pedir Análise para Verificação</span>
+    <div class="btn-loader" id="btnLoader"></div>
+  </button>
+
+  <div class="success-box" id="ok">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Solicitação Enviada!</div>
+    <div class="success-sub">Aguarde de 24 a 72 horas para análise.<br>Você será notificado pelo perfil.</div>
+  </div>
+
+  <div class="footer-note">
+    Ao enviar, você confirma que as informações são verdadeiras.<br>Verificação sujeita à análise manual da equipe.
+  </div>
+
+</div><!-- /app -->
 
 <script>
-function enviar(){
-  const user = document.getElementById("user").value;
-  const erro = document.getElementById("erro");
-  const ok = document.getElementById("ok");
+// Firebase REST API
+const DB = "https://jfzjtsitx-default-rtdb.firebaseio.com";
 
-  // validação simples estilo rede social
-  if(!user.startsWith("@") || user.length < 3){
-    erro.style.display = "block";
-    ok.style.display = "none";
+let condSelecionada = 'cond1';
+
+function selectCond(el, id) {
+  document.querySelectorAll('.cond-block').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  condSelecionada = id;
+
+  // mostrar/ocultar campos extras
+  document.getElementById('codeWrap').style.display  = (id === 'cond2') ? 'block' : 'none';
+  document.getElementById('socialWrap').style.display = (id === 'cond3') ? 'block' : 'none';
+}
+
+function showError(msg) {
+  const el = document.getElementById('erro');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('erro').style.display = 'none';
+}
+
+function setLoading(on) {
+  const btn  = document.getElementById('btnEnviar');
+  const txt  = document.getElementById('btnText');
+  const load = document.getElementById('btnLoader');
+  btn.disabled = on;
+  txt.style.display  = on ? 'none' : 'block';
+  load.style.display = on ? 'block' : 'none';
+}
+
+async function enviar() {
+  hideError();
+  document.getElementById('ok').style.display = 'none';
+
+  const user = document.getElementById('user').value.trim();
+
+  if (!user.startsWith('@') || user.length < 3) {
+    showError('Digite seu usuário no formato correto (ex: @nome)');
     return;
   }
 
-  erro.style.display = "none";
-  ok.style.display = "block";
+  // validação extra por condição
+  if (condSelecionada === 'cond2') {
+    const cod = document.getElementById('partnerCode').value.trim();
+    if (!cod) { showError('Informe o código Evolution Studio.'); return; }
+  }
+  if (condSelecionada === 'cond3') {
+    const link = document.getElementById('socialLink').value.trim();
+    if (!link.startsWith('http')) { showError('Informe um link válido do perfil verificado.'); return; }
+  }
 
-  setTimeout(()=>{
-    ok.style.display = "none";
-  },2500);
+  setLoading(true);
+
+  const labels = { cond1: 'Organização & Seguidores', cond2: 'Empresa Parceira (Evolution Studio)', cond3: 'Verificado em Outra Rede' };
+
+  const payload = {
+    usuario:    user,
+    condicao:   labels[condSelecionada],
+    condicaoId: condSelecionada,
+    extra:      condSelecionada === 'cond2'
+                  ? document.getElementById('partnerCode').value.trim()
+                  : condSelecionada === 'cond3'
+                    ? document.getElementById('socialLink').value.trim()
+                    : '',
+    status:     'pendente',
+    data:       new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+    timestamp:  Date.now()
+  };
+
+  try {
+    const res = await fetch(`${DB}/pedidos_verificacao.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error('Erro na resposta do servidor');
+
+    // limpar
+    document.getElementById('user').value = '';
+    document.getElementById('partnerCode').value = '';
+    document.getElementById('socialLink').value = '';
+    document.getElementById('ok').style.display = 'block';
+
+  } catch (e) {
+    showError('Erro ao enviar. Verifique sua conexão e tente novamente.');
+  } finally {
+    setLoading(false);
+  }
 }
 </script>
-
 </body>
 </html>

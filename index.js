@@ -87,6 +87,60 @@ if (user) {
     location.replace("login.html");
 }
 
+/* ================= SISTEMA DE BLOQUEIO ================= */
+
+let usuariosBloqueados = new Set();
+
+function carregarBloqueados() {
+    let nomeKey = user.replace(/[.#$[\]]/g, '_');
+    db.ref("bloqueados/" + nomeKey).once("value").then(snap => {
+        usuariosBloqueados.clear();
+        if (snap.exists()) {
+            snap.forEach(child => {
+                usuariosBloqueados.add(child.key);
+            });
+        }
+    });
+}
+
+function estaBloqueado(nome) {
+    let nomeKey = nome.replace(/[.#$[\]]/g, '_');
+    return usuariosBloqueados.has(nomeKey);
+}
+
+function bloquearUsuario(nome) {
+    customConfirm(`Deseja bloquear @${nome}?\nEle não poderá mais comentar nos seus posts nem enviar mensagens.`).then(ok => {
+        if (!ok) return;
+        let nomeKey = user.replace(/[.#$[\]]/g, '_');
+        let bloqueadoKey = nome.replace(/[.#$[\]]/g, '_');
+        db.ref("bloqueados/" + nomeKey + "/" + bloqueadoKey).set(true).then(() => {
+            usuariosBloqueados.add(bloqueadoKey);
+            alert(`@${nome} foi bloqueado.`);
+        });
+    });
+}
+
+function desbloquearUsuario(nome) {
+    customConfirm(`Deseja desbloquear @${nome}?`).then(ok => {
+        if (!ok) return;
+        let nomeKey = user.replace(/[.#$[\]]/g, '_');
+        let bloqueadoKey = nome.replace(/[.#$[\]]/g, '_');
+        db.ref("bloqueados/" + nomeKey + "/" + bloqueadoKey).remove().then(() => {
+            usuariosBloqueados.delete(bloqueadoKey);
+            alert(`@${nome} foi desbloqueado.`);
+        });
+    });
+}
+
+// Verifica se o usuário logado está bloqueado pelo dono do post
+function estaBlockeadoPor(donoPost, callback) {
+    let donoKey = donoPost.replace(/[.#$[\]]/g, '_');
+    let userKey = user.replace(/[.#$[\]]/g, '_');
+    db.ref("bloqueados/" + donoKey + "/" + userKey).once("value").then(snap => {
+        callback(snap.exists());
+    });
+}
+
 /* ================= PROMPT / CONFIRM ================= */
 
 let promptResolve = null;
@@ -157,11 +211,48 @@ function fecharImagem() {
 
 /* ================= TEXTO ================= */
 
-function linkificar(texto) {
-    return texto.replace(
+// Cache de usuários existentes para validar @menções
+let cacheUsuariosExistentes = null;
+
+function carregarUsuariosExistentes() {
+    if (cacheUsuariosExistentes) return Promise.resolve(cacheUsuariosExistentes);
+    return db.ref("posts").orderByChild("user").once("value").then(snap => {
+        let nomes = new Set();
+        snap.forEach(child => {
+            if (child.val().user) nomes.add(child.val().user.toLowerCase());
+        });
+        cacheUsuariosExistentes = nomes;
+        return nomes;
+    });
+}
+
+function linkificar(texto, usuariosValidos) {
+    // Links clicáveis
+    let result = texto.replace(
         /(https?:\/\/[^\s]+)/g,
         '<a href="$1" target="_blank" style="color:#4da6ff">$1</a>'
     );
+
+    // @menções — só destaca se o usuário existir
+    // Regex: captura @nome até o fim da palavra (sem espaços)
+    result = result.replace(
+        /@([A-Za-zÀ-ÿ0-9_.]+)/g,
+        (match, nome) => {
+            let nomeCheck = nome.toLowerCase();
+            // Se temos cache e o usuário é válido, ou não temos cache (permissivo)
+            if (!usuariosValidos || usuariosValidos.has(nomeCheck)) {
+                return `<span class="mencao" onclick="abrirPerfil('${nome}')">${match}</span>`;
+            }
+            // Usuário não existe: renderiza como texto normal
+            return match;
+        }
+    );
+    return result;
+}
+
+// Versão async que carrega usuários antes de linkificar
+function linkificarAsync(texto) {
+    return carregarUsuariosExistentes().then(usuarios => linkificar(texto, usuarios));
 }
 
 /* ================= IMAGEM ================= */
@@ -248,6 +339,7 @@ function postar() {
     }
 
     let file = fotoInput.files[0];
+
     if (texto === "" && !file && !pollAtiva) return;
 
     // Montar dados da enquete
@@ -295,6 +387,20 @@ function postar() {
         };
 
         db.ref("posts/" + id).set(post);
+
+        // Detectar @menções no post
+        let mencoes = extrairMencoes(texto);
+        mencoes.forEach(nome => {
+            if (nome !== user) {
+                enviarNotificacao(nome, {
+                    tipo: "mencao",
+                    de: user,
+                    postId: id,
+                    texto: texto.substring(0, 80),
+                    time: Date.now()
+                });
+            }
+        });
 
         postText.value = "";
         fotoInput.value = "";
@@ -351,99 +457,205 @@ function curtir(id) {
 
 /* ================= COMENTÁRIOS ================= */
 
-async function comentar(id) {
-    let c = await customPrompt("Comentário:");
-    if (!c) return;
-
-    db.ref("comments/" + id).push({
-        user: user,
-        text: c
-    });
-}
-
-async function responder(postId, commentId) {
-    let r = await customPrompt("Responder:");
-    if (!r) return;
-
-    db.ref("replies/" + postId + "/" + commentId).push({
-        user: user,
-        text: r
-    });
-}
-
-function carregarRespostas(postId, commentId, div) {
-    db.ref("replies/" + postId + "/" + commentId)
-        .on("child_added", snap => {
-            let r = snap.val();
-
-            let el = document.createElement("div");
-            el.className = "reply";
-            el.innerText = "↳ @" + r.user + " " + r.text;
-
-            div.appendChild(el);
-        });
-}
-
-function carregarComentarios(id, div) {
-    let todosComentarios = [];
-    let modoExpandido = false;
-
-    function renderComentarios() {
-        // Limpar comentários anteriores (mantém btn se houver)
-        div.innerHTML = "";
-
-        let limite = modoExpandido ? todosComentarios.length : 3;
-        let visiveis = todosComentarios.slice(0, limite);
-
-        visiveis.forEach(({ c, cid, respostas }) => {
-            let el = document.createElement("div");
-            el.className = "comment";
-            el.innerHTML = `
-                <b>@${c.user}${usuarioVerificado(c.user) ? ' ✔️' : ''}</b> ${linkificar(c.text)}
-                <br>
-                <button onclick="responder('${id}','${cid}')">Responder</button>
-                <div id="r${cid}"></div>
-            `;
-            div.appendChild(el);
-
-            // Renderizar respostas já carregadas
-            let rDiv = document.getElementById("r" + cid);
-            if (rDiv) {
-                respostas.forEach(r => {
-                    let rel = document.createElement("div");
-                    rel.className = "reply";
-                    rel.innerText = "↳ @" + r.user + " " + r.text;
-                    rDiv.appendChild(rel);
-                });
-
-                // Continuar ouvindo novas respostas
-                carregarRespostas(id, cid, rDiv);
-            }
-        });
-
-        // Botão "ver todos" aparece quando há mais de 3 e não expandido
-        if (todosComentarios.length > 3 && !modoExpandido) {
-            let btn = document.createElement("button");
-            btn.className = "btn-ver-todos-comentarios";
-            btn.innerHTML = `··· ver todos ${todosComentarios.length} comentários`;
-            btn.onclick = () => { modoExpandido = true; renderComentarios(); };
-            div.appendChild(btn);
+async function comentar(id, donoPost) {
+    // Verificar se o usuário logado está bloqueado pelo dono do post
+    if (donoPost && donoPost !== user) {
+        let bloqueado = await new Promise(res => estaBlockeadoPor(donoPost, res));
+        if (bloqueado) {
+            alert("❌ Você foi bloqueado por este usuário e não pode comentar.");
+            return;
         }
     }
 
-    db.ref("comments/" + id).on("child_added", snap => {
+    let c = await customPrompt("Comentário:");
+    if (!c) return;
+
+    // Buscar dono do post para notificar
+    db.ref("posts/" + id + "/user").once("value").then(snap => {
+        let donoPosts = snap.val();
+        if (donoPosts && donoPosts !== user) {
+            enviarNotificacao(donoPosts, {
+                tipo: "comentario",
+                de: user,
+                postId: id,
+                texto: c.substring(0, 80),
+                time: Date.now()
+            });
+        }
+    });
+
+    // Detectar @menções no comentário
+    let mencoes = extrairMencoes(c);
+    mencoes.forEach(nome => {
+        if (nome !== user) {
+            enviarNotificacao(nome, {
+                tipo: "mencao",
+                de: user,
+                postId: id,
+                texto: c.substring(0, 80),
+                time: Date.now()
+            });
+        }
+    });
+
+    db.ref("comments/" + id).push({
+        user: user,
+        text: c,
+        time: Date.now()
+    });
+}
+
+async function responder(postId, commentId, donoPost) {
+    // Verificar se o usuário logado está bloqueado pelo dono do post
+    if (donoPost && donoPost !== user) {
+        let bloqueado = await new Promise(res => estaBlockeadoPor(donoPost, res));
+        if (bloqueado) {
+            alert("❌ Você foi bloqueado por este usuário e não pode responder.");
+            return;
+        }
+    }
+
+    let r = await customPrompt("Responder:");
+    if (!r) return;
+
+    // Buscar dono do comentário para notificar
+    db.ref("comments/" + postId + "/" + commentId + "/user").once("value").then(snap => {
+        let donoComentario = snap.val();
+        if (donoComentario && donoComentario !== user) {
+            enviarNotificacao(donoComentario, {
+                tipo: "resposta",
+                de: user,
+                postId: postId,
+                texto: r.substring(0, 80),
+                time: Date.now()
+            });
+        }
+    });
+
+    // Detectar @menções na resposta
+    let mencoes = extrairMencoes(r);
+    mencoes.forEach(nome => {
+        if (nome !== user) {
+            enviarNotificacao(nome, {
+                tipo: "mencao",
+                de: user,
+                postId: postId,
+                texto: r.substring(0, 80),
+                time: Date.now()
+            });
+        }
+    });
+
+    db.ref("replies/" + postId + "/" + commentId).push({
+        user: user,
+        text: r,
+        time: Date.now()
+    });
+}
+
+function carregarComentarios(id, div, donoPost) {
+    /*
+     * Abordagem sem listener .on() para respostas:
+     * - Comentários chegam via .on("child_added") — cada um é adicionado ao DOM diretamente,
+     *   sem reconstruir nada. Nunca chamamos div.innerHTML = "".
+     * - Respostas existentes são buscadas com .once() e adicionadas ao rDiv do comentário.
+     * - Novas respostas são ouvidas com .on("child_added") num rDiv estável (não destruído).
+     * - Sets garantem que nenhum comentário ou resposta é inserido duas vezes.
+     */
+    let comentariosVistosIds = new Set();
+    let respostasVistasMap = {};   // cid -> Set de reply keys
+    let todosComentarios = [];     // para controle do "ver todos"
+    let modoExpandido = false;
+    let totalComentarios = 0;
+    let btnVerTodos = null;
+
+    function criarElComentario(c, cid) {
+        let el = document.createElement("div");
+        el.className = "comment";
+        el.dataset.cid = cid;
+        el.id = "comment-el-" + cid;
+
+        let bloqueioBtn = "";
+        if (donoPost === user && c.user !== user) {
+            bloqueioBtn = `<button onclick="bloquearUsuario('${c.user}')" style="background:#1a0e0e;border:1px solid #3d1515;color:#e05555;font-size:10px;padding:3px 8px;border-radius:12px;margin-left:6px;cursor:pointer;">🚫 Bloquear</button>`;
+        }
+
+        el.innerHTML = `
+            <span class="comment-user" onclick="abrirPerfil('${c.user}')">@${c.user}${usuarioVerificado(c.user) ? ' ✔️' : ''}</span> <span class="comment-text">${linkificar(c.text)}</span>
+            ${bloqueioBtn}
+            <br>
+            <button onclick="responder('${id}','${cid}','${donoPost}')">Responder</button>
+            <div id="r${cid}"></div>
+        `;
+        return el;
+    }
+
+    function atualizarVisibilidade() {
+        // Mostra/oculta comentários baseado em modoExpandido
+        todosComentarios.forEach((cid, idx) => {
+            let el = document.getElementById("comment-el-" + cid);
+            if (!el) return;
+            el.style.display = (modoExpandido || idx < 3) ? "" : "none";
+        });
+
+        // Botão "ver todos"
+        if (btnVerTodos) btnVerTodos.remove();
+        btnVerTodos = null;
+
+        if (totalComentarios > 3 && !modoExpandido) {
+            btnVerTodos = document.createElement("button");
+            btnVerTodos.className = "btn-ver-todos-comentarios";
+            btnVerTodos.innerHTML = `··· ver todos ${totalComentarios} comentários`;
+            btnVerTodos.onclick = () => { modoExpandido = true; atualizarVisibilidade(); };
+            div.appendChild(btnVerTodos);
+        }
+    }
+
+    function iniciarListenerRespostas(cid, rDiv) {
+        if (!respostasVistasMap[cid]) respostasVistasMap[cid] = new Set();
+        let vistas = respostasVistasMap[cid];
+
+        db.ref("replies/" + id + "/" + cid)
+            .orderByChild("time")
+            .on("child_added", snap => {
+                if (vistas.has(snap.key)) return;
+                vistas.add(snap.key);
+                let r = snap.val();
+                let rel = document.createElement("div");
+                rel.className = "reply";
+                rel.dataset.rid = snap.key;
+                rel.innerHTML = `↳ <span class="reply-user" onclick="abrirPerfil('${r.user}')">@${r.user}</span> <span class="comment-text">${linkificar(r.text)}</span>`;
+                rDiv.appendChild(rel);
+            });
+    }
+
+    db.ref("comments/" + id).orderByChild("time").on("child_added", snap => {
+        if (comentariosVistosIds.has(snap.key)) return;
+        comentariosVistosIds.add(snap.key);
+
         let c = snap.val();
         let cid = snap.key;
+        totalComentarios++;
+        todosComentarios.push(cid);
 
-        // Buscar respostas existentes
-        db.ref("replies/" + id + "/" + cid).once("value").then(rSnap => {
-            let respostas = [];
-            if (rSnap.exists()) {
-                rSnap.forEach(r => respostas.push(r.val()));
-            }
-            todosComentarios.push({ c, cid, respostas });
-            renderComentarios();
-        });
+        let el = criarElComentario(c, cid);
+        // Inserir antes do botão "ver todos" se existir
+        if (btnVerTodos && div.contains(btnVerTodos)) {
+            div.insertBefore(el, btnVerTodos);
+        } else {
+            div.appendChild(el);
+        }
+
+        // Ocultar se não expandido e índice >= 3
+        if (!modoExpandido && todosComentarios.length > 3) {
+            el.style.display = "none";
+        }
+
+        atualizarVisibilidade();
+
+        // Iniciar listener de respostas direto no rDiv estável
+        let rDiv = document.getElementById("r" + cid);
+        if (rDiv) iniciarListenerRespostas(cid, rDiv);
     });
 }
 
@@ -452,6 +664,9 @@ function carregarComentarios(id, div) {
 let feed = document.getElementById("feed");
 
 function renderPost(id, p, fotosMap) {
+    // Não renderizar se já existir
+    if (document.getElementById("post-" + id)) return;
+
     let div = document.createElement("div");
     div.className = "post";
     div.id = "post-" + id;
@@ -503,13 +718,13 @@ function renderPost(id, p, fotosMap) {
                     <span class="emoji">❤️</span> ${p.likes || 0}
                 </button>
 
-                <button onclick="comentar('${id}')">
+                <button onclick="comentar('${id}','${p.user}')">
                     <span class="emoji">💬</span> comentar
                 </button>
 
                 ${p.user === user ? `
                 <button onclick="editarPost('${id}')">
-                    <span class="emoji">✏️</span> Editar
+                    <span class="emoji">✎</span> Editar
                 </button>
                 <button onclick="deletarPost('${id}')">
                     <span class="emoji">🗑️</span> Deletar
@@ -532,7 +747,7 @@ function renderPost(id, p, fotosMap) {
             document.getElementById("img-" + id).appendChild(img);
         }
 
-        carregarComentarios(id, document.getElementById("c" + id));
+        carregarComentarios(id, document.getElementById("c" + id), p.user);
     });
 }
 
@@ -620,9 +835,6 @@ function logout() {
         location.href = "login.html";
     });
 }
-
-/* ================= MENU / CONFIG ================= */
-
 function abrirMenu() {
     document.getElementById("menuOverlay").style.display = "block";
     document.getElementById("menuLateral").style.left = "0";
@@ -654,6 +866,10 @@ function abrirchat() {
     setTimeout(() => { location.href = "chat.html"; }, 200);
 }
 
+function abrirverificar() {
+    fecharMenu();
+    setTimeout(() => { location.href = "verificado.html"; }, 200);
+}
 /* ================= TEMA ================= */
 
 function atualizarBotoesAtivos() {
@@ -681,7 +897,6 @@ function setTema(tipo) {
 }
 
 /* ================= PARTÍCULAS DE LIKE ================= */
-
 function soltarCoracoes(botao) {
     let rect = botao.getBoundingClientRect();
 
@@ -736,7 +951,6 @@ function renderEnquete(postId, poll) {
         btn.className = "pollBtn" + (isVotada ? " voted" : "");
         btn.dataset.index = index;
 
-        // Barra de progresso inline via CSS variable
         btn.style.setProperty("--pct", porcentagem + "%");
 
         btn.innerHTML = `
@@ -756,7 +970,6 @@ function renderEnquete(postId, poll) {
 
     container.appendChild(pollDiv);
 
-    // Agendar limpeza automática se ainda não ex
     if (restante > 0) {
         setTimeout(() => limparEnqueteExpirada(postId), restante);
     }
@@ -769,7 +982,6 @@ function limparEnqueteExpirada(postId) {
         if (!snap.exists()) return;
         let expiraEm = snap.val();
 
-        // Só remove se realmente expirou (evita race condition)
         if (Date.now() < expiraEm) return;
 
         db.ref("posts/" + postId + "/poll").remove().then(() => {
@@ -793,18 +1005,15 @@ function votarEnquete(postId, index) {
             ? post.poll.votosPorUsuario[user]
             : undefined;
 
-        // Clicou na mesma opção → remover voto
         if (votoAnterior === index) {
             post.poll.opcoes[index].votos = Math.max((post.poll.opcoes[index].votos || 1) - 1, 0);
             post.poll.votosPorUsuario[user] = null;
 
-        // Clicou em opção diferente → trocar voto
         } else if (votoAnterior !== undefined) {
             post.poll.opcoes[votoAnterior].votos = Math.max((post.poll.opcoes[votoAnterior].votos || 1) - 1, 0);
             post.poll.opcoes[index].votos = (post.poll.opcoes[index].votos || 0) + 1;
             post.poll.votosPorUsuario[user] = index;
 
-        // Sem voto anterior → votar
         } else {
             post.poll.opcoes[index].votos = (post.poll.opcoes[index].votos || 0) + 1;
             post.poll.votosPorUsuario[user] = index;
@@ -816,14 +1025,12 @@ function votarEnquete(postId, index) {
         let poll = result.snapshot.val().poll;
         if (!poll) return;
 
-        // Animação no botão clicado
         let btn = document.querySelector(`#poll-${postId} .pollBtn[data-index="${index}"]`);
-         if (btn) {
+        if (btn) {
             btn.classList.add("poll-pulse");
             setTimeout(() => btn.classList.remove("poll-pulse"), 350);
         }
 
-        // Re-renderiza só a enquete, sem recarregar o feed todo
         renderEnquete(postId, poll);
     });
 }
@@ -859,7 +1066,6 @@ function buscarUsuarios(query) {
     resultados.innerHTML = `<div style="color:#555;font-size:13px;text-align:center;">Buscando...</div>`;
 
     buscaTimer = setTimeout(() => {
-        // Coletar usuários únicos a partir dos posts
         db.ref("posts").orderByChild("user").once("value").then(snap => {
             let usuariosUnicos = new Set();
             snap.forEach(child => {
@@ -912,7 +1118,181 @@ function buscarUsuarios(query) {
         });
     }, 300);
 }
+function extrairMencoes(texto) {
+    let matches = texto.match(/@([A-Za-zÀ-ÿ0-9_.]+)/g) || [];
+    return matches.map(m => m.replace('@', '').trim()).filter(Boolean);
+}
 
+/* ================= NOTIFICAÇÕES ================= */
+
+function enviarNotificacao(destinatario, dados) {
+    let nomeKey = destinatario.replace(/[.#$[\]]/g, '_');
+    db.ref("notificacoes/" + nomeKey).push(dados);
+}
+
+function tempoRelativo(ts) {
+    let diff = Date.now() - ts;
+    if (diff < 60000)    return "agora";
+    if (diff < 3600000)  return Math.floor(diff / 60000) + " min atrás";
+    if (diff < 86400000) return Math.floor(diff / 3600000) + "h atrás";
+    return Math.floor(diff / 86400000) + "d atrás";
+}
+
+function iconeNotif(tipo) {
+    return { comentario: "💬", resposta: "↩️", mencao: "📣", chat: "✉️" }[tipo] || "🔔";
+}
+
+function textoNotif(n) {
+    let nome = `<span class="notif-nome">@${n.de}</span>`;
+    if (n.tipo === "comentario") return `${nome} comentou no seu post`;
+    if (n.tipo === "resposta")   return `${nome} respondeu seu comentário`;
+    if (n.tipo === "mencao")     return `${nome} mencionou você`;
+    if (n.tipo === "chat")       return `${nome} enviou uma mensagem`;
+    return `${nome} interagiu com você`;
+}
+
+let notifNaoLidas = 0;
+let notifPainelAberto = false;
+
+function atualizarBadge(total) {
+    let badge = document.getElementById("notifBadge");
+    if (!badge) return;
+    if (total > 0) {
+        badge.style.display = "flex";
+        badge.innerText = total > 99 ? "99+" : total;
+        badge.classList.add("pulse");
+        setTimeout(() => badge.classList.remove("pulse"), 400);
+    } else {
+        badge.style.display = "none";
+    }
+}
+
+function escutarNotificacoes() {
+    if (!user) return;
+    let nomeKey = user.replace(/[.#$[\]]/g, '_');
+    let ref = db.ref("notificacoes/" + nomeKey);
+
+    ref.on("child_added", snap => {
+        let n = snap.val();
+        if (!n.lida) {
+            notifNaoLidas++;
+            atualizarBadge(notifNaoLidas);
+            if (notifPainelAberto) renderNotificacoes();
+        }
+    });
+}
+
+function renderNotificacoes() {
+    let lista = document.getElementById("notifLista");
+    if (!lista) return;
+    lista.innerHTML = `<div class="notif-vazia">Carregando...</div>`;
+
+    let nomeKey = user.replace(/[.#$[\]]/g, '_');
+    db.ref("notificacoes/" + nomeKey).orderByChild("time").limitToLast(30).once("value").then(snap => {
+        let notifs = [];
+        snap.forEach(child => notifs.push({ id: child.key, ...child.val() }));
+        notifs.reverse();
+
+        if (notifs.length === 0) {
+            lista.innerHTML = `<div class="notif-vazia">Sem notificações ainda 🙂</div>`;
+            return;
+        }
+
+        lista.innerHTML = "";
+        notifs.forEach(n => {
+            let el = document.createElement("div");
+            el.className = "notif-item" + (!n.lida ? " nao-lida" : "");
+            el.innerHTML = `
+                <div class="notif-icon">${iconeNotif(n.tipo)}</div>
+                <div class="notif-corpo">
+                    <div class="notif-texto">${textoNotif(n)}</div>
+                    ${n.texto ? `<div style="font-size:11px;color:#555;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">"${n.texto}"</div>` : ''}
+                    <div class="notif-tempo">${tempoRelativo(n.time)}</div>
+                </div>
+            `;
+
+            // ====== AUTO-DISMISS: ao visualizar, marcar como lida ======
+            if (!n.lida) {
+                let observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            // Marcar como lida no Firebase
+                            db.ref("notificacoes/" + nomeKey + "/" + n.id + "/lida").set(true);
+                            el.classList.remove("nao-lida");
+                            observer.disconnect();
+                        }
+                    });
+                }, { threshold: 0.5 });
+                observer.observe(el);
+            }
+
+            if (n.postId) {
+                el.onclick = () => {
+                    fecharNotificacoes();
+                    let postEl = document.getElementById("post-" + n.postId);
+                    if (postEl) postEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                };
+            }
+            lista.appendChild(el);
+        });
+
+        // Atualizar badge após render
+        db.ref("notificacoes/" + nomeKey).orderByChild("lida").equalTo(false).once("value").then(s => {
+            notifNaoLidas = s.numChildren();
+            atualizarBadge(notifNaoLidas);
+        });
+    });
+}
+
+function marcarTodasLidas() {
+    let nomeKey = user.replace(/[.#$[\]]/g, '_');
+    db.ref("notificacoes/" + nomeKey).once("value").then(snap => {
+        let updates = {};
+        snap.forEach(child => {
+            if (!child.val().lida) {
+                updates[child.key + "/lida"] = true;
+            }
+        });
+        if (Object.keys(updates).length > 0) {
+            db.ref("notificacoes/" + nomeKey).update(updates).then(() => {
+                notifNaoLidas = 0;
+                atualizarBadge(0);
+                renderNotificacoes();
+            });
+        }
+    });
+}
+
+function toggleNotificacoes() {
+    if (notifPainelAberto) {
+        fecharNotificacoes();
+    } else {
+        abrirNotificacoes();
+    }
+}
+
+function abrirNotificacoes() {
+    document.getElementById("notifOverlay").style.display = "block";
+    document.getElementById("notifPanel").style.display = "block";
+    notifPainelAberto = true;
+    renderNotificacoes();
+}
+
+function fecharNotificacoes() {
+    document.getElementById("notifOverlay").style.display = "none";
+    document.getElementById("notifPanel").style.display = "none";
+    notifPainelAberto = false;
+}
+function notificarChat(destinatario, mensagem) {
+    if (destinatario && destinatario !== user) {
+        enviarNotificacao(destinatario, {
+            tipo: "chat",
+            de: user,
+            texto: mensagem.substring(0, 80),
+            time: Date.now()
+        });
+    }
+}
 /* ================= INIT ================= */
 
 postText.addEventListener("input", () => {
@@ -920,5 +1300,7 @@ postText.addEventListener("input", () => {
 });
 
 setTema(localStorage.getItem("tema") || "escuro");
-
+escutarNotificacoes();
+carregarBloqueados();
+carregarUsuariosExistentes(); // pré-carregar para @menções
 carregarFeed();

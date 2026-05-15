@@ -14,6 +14,7 @@ body{
     font-family:system-ui;
     background:#0b0b0b;
     color:#e8e8e8;
+    padding-bottom: 70px;
 }
 
 header{
@@ -457,6 +458,79 @@ button.seguindo{
     from{opacity:0;}
     to{opacity:1;}
 }
+
+/* ================= TAB BAR ================= */
+#tabBar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    background: #0f0f0f;
+    border-top: 1px solid #1f1f1f;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 90;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 14px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    flex: 1;
+    position: relative;
+}
+
+.tab-item:active {
+    transform: scale(0.88);
+}
+
+.tab-icon {
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.tab-label {
+    font-size: 10px;
+    color: #555;
+    letter-spacing: 0.2px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.tab-item.active .tab-label {
+    color: #1da1f2;
+}
+
+.tab-item.active .tab-icon {
+    transform: scale(1.12);
+}
+
+.tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #1da1f2;
+    animation: tabDotIn 0.25s ease both;
+}
+
+@keyframes tabDotIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
 </style>
 </head>
 
@@ -562,6 +636,26 @@ button.seguindo{
     </div>
 </div>
 
+<!-- ================= TAB BAR ================= -->
+<nav id="tabBar">
+    <div class="tab-item" id="tab-feed" onclick="window.location.href='index.html'">
+        <span class="tab-icon">🏠</span>
+        <span class="tab-label">Feed</span>
+    </div>
+    <div class="tab-item" id="tab-chat" onclick="irParaChat()">
+        <span class="tab-icon">💬</span>
+        <span class="tab-label">Chat</span>
+    </div>
+    <div class="tab-item" id="tab-veez" onclick="window.location.href='veez.html'">
+        <span class="tab-icon">▶️</span>
+        <span class="tab-label">Veez</span>
+    </div>
+    <div class="tab-item active" id="tab-perfil">
+        <span class="tab-icon">👤</span>
+        <span class="tab-label">Perfil</span>
+    </div>
+</nav>
+
 <script>
 const firebaseConfig = {
     databaseURL: "https://contaevilution-default-rtdb.firebaseio.com/"
@@ -607,6 +701,17 @@ if (eVerificado(perfil)) {
 /* ================= VOLTAR ================= */
 
 function voltar(){ history.back(); }
+
+/* ================= TAB CHAT ================= */
+
+function irParaChat() {
+    // Ajuste conforme o nome correto do seu arquivo de chat
+    if (typeof abrirchat === 'function') {
+        abrirchat();
+    } else {
+        window.location.href = 'chat.html';
+    }
+}
 
 /* ================= LINKS ================= */
 
@@ -777,7 +882,6 @@ async function abrirModal(tipo) {
     lista.innerHTML = "";
 
     for (const username of usernames) {
-        // Somente foto e bio — sem posts
         const [fotoSnap, bioSnap] = await Promise.all([
             db.ref("fotosPerfil/" + username).once("value"),
             db.ref("bios/" + username).once("value")
@@ -787,7 +891,6 @@ async function abrirModal(tipo) {
         item.className = "modal-user-item";
         item.onclick = () => irParaPerfil(username);
 
-        // Avatar
         const avatarDiv = document.createElement("div");
         avatarDiv.className = "modal-avatar";
         if (fotoSnap.exists()) {
@@ -796,11 +899,9 @@ async function abrirModal(tipo) {
             avatarDiv.innerText = username.charAt(0).toUpperCase();
         }
 
-        // Info
         const infoDiv = document.createElement("div");
         infoDiv.className = "modal-user-info";
 
-        // Linha do nome + badge
         const nomeLinha = document.createElement("div");
         nomeLinha.className = "modal-nome-linha";
 
@@ -809,7 +910,6 @@ async function abrirModal(tipo) {
         nomeSpan.innerText = "@" + username;
         nomeLinha.appendChild(nomeSpan);
 
-        // Badge verificado no modal
         if (eVerificado(username)) {
             const badgeSpan = document.createElement("span");
             badgeSpan.className = "modal-badge";
@@ -819,7 +919,6 @@ async function abrirModal(tipo) {
 
         infoDiv.appendChild(nomeLinha);
 
-        // Bio (sem post, só bio)
         if (bioSnap.exists() && bioSnap.val().trim()) {
             const bioDiv = document.createElement("div");
             bioDiv.className = "modal-user-bio";
@@ -898,7 +997,6 @@ function carregarPersonalizacao() {
 }
 
 function abrirPersonalizar() {
-    // Pré-carregar valores atuais do Firebase
     aparenciasDB.ref("aparencias/" + user).once("value").then(snap => {
         let salvo = snap.exists() ? snap.val() : {};
         document.getElementById("persoCorFundo").value = salvo.corFundo || "#0b0b0b";
@@ -934,7 +1032,6 @@ function salvarPersonalizar() {
         corBio: document.getElementById("persoCorBio").value,
         fonte: document.getElementById("persoFonte").value
     };
-    // Salvar no Firebase — visível para todos
     aparenciasDB.ref("aparencias/" + user).set(dados).then(() => {
         fecharPersonalizar();
     });

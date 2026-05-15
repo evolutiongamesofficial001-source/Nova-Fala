@@ -772,6 +772,9 @@ function abrirConv(c){
   if(offMsgs)offMsgs();
   escutarMsgs(c.nome);
   renderLista();
+  // Auto-dismiss badge ao abrir conversa
+  c.naoLidas = 0;
+  renderLista();
 }
 
 function atualizarSt(c){
@@ -861,6 +864,15 @@ function marcarLidas(contato){
   }).catch(()=>{});
 }
 
+/* ═══ VERIFICAR BLOQUEIO NO CHAT ═══ */
+async function verificarBloqueioChat(destinatario) {
+  const userKey = user.replace(/[.#$[\]]/g, '_');
+  const destKey = destinatario.replace(/[.#$[\]]/g, '_');
+  // Verifica se o destinatário bloqueou o usuário logado
+  const snap = await db.ref("bloqueados/" + destKey + "/" + userKey).once("value");
+  return snap.exists();
+}
+
 /* ═══ ENVIAR ═══ */
 async function enviar(){
   if(!ativo)return;
@@ -868,6 +880,17 @@ async function enviar(){
   const texto=ta?ta.value.trim():"";
   if(!texto&&!imgsPend.length)return;
   const btn=document.getElementById("benv"); btn.disabled=true;
+
+  // Verificar bloqueio antes de enviar
+  try {
+    const bloqueado = await verificarBloqueioChat(ativo);
+    if (bloqueado) {
+      toast("❌ Você foi bloqueado por este usuário.");
+      btn.disabled=false;
+      return;
+    }
+  } catch(e) { /* ignora erro de verificação */ }
+
   const key=cKey(user,ativo);
   const msg={de:user,ts:Date.now(),...(texto?{texto:rot20(texto)}:{}),...(imgsPend.length?{imgUrl:imgsPend.length===1?imgsPend[0].dataUrl:imgsPend.map(p=>p.dataUrl)}:{})};
   try{

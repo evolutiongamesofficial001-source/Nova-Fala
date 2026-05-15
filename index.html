@@ -16,15 +16,31 @@
 <header>
     <div style="display:flex;align-items:center;gap:10px;">
         <div onclick="abrirMenu()" style="cursor:pointer;font-size:22px;">☰</div>
-        <span>Nova-Fala</span>
+        <span class="nova-fala-logo">Nova-Fala</span>
     </div>
     
     <div style="display:flex;align-items:center;gap:8px;">
         <div onclick="abrirBusca()" style="cursor:pointer;font-size:20px;" title="Buscar usuários">🔍</div>
-        <div onclick="abrirchat()" style="cursor:pointer;font-size:20px;" title="EVChat">💬</div>
-        <div class="logout" onclick="logout()">Sair</div>
+        <!-- BOTÃO NOTIFICAÇÃO -->
+        <div id="notifBtn" onclick="toggleNotificacoes()" style="cursor:pointer;font-size:20px;position:relative;" title="Notificações">
+            🔔
+            <span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ff6b81;color:white;font-size:10px;font-weight:bold;border-radius:50%;width:16px;height:16px;display:none;align-items:center;justify-content:center;line-height:1;">0</span>
+        </div>
     </div>
 </header>
+
+<!-- ================= PAINEL NOTIFICAÇÕES ================= -->
+<div id="notifOverlay" onclick="fecharNotificacoes()" style="display:none;position:fixed;inset:0;background:#0009;z-index:500;"></div>
+<div id="notifPanel" style="display:none;position:fixed;top:56px;right:8px;width:320px;max-width:95vw;background:#111;border:1px solid #222;border-radius:14px;z-index:501;animation:fade .2s;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1f1f1f;">
+        <span style="font-weight:bold;font-size:15px;color:#e8e8e8;">🔔 Notificações</span>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <span onclick="marcarTodasLidas()" style="cursor:pointer;font-size:11px;color:#1da1f2;">Marcar lidas</span>
+            <span onclick="fecharNotificacoes()" style="cursor:pointer;color:#888;font-size:18px;">✕</span>
+        </div>
+    </div>
+    <div id="notifLista" style="max-height:380px;overflow-y:auto;"></div>
+</div>
 
 <!-- ================= BUSCA ================= -->
 <div id="buscaOverlay" onclick="fecharBusca()" style="display:none;position:fixed;inset:0;background:#0009;z-index:500;"></div>
@@ -140,7 +156,10 @@
     <button onclick="abrirConfig()">⚙️ Configurações</button>
     <button onclick="abrirMeuPerfil()">👤 Meu Perfil</button>
     <button onclick="abrirSAR()">🤖 S.A.R</button>
-    <button onclick="abrirchat()">💬EVChat</button>
+     <button onclick="abrirverificar()">Vereficação</button>
+    <!-- BOTÃO SAIR MOVIDO PARA A BARRA LATERAL -->
+    <div style="flex:1;"></div>
+    <button class="menu-logout-btn" onclick="logout()">🚪 Sair da conta</button>
 </div>
 
 <!-- ================= CONFIG ================= -->
@@ -159,7 +178,50 @@
     </div>
 </div>
 
+<!-- ================= TAB BAR ================= -->
+<nav id="tabBar">
+    <div class="tab-item active" id="tab-feed" onclick="irParaFeed()">
+        <span class="tab-icon">🏠</span>
+        <span class="tab-label">Feed</span>
+    </div>
+    <div class="tab-item" id="tab-chat" onclick="abrirchat()">
+        <span class="tab-icon">💬</span>
+        <span class="tab-label">Chat</span>
+    </div>
+    <div class="tab-item" id="tab-veez" onclick="irParaVeez()">
+        <span class="tab-icon">🐇</span>
+        <span class="tab-label">Rapidoz</span>
+    </div>
+    <div class="tab-item" id="tab-perfil" onclick="abrirMeuPerfil()">
+        <span class="tab-icon">👤</span>
+        <span class="tab-label">Perfil</span>
+    </div>
+</nav>
+
 <script src="index.js"></script>
+<script>
+// ================= TAB BAR HELPERS =================
+function irParaFeed() {
+    setTabAtiva('tab-feed');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function irParaVeez() {
+    setTabAtiva('tab-veez');
+    window.location.href = 'veez.html';
+}
+
+function setTabAtiva(id) {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+}
+
+// Marca aba correta ao carregar
+document.addEventListener('DOMContentLoaded', () => {
+    setTabAtiva('tab-feed');
+});
+</script>
 
 </body>
 </html>
