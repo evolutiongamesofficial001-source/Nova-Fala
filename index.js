@@ -29,7 +29,8 @@ const fotoDB = firebase.initializeApp({
 const usuariosVerificados = [
     "Macedo",
     "Evolution Studio Official",
-    "João Antônio"
+    "João Antônio",
+    "Mariel Lunardrine"
 ];
 
 function usuarioVerificado(nome) {
