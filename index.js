@@ -24,6 +24,10 @@ const fotoDB = firebase.initializeApp({
     databaseURL: "https://bigtrio-ip-default-rtdb.firebaseio.com/"
 }, "fotos").database();
 
+const db3 = firebase.initializeApp({
+    databaseURL: "https://qwhsb-1577d-default-rtdb.firebaseio.com/"
+}, "extra").database();
+
 /* ================= VERIFICADO ================= */
 
 const usuariosVerificados = [
@@ -647,6 +651,12 @@ function carregarComentarios(id, div, donoPost) {
             div.appendChild(el);
         }
 
+        if (btnVerTodos && div.contains(btnVerTodos)) {
+            div.insertBefore(el, btnVerTodos);
+        } else {
+            div.appendChild(el);
+        }
+
         // Ocultar se não expandido e índice >= 3
         if (!modoExpandido && todosComentarios.length > 3) {
             el.style.display = "none";
@@ -751,9 +761,6 @@ function renderPost(id, p, fotosMap) {
         carregarComentarios(id, document.getElementById("c" + id), p.user);
     });
 }
-
-/* ================= FEED ================= */
-
 function carregarFeed() {
     feed.innerHTML = "";
 
@@ -871,8 +878,6 @@ function abrirverificar() {
     fecharMenu();
     setTimeout(() => { location.href = "verificado.html"; }, 200);
 }
-/* ================= TEMA ================= */
-
 function atualizarBotoesAtivos() {
     document.getElementById("btnEscuro").classList.remove("ativo");
     document.getElementById("btnClaro").classList.remove("ativo");
@@ -1123,9 +1128,6 @@ function extrairMencoes(texto) {
     let matches = texto.match(/@([A-Za-zÀ-ÿ0-9_.]+)/g) || [];
     return matches.map(m => m.replace('@', '').trim()).filter(Boolean);
 }
-
-/* ================= NOTIFICAÇÕES ================= */
-
 function enviarNotificacao(destinatario, dados) {
     let nomeKey = destinatario.replace(/[.#$[\]]/g, '_');
     db.ref("notificacoes/" + nomeKey).push(dados);
@@ -1294,8 +1296,6 @@ function notificarChat(destinatario, mensagem) {
         });
     }
 }
-/* ================= INIT ================= */
-
 postText.addEventListener("input", () => {
     contador.innerText = postText.value.length + " / 1000";
 });
