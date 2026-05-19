@@ -458,26 +458,6 @@ button.seguindo{
 .perso-cancelar{ background:#1c1c1c;color:#bbb; }
 .perso-cancelar:hover{ background:#2a2a2a; }
 
-/* ===== NOME DE EXIBIÇÃO ===== */
-.nome-display{
-    font-size:20px;
-    font-weight:bold;
-    color:#e8e8e8;
-}
-
-/* ===== INPUT TEXTO PERSONALIZAR ===== */
-.perso-row input[type="text"]{
-    flex:1;
-    padding:9px 12px;
-    border-radius:8px;
-    border:1px solid #2a2a2a;
-    background:#1c1c1c;
-    color:#e8e8e8;
-    font-size:13px;
-    outline:none;
-}
-.perso-row input[type="text"]::placeholder{ color:#555; }
-
 /* ===== SCROLL no painel personalizar ===== */
 #personalizarBox{
     max-height:88vh;
@@ -519,6 +499,62 @@ button.seguindo{
     padding:4px 0 2px;
     border-bottom:1px solid #1e1e1e;
     margin-bottom:2px;
+}
+
+/* ===== FONT GRID ===== */
+.font-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:4px;
+}
+.font-card{
+    background:#141414;
+    border:2px solid #252525;
+    border-radius:12px;
+    padding:12px 10px 10px;
+    cursor:pointer;
+    transition:all 0.18s;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    -webkit-tap-highlight-color:transparent;
+    position:relative;
+    overflow:hidden;
+}
+.font-card:active{ transform:scale(0.94); }
+.font-card:hover{ border-color:#333; background:#1a1a1a; }
+.font-card.selecionada{
+    border-color:#1da1f2;
+    background:rgba(29,161,242,0.08);
+}
+.font-card.selecionada::after{
+    content:"✓";
+    position:absolute;
+    top:5px;
+    right:8px;
+    font-size:11px;
+    color:#1da1f2;
+    font-weight:700;
+}
+.font-card-amostra{
+    font-size:17px;
+    font-weight:700;
+    color:#e8e8e8;
+    line-height:1.2;
+    text-align:center;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+}
+.font-card-tag{
+    font-size:9px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:#444;
+    font-family:system-ui;
 }
 
 @keyframes fadeIn{
@@ -626,7 +662,6 @@ button.seguindo{
             </svg>
         </span>
     </div>
-    <div id="nomeUsuarioEl" style="font-size:12px;color:#555;margin-top:2px;">@<span id="nomeUsuarioSpan"></span></div>
 
     <div id="bioEl" style="margin-top:6px;font-size:14px;color:#aaa;max-width:300px;margin-left:auto;margin-right:auto;word-break:break-word;"></div>
     <div id="editBioBtn" style="display:none;margin-top:4px;">
@@ -668,18 +703,8 @@ button.seguindo{
     <div class="perso-titulo">✏️ Personalizar Perfil</div>
     <div class="perso-corpo">
 
-        <!-- SEÇÃO: IDENTIDADE -->
-        <div class="perso-secao">👤 Identidade</div>
-
-        <div class="perso-grupo">
-            <div class="perso-label">Nome de exibição</div>
-            <div class="perso-row">
-                <input type="text" id="persoNomeDisplay" placeholder="Seu nome público..." maxlength="30">
-            </div>
-        </div>
-
         <!-- SEÇÃO: CORES -->
-        <div class="perso-secao" style="margin-top:8px;">🎨 Cores</div>
+        <div class="perso-secao">🎨 Cores</div>
 
         <div class="perso-grupo">
             <div class="perso-label">Cor de fundo do perfil</div>
@@ -746,56 +771,15 @@ button.seguindo{
         </div>
 
         <!-- SEÇÃO: FONTES -->
-        <div class="perso-secao" style="margin-top:8px;">🖋️ Fontes</div>
-
+        <div class="perso-secao" style="margin-top:8px;">🖋️ Fonte do nome e bio</div>
         <div class="perso-grupo">
-            <div class="perso-label">Fonte do nome e bio</div>
-            <select id="persoFonte" onchange="atualizarPreview()">
-                <option value="system-ui">⬜ Padrão (System)</option>
-                <optgroup label="── Sans-serif ──">
-                    <option value="'Arial', sans-serif">Arial</option>
-                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                    <option value="'Ubuntu', sans-serif">Ubuntu</option>
-                    <option value="'Rajdhani', sans-serif">Rajdhani</option>
-                    <option value="'Exo 2', sans-serif">Exo 2</option>
-                    <option value="'Righteous', sans-serif">Righteous</option>
-                    <option value="'Russo One', sans-serif">Russo One</option>
-                    <option value="'Titan One', cursive">Titan One</option>
-                    <option value="'Sigmar One', cursive">Sigmar One</option>
-                </optgroup>
-                <optgroup label="── Serifada ──">
-                    <option value="'Georgia', serif">Georgia</option>
-                    <option value="'Zilla Slab', serif">Zilla Slab</option>
-                    <option value="'Special Elite', cursive">Special Elite (Máquina)</option>
-                </optgroup>
-                <optgroup label="── Decorativa / Display ──">
-                    <option value="'Bebas Neue', cursive">Bebas Neue</option>
-                    <option value="'Bangers', cursive">Bangers (HQ)</option>
-                    <option value="'Monoton', cursive">Monoton (Neon)</option>
-                    <option value="'Orbitron', sans-serif">Orbitron (Sci-fi)</option>
-                    <option value="'Permanent Marker', cursive">Permanent Marker (Caneta)</option>
-                    <option value="'Lobster', cursive">Lobster</option>
-                    <option value="'Pacifico', cursive">Pacifico</option>
-                    <option value="'Yellowtail', cursive">Yellowtail</option>
-                    <option value="'Satisfy', cursive">Satisfy</option>
-                    <option value="'Dancing Script', cursive">Dancing Script</option>
-                </optgroup>
-                <optgroup label="── Pixel / Retro ──">
-                    <option value="'Press Start 2P', cursive">Press Start 2P (8-bit)</option>
-                    <option value="'VT323', monospace">VT323 (Terminal)</option>
-                    <option value="'Courier New', monospace">Courier New (Mono)</option>
-                </optgroup>
-                <optgroup label="── Especial ──">
-                    <option value="cursive">Cursiva do Sistema</option>
-                    <option value="fantasy">Fantasy do Sistema</option>
-                </optgroup>
-            </select>
+            <div id="fontGrid" class="font-grid"></div>
         </div>
 
         <!-- PREVIEW -->
         <div class="perso-grupo">
             <div class="perso-label">Pré-visualização</div>
-            <div class="perso-preview-text" id="persoPreview">Nome Exibido — bio aqui...</div>
+            <div class="perso-preview-text" id="persoPreview">@SeuNome — bio aqui...</div>
         </div>
 
     </div>
@@ -837,7 +821,6 @@ const aparenciasDB = firebase.initializeApp({
 }, "aparencias").database();
 
 /* ================= VERIFICADO ================= */
-
 const usuariosVerificados = [
     "Macedo",
     "Evolution Studio Official",
@@ -861,7 +844,6 @@ let perfil = localStorage.getItem("perfil");
 if(!perfil) location.href = "index.html";
 
 document.getElementById("nome").innerText = "@" + perfil;
-document.getElementById("nomeUsuarioSpan").innerText = perfil;
 
 // Mostrar badge no perfil se verificado
 if (eVerificado(perfil)) {
@@ -1149,25 +1131,70 @@ function carregarPosts(){
 
 /* ================= PERSONALIZAR PERFIL ================= */
 
-/* ================= NOME DE EXIBIÇÃO ================= */
+// Lista de fontes com label, família CSS e categoria
+const FONTES = [
+    { label:"Padrão",         css:"system-ui",                    cat:"" },
+    { label:"Arial",          css:"'Arial', sans-serif",          cat:"sans" },
+    { label:"Ubuntu",         css:"'Ubuntu', sans-serif",         cat:"sans" },
+    { label:"Rajdhani",       css:"'Rajdhani', sans-serif",       cat:"sans" },
+    { label:"Exo 2",          css:"'Exo 2', sans-serif",          cat:"sans" },
+    { label:"Righteous",      css:"'Righteous', sans-serif",      cat:"sans" },
+    { label:"Russo One",      css:"'Russo One', sans-serif",      cat:"sans" },
+    { label:"Trebuchet MS",   css:"'Trebuchet MS', sans-serif",   cat:"sans" },
+    { label:"Georgia",        css:"'Georgia', serif",             cat:"serif" },
+    { label:"Zilla Slab",     css:"'Zilla Slab', serif",         cat:"serif" },
+    { label:"Special Elite",  css:"'Special Elite', cursive",     cat:"retro" },
+    { label:"Bebas Neue",     css:"'Bebas Neue', cursive",        cat:"display" },
+    { label:"Bangers",        css:"'Bangers', cursive",           cat:"display" },
+    { label:"Monoton",        css:"'Monoton', cursive",           cat:"neon" },
+    { label:"Orbitron",       css:"'Orbitron', sans-serif",       cat:"sci-fi" },
+    { label:"Permanent Marker",css:"'Permanent Marker', cursive", cat:"caneta" },
+    { label:"Lobster",        css:"'Lobster', cursive",           cat:"display" },
+    { label:"Pacifico",       css:"'Pacifico', cursive",          cat:"display" },
+    { label:"Yellowtail",     css:"'Yellowtail', cursive",        cat:"script" },
+    { label:"Satisfy",        css:"'Satisfy', cursive",           cat:"script" },
+    { label:"Dancing Script", css:"'Dancing Script', cursive",    cat:"script" },
+    { label:"Sigmar One",     css:"'Sigmar One', cursive",        cat:"display" },
+    { label:"Titan One",      css:"'Titan One', cursive",         cat:"display" },
+    { label:"Press Start 2P", css:"'Press Start 2P', cursive",    cat:"8-bit" },
+    { label:"VT323",          css:"'VT323', monospace",           cat:"terminal" },
+    { label:"Courier New",    css:"'Courier New', monospace",     cat:"mono" },
+];
 
-function carregarNomeDisplay() {
-    aparenciasDB.ref("aparencias/" + perfil).once("value").then(snap => {
-        let dados = snap.exists() ? snap.val() : {};
-        let nomeEl = document.getElementById("nome");
-        let nomeUsuarioEl = document.getElementById("nomeUsuarioEl");
-        if (dados.nomeDisplay && dados.nomeDisplay.trim()) {
-            nomeEl.innerText = dados.nomeDisplay.trim();
-            nomeUsuarioEl.style.display = "block";
-            document.getElementById("nomeUsuarioSpan").innerText = perfil;
-        } else {
-            nomeEl.innerText = "@" + perfil;
-            nomeUsuarioEl.style.display = "none";
-        }
+let fonteAtual = "system-ui";
+
+function construirFontGrid(fonteSalva) {
+    fonteAtual = fonteSalva || "system-ui";
+    let grid = document.getElementById("fontGrid");
+    grid.innerHTML = "";
+    FONTES.forEach(f => {
+        let card = document.createElement("div");
+        card.className = "font-card" + (f.css === fonteAtual ? " selecionada" : "");
+        card.dataset.css = f.css;
+        card.onclick = () => selecionarFonte(f.css);
+
+        let amostra = document.createElement("div");
+        amostra.className = "font-card-amostra";
+        amostra.style.fontFamily = f.css;
+        amostra.textContent = f.label;
+
+        let tag = document.createElement("div");
+        tag.className = "font-card-tag";
+        tag.textContent = f.cat;
+
+        card.appendChild(amostra);
+        if (f.cat) card.appendChild(tag);
+        grid.appendChild(card);
     });
 }
 
-/* ================= PERSONALIZAR PERFIL ================= */
+function selecionarFonte(css) {
+    fonteAtual = css;
+    document.querySelectorAll(".font-card").forEach(c => {
+        c.classList.toggle("selecionada", c.dataset.css === css);
+    });
+    atualizarPreview();
+}
 
 // Paletas de cores rápidas
 const PALETAS = {
@@ -1213,24 +1240,12 @@ function aplicarPersonalizacao(dados) {
         if (bioEl) bioEl.style.fontFamily = dados.fonte;
     }
 
-    // Aplicar nome de exibição
-    if (dados.nomeDisplay && dados.nomeDisplay.trim()) {
-        if (nomeEl) nomeEl.innerText = dados.nomeDisplay.trim();
-        let nomeUsuarioEl = document.getElementById("nomeUsuarioEl");
-        if (nomeUsuarioEl) {
-            nomeUsuarioEl.style.display = "block";
-            document.getElementById("nomeUsuarioSpan").innerText = perfil;
-        }
-    }
-
     // Aplicar cores do botão seguir (para quando outro usuário visita)
     if (user !== perfil) {
-        if (dados.corBtnSeguir || dados.corBtnSeguirTexto) {
-            let btn = document.getElementById("btnSeguir");
-            if (btn && !btn.classList.contains("seguindo")) {
-                if (dados.corBtnSeguir) btn.style.background = dados.corBtnSeguir;
-                if (dados.corBtnSeguirTexto) btn.style.color = dados.corBtnSeguirTexto;
-            }
+        let btn = document.getElementById("btnSeguir");
+        if (btn && !btn.classList.contains("seguindo")) {
+            if (dados.corBtnSeguir) btn.style.background = dados.corBtnSeguir;
+            if (dados.corBtnSeguirTexto) btn.style.color = dados.corBtnSeguirTexto;
         }
     }
 }
@@ -1253,8 +1268,6 @@ function abrirPersonalizar() {
         document.getElementById("persoCorBtnSeguirTexto").value = salvo.corBtnSeguirTexto || "#ffffff";
         document.getElementById("persoCorBtnSeguindo").value = salvo.corBtnSeguindo || "#2ee6a6";
         document.getElementById("persoCorBtnSeguindoTexto").value = salvo.corBtnSeguindoTexto || "#000000";
-        document.getElementById("persoNomeDisplay").value = salvo.nomeDisplay || "";
-        if (salvo.fonte) document.getElementById("persoFonte").value = salvo.fonte;
 
         // Criar swatches
         criarSwatches("swatchesFundo", "persoCorFundo", PALETAS.fundo);
@@ -1262,6 +1275,9 @@ function abrirPersonalizar() {
         criarSwatches("swatchesBio", "persoCorBio", PALETAS.bio);
         criarSwatches("swatchesBtnSeguir", "persoCorBtnSeguir", PALETAS.btnSeguir);
         criarSwatches("swatchesBtnSeguindo", "persoCorBtnSeguindo", PALETAS.btnSeguindo);
+
+        // Construir grid de fontes
+        construirFontGrid(salvo.fonte || "system-ui");
 
         atualizarPreview();
     });
@@ -1278,21 +1294,17 @@ function fecharPersonalizar() {
 }
 
 function atualizarPreview() {
-    let fonte = document.getElementById("persoFonte").value;
     let corBio = document.getElementById("persoCorBio").value;
     let corNome = document.getElementById("persoCorNome").value;
     let corFundo = document.getElementById("persoCorFundo").value;
-    let nomeDisplay = document.getElementById("persoNomeDisplay").value.trim();
     let prev = document.getElementById("persoPreview");
-    prev.style.fontFamily = fonte;
+    prev.style.fontFamily = fonteAtual;
     prev.style.color = corBio;
     prev.style.background = corFundo;
-    let nomeTexto = nomeDisplay || "@" + (user || "SeuNome");
-    prev.innerHTML = `<span style="color:${corNome};font-family:${fonte};font-weight:bold;">${nomeTexto}</span> — bio aqui...`;
+    prev.innerHTML = `<span style="color:${corNome};font-family:${fonteAtual};font-weight:bold;">@${perfil || "SeuNome"}</span> — bio aqui...`;
 }
 
 function salvarPersonalizar() {
-    let nomeDisplay = document.getElementById("persoNomeDisplay").value.trim().substring(0, 30);
     let dados = {
         corFundo:              document.getElementById("persoCorFundo").value,
         corBio:                document.getElementById("persoCorBio").value,
@@ -1301,8 +1313,7 @@ function salvarPersonalizar() {
         corBtnSeguirTexto:     document.getElementById("persoCorBtnSeguirTexto").value,
         corBtnSeguindo:        document.getElementById("persoCorBtnSeguindo").value,
         corBtnSeguindoTexto:   document.getElementById("persoCorBtnSeguindoTexto").value,
-        fonte:                 document.getElementById("persoFonte").value,
-        nomeDisplay:           nomeDisplay
+        fonte:                 fonteAtual
     };
     aparenciasDB.ref("aparencias/" + user).set(dados).then(() => {
         fecharPersonalizar();
@@ -1314,8 +1325,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let el = document.getElementById(id);
         if (el) el.addEventListener("input", atualizarPreview);
     });
-    let nomeInput = document.getElementById("persoNomeDisplay");
-    if (nomeInput) nomeInput.addEventListener("input", atualizarPreview);
 });
 
 /* ================= INIT ================= */
