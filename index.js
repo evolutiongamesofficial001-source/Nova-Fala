@@ -34,7 +34,8 @@ const usuariosVerificados = [
     "Macedo",
     "Evolution Studio Official",
     "João Antônio",
-    "Mariel Lunardrine"
+    "Mariel Lunardrine",
+    "petrus"
 ];
 
 function usuarioVerificado(nome) {
