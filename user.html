@@ -824,7 +824,8 @@ const aparenciasDB = firebase.initializeApp({
 const usuariosVerificados = [
     "Macedo",
     "Evolution Studio Official",
-    "João Antônio"
+    "João Antônio",
+    "Mariel Lurnardine"
 ];
 
 function eVerificado(nome) {
@@ -1113,20 +1114,94 @@ function carregarPosts(){
     .on("value", snap => {
         posts.innerHTML = "";
         let lista = [];
-        snap.forEach(child => { lista.push(child.val()); });
+        snap.forEach(child => { lista.push({ key: child.key, ...child.val() }); });
         lista.reverse();
         lista.forEach(p => {
             let div = document.createElement("div");
             div.className = "post";
-            div.innerHTML = `<div>${linkificar(p.text || "")}</div>`;
+            div.style.position = "relative";
+
+            let conteudo = document.createElement("div");
+            conteudo.innerHTML = linkificar(p.text || "");
+            div.appendChild(conteudo);
+
             if(p.photoBase64){
                 let img = document.createElement("img");
                 img.src = p.photoBase64;
                 div.appendChild(img);
             }
+
+            if(user === perfil){
+                let btnEditar = document.createElement("div");
+                btnEditar.innerHTML = "✏️";
+                btnEditar.title = "Editar post";
+                btnEditar.style.cssText = "position:absolute;top:8px;right:10px;font-size:13px;cursor:pointer;opacity:0.45;transition:opacity 0.2s;";
+                btnEditar.onmouseenter = () => btnEditar.style.opacity = "1";
+                btnEditar.onmouseleave = () => btnEditar.style.opacity = "0.45";
+                btnEditar.onclick = () => editarPost(p.key, p.text || "");
+                div.appendChild(btnEditar);
+            }
+
             posts.appendChild(div);
         });
     });
+}
+
+function editarPost(postKey, textoAtual) {
+    let overlay = document.createElement("div");
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:900;display:flex;align-items:flex-end;backdrop-filter:blur(5px);animation:fadeIn 0.2s ease;";
+
+    let box = document.createElement("div");
+    box.style.cssText = "width:100%;background:#181818;border-top:1px solid #2a2a2a;border-radius:24px 24px 0 0;padding:20px 20px 36px;box-shadow:0 -10px 40px rgba(0,0,0,0.7);";
+
+    let handle = document.createElement("div");
+    handle.style.cssText = "width:44px;height:4px;background:#2e2e2e;border-radius:4px;margin:0 auto 16px;";
+
+    let titulo = document.createElement("div");
+    titulo.style.cssText = "font-size:15px;font-weight:700;color:#e8e8e8;margin-bottom:14px;text-align:center;border-bottom:1px solid #1f1f1f;padding-bottom:12px;";
+    titulo.innerText = "✏️ Editar post";
+
+    let textarea = document.createElement("textarea");
+    textarea.value = textoAtual;
+    textarea.style.cssText = "width:100%;min-height:110px;background:#111;border:1px solid #2a2a2a;color:#e8e8e8;border-radius:12px;padding:12px;font-size:14px;font-family:system-ui;resize:vertical;outline:none;box-sizing:border-box;line-height:1.5;";
+    textarea.onfocus = () => textarea.style.borderColor = "#1da1f2";
+    textarea.onblur  = () => textarea.style.borderColor = "#2a2a2a";
+
+    let contador = document.createElement("div");
+    contador.style.cssText = "font-size:11px;color:#555;text-align:right;margin-top:5px;";
+    contador.innerText = textoAtual.length + " caracteres";
+    textarea.oninput = () => contador.innerText = textarea.value.length + " caracteres";
+
+    let btns = document.createElement("div");
+    btns.style.cssText = "display:flex;gap:10px;margin-top:16px;";
+
+    let btnCancelar = document.createElement("button");
+    btnCancelar.innerText = "Cancelar";
+    btnCancelar.style.cssText = "flex:1;padding:11px;border-radius:10px;border:none;background:#1c1c1c;color:#bbb;font-size:14px;font-weight:600;cursor:pointer;margin-top:0;";
+    btnCancelar.onclick = () => document.body.removeChild(overlay);
+
+    let btnSalvar = document.createElement("button");
+    btnSalvar.innerText = "Salvar";
+    btnSalvar.style.cssText = "flex:1;padding:11px;border-radius:10px;border:none;background:#1da1f2;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:0;";
+    btnSalvar.onclick = () => {
+        let novoTexto = textarea.value.trim();
+        if(!novoTexto){ alert("O post não pode ficar vazio."); return; }
+        db.ref("posts/" + postKey + "/text").set(novoTexto).then(() => {
+            document.body.removeChild(overlay);
+        }).catch(err => alert("Erro ao salvar: " + err.message));
+    };
+
+    btns.appendChild(btnCancelar);
+    btns.appendChild(btnSalvar);
+    box.appendChild(handle);
+    box.appendChild(titulo);
+    box.appendChild(textarea);
+    box.appendChild(contador);
+    box.appendChild(btns);
+    overlay.appendChild(box);
+    overlay.onclick = (e) => { if(e.target === overlay) document.body.removeChild(overlay); };
+    document.body.appendChild(overlay);
+    setTimeout(() => textarea.focus(), 100);
 }
 
 /* ================= PERSONALIZAR PERFIL ================= */

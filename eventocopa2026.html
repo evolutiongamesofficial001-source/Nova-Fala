@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>COPA PACK 2026</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:
+linear-gradient(180deg,#014421 0%,#03160f 100%);
+color:white;
+overflow-x:hidden;
+min-height:100vh;
+}
+
+/* FUNDO */
+
+body::before{
+content:"";
+position:fixed;
+inset:0;
+background:
+radial-gradient(circle at top,#00ff9955 0%,transparent 30%),
+radial-gradient(circle at bottom right,#ffe60033 0%,transparent 35%);
+z-index:-1;
+}
+
+/* HEADER */
+
+header{
+padding:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.logo{
+font-size:1.5rem;
+font-weight:800;
+line-height:1;
+}
+
+.logo span{
+color:#ffe600;
+}
+
+.top-info{
+display:flex;
+gap:10px;
+}
+
+.box{
+background:rgba(255,255,255,.08);
+padding:12px 15px;
+border-radius:18px;
+border:1px solid rgba(255,255,255,.1);
+font-weight:700;
+backdrop-filter:blur(10px);
+}
+
+/* HERO */
+
+.hero{
+margin:0 20px;
+padding:25px;
+border-radius:35px;
+background:
+linear-gradient(145deg,
+rgba(255,255,255,.08),
+rgba(255,255,255,.03));
+border:1px solid rgba(255,255,255,.1);
+box-shadow:0 15px 40px rgba(0,0,0,.35);
+position:relative;
+overflow:hidden;
+}
+
+.hero::before{
+content:"";
+position:absolute;
+width:250px;
+height:250px;
+background:#ffe60022;
+border-radius:50%;
+top:-120px;
+right:-80px;
+filter:blur(50px);
+}
+
+.badge{
+display:inline-block;
+padding:8px 14px;
+background:linear-gradient(90deg,#ffe600,#ffb300);
+color:black;
+border-radius:50px;
+font-weight:700;
+font-size:.8rem;
+margin-bottom:15px;
+}
+
+.hero h1{
+font-size:2rem;
+line-height:1.1;
+margin-bottom:15px;
+}
+
+.hero p{
+color:#d4ffe5;
+line-height:1.6;
+font-size:.95rem;
+}
+
+.buttons{
+display:flex;
+gap:15px;
+margin-top:25px;
+}
+
+button{
+border:none;
+cursor:pointer;
+transition:.3s;
+}
+
+.open-btn{
+flex:1;
+padding:16px;
+border-radius:20px;
+background:
+linear-gradient(90deg,#ffe600,#ffb300);
+font-weight:800;
+font-size:1rem;
+color:black;
+box-shadow:0 10px 25px rgba(255,200,0,.35);
+}
+
+.reset-btn{
+width:60px;
+border-radius:20px;
+background:rgba(255,255,255,.08);
+color:white;
+font-size:1.2rem;
+border:1px solid rgba(255,255,255,.1);
+}
+
+button:hover{
+transform:translateY(-5px);
+}
+
+/* PACK */
+
+.section-title{
+padding:30px 20px 15px;
+font-size:1.3rem;
+font-weight:700;
+}
+
+.pack{
+padding:0 20px;
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+}
+
+/* CARD */
+
+.card{
+border-radius:28px;
+overflow:hidden;
+background:
+linear-gradient(180deg,#ffe600 0%,#c59c00 100%);
+box-shadow:
+0 12px 25px rgba(0,0,0,.4),
+0 0 15px rgba(255,230,0,.2);
+animation:show .7s ease;
+position:relative;
+}
+
+@keyframes show{
+from{
+opacity:0;
+transform:scale(.7) rotateY(90deg);
+}
+to{
+opacity:1;
+transform:scale(1) rotateY(0deg);
+}
+}
+
+.card-image{
+height:230px;
+background-size:cover;
+background-position:center top;
+position:relative;
+}
+
+.overlay{
+position:absolute;
+inset:0;
+background:
+linear-gradient(to top,
+rgba(0,0,0,.95),
+rgba(0,0,0,.1));
+}
+
+.rating{
+position:absolute;
+top:12px;
+left:12px;
+font-size:2rem;
+font-weight:800;
+z-index:2;
+text-shadow:0 0 10px black;
+}
+
+.shirt{
+position:absolute;
+top:14px;
+right:14px;
+padding:6px 10px;
+border-radius:12px;
+background:#ffffff22;
+font-size:.8rem;
+font-weight:700;
+z-index:2;
+backdrop-filter:blur(8px);
+}
+
+.rarity{
+position:absolute;
+bottom:70px;
+left:14px;
+padding:6px 10px;
+border-radius:10px;
+font-size:.7rem;
+font-weight:700;
+z-index:2;
+}
+
+.legendary{
+background:gold;
+color:black;
+}
+
+.epic{
+background:#c000ff;
+}
+
+.rare{
+background:#0066ff;
+}
+
+.common{
+background:#555;
+}
+
+.name{
+position:absolute;
+bottom:18px;
+left:14px;
+font-weight:700;
+font-size:1rem;
+z-index:2;
+}
+
+.country{
+position:absolute;
+bottom:42px;
+left:14px;
+font-size:.75rem;
+color:#ffe600;
+z-index:2;
+}
+
+.card-bottom{
+padding:14px;
+background:#092116;
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+}
+
+.stat{
+background:rgba(255,255,255,.08);
+padding:10px;
+border-radius:14px;
+text-align:center;
+}
+
+.stat h3{
+font-size:1rem;
+}
+
+.stat span{
+font-size:.65rem;
+color:#caffdd;
+}
+
+/* COLLECTION */
+
+.collection{
+padding:0 20px 30px;
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.item{
+background:rgba(255,255,255,.06);
+padding:15px;
+border-radius:18px;
+border:1px solid rgba(255,255,255,.08);
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.item p{
+font-size:.8rem;
+color:#c8ffe0;
+}
+
+.ovr{
+background:#ffe600;
+padding:8px 12px;
+border-radius:12px;
+font-weight:800;
+color:black;
+}
+
+/* FOOTER */
+
+footer{
+padding:30px 20px;
+text-align:center;
+color:#c7ffdf;
+font-size:.85rem;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+
+<div class="logo">
+COPA <span>PACK</span><br>
+2026
+</div>
+
+<div class="top-info">
+
+<div class="box">
+🪙 <span id="coins">500</span>
+</div>
+
+<div class="box">
+🏆 <span id="score">0</span>
+</div>
+
+</div>
+
+</header>
+
+<section class="hero">
+
+<div class="badge">
+⚽ WORLD CUP EVENT
+</div>
+
+<h1>
+Monte sua coleção da Copa 2026
+</h1>
+
+<p>
+Abra pacotes com 4 jogadores reais,
+consiga cartas lendárias e aumente sua pontuação geral.
+</p>
+
+<div class="buttons">
+
+<button class="open-btn" onclick="openPack()">
+ABRIR PACOTE
+</button>
+
+<button class="reset-btn" onclick="resetGame()">
+🗑
+</button>
+
+</div>
+
+</section>
+
+<div class="section-title">
+🎁 Último Pacote
+</div>
+
+<div class="pack" id="pack"></div>
+
+<div class="section-title">
+🏆 Sua Coleção
+</div>
+
+<div class="collection" id="collection"></div>
+
+<footer>
+COPA PACK 2026 © Sem prêmios reais.
+</footer>
+
+<script>
+
+const players = [
+
+{
+name:"Neymar Jr",
+country:"Brasil",
+number:10,
+rating:97,
+pace:95,
+shoot:96,
+pass:95,
+rarity:"legendary",
+image:"https://images2.minutemediacdn.com/image/upload/c_crop,w_8256,h_4644,x_0,y_429/c_fill,w_1200,ar_1:1,f_auto,q_auto,g_auto/images/GettyImages/mmsport/90min_en_international_web/01gmdxj7g5z0sq9k2w2z.jpg"
+},
+
+{
+name:"Lionel Messi",
+country:"Argentina",
+number:10,
+rating:99,
+pace:90,
+shoot:99,
+pass:99,
+rarity:"legendary",
+image:"https://cdn.britannica.com/34/242834-050-3A0391C4/Lionel-Messi-Argentina-2022-FIFA-World-Cup.jpg"
+},
+
+{
+name:"Cristiano Ronaldo",
+country:"Portugal",
+number:7,
+rating:98,
+pace:91,
+shoot:99,
+pass:88,
+rarity:"legendary",
+image:"https://static.independent.co.uk/2022/11/24/17/newFile.jpg"
+},
+
+{
+name:"Kylian Mbappé",
+country:"França",
+number:10,
+rating:97,
+pace:99,
+shoot:95,
+pass:87,
+rarity:"epic",
+image:"https://assets.goal.com/images/v3/blt6ec7dbddd0f6f53c/GOAL%20-%20Blank%20WEB%20-%20Facebook%20(14).jpg"
+},
+
+{
+name:"Vinicius Jr",
+country:"Brasil",
+number:7,
+rating:95,
+pace:98,
+shoot:90,
+pass:86,
+rarity:"epic",
+image:"https://assets.goal.com/images/v3/blt8d2bb98c2f3d5b93/GettyImages-2158043017.jpg"
+},
+
+{
+name:"Erling Haaland",
+country:"Noruega",
+number:9,
+rating:96,
+pace:93,
+shoot:99,
+pass:80,
+rarity:"epic",
+image:"https://img.a.transfermarkt.technology/portrait/big/418560-1656179352.jpg"
+},
+
+{
+name:"Jude Bellingham",
+country:"Inglaterra",
+number:5,
+rating:93,
+pace:89,
+shoot:87,
+pass:91,
+rarity:"rare",
+image:"https://assets.goal.com/images/v3/blt9f1ef4fa2b0d8c11/GettyImages-2158041560.jpg"
+},
+
+{
+name:"Lamine Yamal",
+country:"Espanha",
+number:19,
+rating:92,
+pace:96,
+shoot:85,
+pass:88,
+rarity:"rare",
+image:"https://assets.goal.com/images/v3/bltca4b4a0b3cfbfc7f/GettyImages-2160095014.jpg"
+}
+
+];
+
+let collection =
+JSON.parse(localStorage.getItem("cupCollection")) || [];
+
+let coins =
+JSON.parse(localStorage.getItem("cupCoins")) || 500;
+
+let score =
+JSON.parse(localStorage.getItem("cupScore")) || 0;
+
+updateUI();
+renderCollection();
+
+function getRandomPlayer(){
+
+let rarityChance = Math.random();
+
+let pool = [];
+
+if(rarityChance < 0.08){
+
+pool = players.filter(p=>p.rarity==="legendary");
+
+}else if(rarityChance < 0.35){
+
+pool = players.filter(p=>p.rarity==="epic");
+
+}else if(rarityChance < 0.70){
+
+pool = players.filter(p=>p.rarity==="rare");
+
+}else{
+
+pool = players.filter(p=>p.rarity==="common");
+
+if(pool.length===0){
+pool = players;
+}
+
+}
+
+return pool[Math.floor(Math.random()*pool.length)];
+
+}
+
+function openPack(){
+
+if(coins < 100){
+alert("Moedas insuficientes!");
+return;
+}
+
+coins -= 100;
+
+const pack = document.getElementById("pack");
+
+pack.innerHTML = "";
+
+let packPlayers = [];
+
+while(packPlayers.length < 4){
+
+let player = getRandomPlayer();
+
+if(!packPlayers.find(p=>p.name === player.name)){
+
+packPlayers.push(player);
+
+collection.push(player);
+
+score += player.rating;
+
+}
+
+}
+
+packPlayers.forEach(player=>{
+
+pack.innerHTML += `
+
+<div class="card">
+
+<div class="card-image"
+style="background-image:url('${player.image}')">
+
+<div class="overlay"></div>
+
+<div class="rating">
+${player.rating}
+</div>
+
+<div class="shirt">
+👕 ${player.number}
+</div>
+
+<div class="rarity ${player.rarity}">
+${player.rarity.toUpperCase()}
+</div>
+
+<div class="country">
+${player.country}
+</div>
+
+<div class="name">
+${player.name}
+</div>
+
+</div>
+
+<div class="card-bottom">
+
+<div class="stats">
+
+<div class="stat">
+<h3>${player.pace}</h3>
+<span>PACE</span>
+</div>
+
+<div class="stat">
+<h3>${player.shoot}</h3>
+<span>CHUTE</span>
+</div>
+
+<div class="stat">
+<h3>${player.pass}</h3>
+<span>PASSE</span>
+</div>
+
+<div class="stat">
+<h3>${player.rating}</h3>
+<span>OVR</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+localStorage.setItem(
+"cupCollection",
+JSON.stringify(collection)
+);
+
+localStorage.setItem(
+"cupCoins",
+JSON.stringify(coins)
+);
+
+localStorage.setItem(
+"cupScore",
+JSON.stringify(score)
+);
+
+updateUI();
+renderCollection();
+
+}
+
+function renderCollection(){
+
+const div =
+document.getElementById("collection");
+
+div.innerHTML = "";
+
+collection.forEach(player=>{
+
+div.innerHTML += `
+
+<div class="item">
+
+<div>
+
+<h3>
+${player.name}
+</h3>
+
+<p>
+${player.country} • Camisa ${player.number}
+</p>
+
+</div>
+
+<div class="ovr">
+${player.rating}
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+function updateUI(){
+
+document.getElementById("coins").innerText = coins;
+document.getElementById("score").innerText = score;
+
+}
+
+function resetGame(){
+
+localStorage.clear();
+
+collection = [];
+coins = 500;
+score = 0;
+
+document.getElementById("pack").innerHTML = "";
+
+updateUI();
+renderCollection();
+
+}
+
+</script>
+
+</body>
+</html>

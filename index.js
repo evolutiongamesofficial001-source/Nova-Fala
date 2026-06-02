@@ -317,6 +317,7 @@ fotoInput.addEventListener("change", () => {
     if (file) {
         uploadVisual.innerText = "✅ Foto selecionada";
         uploadVisual.classList.add("selected");
+        document.getElementById("spoilerLabel").style.display = "flex";
 
         const reader = new FileReader();
         reader.onload = e => {
@@ -328,6 +329,8 @@ fotoInput.addEventListener("change", () => {
         uploadVisual.innerText = "📷 Escolher foto";
         uploadVisual.classList.remove("selected");
         previewImg.style.display = "none";
+        document.getElementById("spoilerLabel").style.display = "none";
+        document.getElementById("spoilerCheck").checked = false;
     }
 });
 
@@ -382,12 +385,14 @@ function postar() {
     let id = db.ref("posts").push().key;
 
     function salvarPost() {
+        let isSpoiler = document.getElementById("spoilerCheck") && document.getElementById("spoilerCheck").checked;
         let post = {
             user: user,
             text: texto,
             likes: 0,
             time: Date.now(),
             photoBase64: fotoBase64 || null,
+            spoiler: (fotoBase64 && isSpoiler) ? true : null,
             poll: pollData || null
         };
 
@@ -414,8 +419,14 @@ function postar() {
         uploadVisual.innerText = "📷 Escolher foto";
         uploadVisual.classList.remove("selected");
         previewImg.style.display = "none";
+        document.getElementById("spoilerLabel").style.display = "none";
+        document.getElementById("spoilerCheck").checked = false;
         previewImg.src = "";
 
+        let spoilerEl = document.getElementById("spoilerCheck");
+        if (spoilerEl) spoilerEl.checked = false;
+        let spoilerLbl = document.getElementById("spoilerLabel");
+        if (spoilerLbl) spoilerLbl.style.display = "none";
         resetarPoll();
         fecharPost();
         carregarFeed();
@@ -674,6 +685,48 @@ function carregarComentarios(id, div, donoPost) {
 
 let feed = document.getElementById("feed");
 
+function renderSpoilerImg(container, src) {
+    // Wrapper relativo para posicionar o overlay
+    let wrapper = document.createElement("div");
+    wrapper.style.cssText = "position:relative;display:inline-block;width:100%;";
+
+    let img = document.createElement("img");
+    img.src = src;
+    img.style.cssText = "width:100%;border-radius:10px;display:block;filter:blur(18px) brightness(0.55);transition:filter 0.4s ease;";
+
+    // Overlay com botão
+    let overlay = document.createElement("div");
+    overlay.style.cssText = "position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border-radius:10px;cursor:pointer;";
+
+    let icon = document.createElement("div");
+    icon.style.cssText = "font-size:32px;filter:drop-shadow(0 2px 6px #000a);";
+    icon.innerText = "🙈";
+
+    let btn = document.createElement("button");
+    btn.innerText = "⚠️ Spoiler";
+    btn.style.cssText = "background:rgba(245,158,11,0.18);border:1.5px solid #f59e0b;color:#f59e0b;font-size:13px;font-weight:700;padding:8px 22px;border-radius:20px;cursor:pointer;letter-spacing:0.5px;backdrop-filter:blur(4px);transition:background 0.2s;margin:0;";
+    btn.onmouseenter = () => btn.style.background = "rgba(245,158,11,0.32)";
+    btn.onmouseleave = () => btn.style.background = "rgba(245,158,11,0.18)";
+
+    let revealed = false;
+    function revelar(e) {
+        e.stopPropagation();
+        if (revealed) { abrirImagem(src); return; }
+        revealed = true;
+        img.style.filter = "none";
+        overlay.style.display = "none";
+    }
+
+    overlay.onclick = revelar;
+    btn.onclick = revelar;
+
+    overlay.appendChild(icon);
+    overlay.appendChild(btn);
+    wrapper.appendChild(img);
+    wrapper.appendChild(overlay);
+    container.appendChild(wrapper);
+}
+
 function renderPost(id, p, fotosMap) {
     // Não renderizar se já existir
     if (document.getElementById("post-" + id)) return;
@@ -752,10 +805,15 @@ function renderPost(id, p, fotosMap) {
 
         // Render imagem
         if (p.photoBase64) {
-            let img = document.createElement("img");
-            img.src = p.photoBase64;
-            img.onclick = () => abrirImagem(p.photoBase64);
-            document.getElementById("img-" + id).appendChild(img);
+            let container = document.getElementById("img-" + id);
+            if (p.spoiler) {
+                renderSpoilerImg(container, p.photoBase64);
+            } else {
+                let img = document.createElement("img");
+                img.src = p.photoBase64;
+                img.onclick = () => abrirImagem(p.photoBase64);
+                container.appendChild(img);
+            }
         }
 
         carregarComentarios(id, document.getElementById("c" + id), p.user);
@@ -802,8 +860,6 @@ function carregarFeed() {
         if (btn) btn.innerHTML = `<span class="emoji">❤️</span> ${p.likes || 0}`;
     });
 }
-
-/* ================= AÇÕES ================= */
 
 function deletarPost(id) {
     customConfirm("Deseja deletar este post?").then(ok => {
@@ -920,8 +976,6 @@ function soltarCoracoes(botao) {
     }
 }
 
-/* ================= ENQUETE — RENDER ================= */
-
 function renderEnquete(postId, poll) {
     let container = document.getElementById("poll-" + postId);
     if (!container) return;
@@ -980,8 +1034,6 @@ function renderEnquete(postId, poll) {
         setTimeout(() => limparEnqueteExpirada(postId), restante);
     }
 }
-
-/* ================= ENQUETE — LIMPAR QUANDO EXPIRAR ================= */
 
 function limparEnqueteExpirada(postId) {
     db.ref("posts/" + postId + "/poll/expiraEm").once("value").then(snap => {
@@ -1213,8 +1265,7 @@ function renderNotificacoes() {
                     <div class="notif-tempo">${tempoRelativo(n.time)}</div>
                 </div>
             `;
-
-            // ====== AUTO-DISMISS: ao visualizar, marcar como lida ======
+            
             if (!n.lida) {
                 let observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
