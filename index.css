@@ -1096,7 +1096,6 @@ body.claro .reply {
 }
 
 /* ================= COMENTÁRIO — NOME DESTACADO ================= */
-
 .comment-user{
     font-weight:700;
     color:#00d4ff;
@@ -1154,8 +1153,6 @@ body.claro .reply {
     to{transform:rotate(360deg);}
 }
 
-/* ================= BTN VER TODOS COMENTÁRIOS ================= */
-
 .btn-ver-todos-comentarios{
     display:inline-flex;
     align-items:center;
@@ -1177,8 +1174,6 @@ body.claro .reply {
     border-color:#1da1f2;
     background:rgba(29,161,242,0.05);
 }
-
-/* ================= NOTIFICAÇÕES ================= */
 
 .notif-item{
     display:flex;
@@ -1262,7 +1257,6 @@ body.claro .reply {
     opacity:0.8;
 }
 
-/* ================= BLOQUEADO ================= */
 .bloqueado-aviso {
     padding: 8px 12px;
     background: #1a0e0e;
@@ -1352,4 +1346,523 @@ body.claro .reply {
 /* Ajuste do feed para não ficar atrás da tab bar */
 #feed {
     padding-bottom: 80px;
+}
+
+#feedTabs {
+    display: flex;
+    gap: 0;
+    background: #0f0f0f;
+    border-bottom: 1px solid #1f1f1f;
+    padding: 0 16px;
+    position: sticky;
+    top: 57px;
+    z-index: 9;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+#feedTabs::-webkit-scrollbar { display: none; }
+
+.feed-tab {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #555;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 13px 20px 10px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    flex-shrink: 0;
+}
+
+.feed-tab:hover {
+    color: #aaa;
+}
+
+.feed-tab.active {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+}
+
+.tab-icon-svg {
+    color: #555;
+    transition: color 0.2s, transform 0.2s ease;
+}
+
+.tab-item.active .tab-icon-svg {
+    color: var(--blue);
+    transform: scale(1.12);
+}
+
+/* ================= MONKEY SPRITE (SPOILER) ================= */
+
+.monkey-sprite {
+    width: 36px;
+    height: 36px;
+    display: inline-block;
+    filter: drop-shadow(0 2px 6px #000a);
+}
+
+/* ================= HASHTAG INFO BUTTON ================= */
+
+#hashtagInfoBtn:hover {
+    color: #aaa !important;
+    background: #1a1a1a;
+}
+
+/* ================= LOCK SCREEN ================= */
+
+#lockScreen {
+    display: flex;
+}
+
+#lockScreen.hidden {
+    display: none !important;
+}
+
+/* ================= CONFIG SENHA ================= */
+
+#senhaInput:focus, #senhaConfirmInput:focus, #lockInput:focus {
+    border-color: #1da1f2 !important;
+    box-shadow: 0 0 8px rgba(29,161,242,0.25) !important;
+}
+
+/* ================= AJUSTES SOCIAL FEED ================= */
+
+#feed {
+    padding-top: 4px;
+}
+
+.post {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    border-top: none;
+    margin-bottom: 0;
+    padding: 16px;
+    transition: background 0.15s;
+}
+
+.post:hover {
+    background: #141414;
+    border-color: var(--border);
+}
+
+.post:first-child {
+    border-top: 1px solid var(--border);
+}
+
+/* Linha divisória entre posts estilo Twitter/X */
+.post + .post {
+    border-top: none;
+}
+
+#uploadVisual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.claro #feedTabs {
+    background: #f0f0f0;
+    border-bottom-color: #ddd;
+}
+
+body.claro .feed-tab {
+    color: #aaa;
+}
+
+body.claro .feed-tab.active {
+    color: var(--blue);
+}
+
+body.claro .post:hover {
+    background: #fafafa;
+}
+
+/* ================= LOCK SHAKE ANIMATION ================= */
+
+@keyframes lockShake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-8px); }
+    40%       { transform: translateX(8px); }
+    60%       { transform: translateX(-5px); }
+    80%       { transform: translateX(5px); }
+}
+/* =====================================================================
+   ================  NOVA-FALA — CAMADA DE REDESIGN (v2)  ================
+   Refinamento visual global. Mantém 100% dos seletores/IDs originais —
+   apenas eleva tipografia, cor, profundidade e micro-interações.
+   ===================================================================== */
+
+:root{
+    --bg:#08090b;
+    --bg-elevated:#0e0f12;
+    --card:#111318;
+    --card-2:#15171d;
+    --border:#1e2128;
+    --border-soft:#181a20;
+    --blue:#1d9bf0;
+    --blue-2:#7c3aed;
+    --accent-gradient: linear-gradient(135deg,#1d9bf0,#7c3aed);
+    --text:#f1f2f4;
+    --sub:#8b8f98;
+    --sub-2:#5c6068;
+    --danger:#ff5c72;
+    --success:#2ee6a6;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow-soft: 0 4px 20px rgba(0,0,0,.35);
+    --shadow-pop: 0 12px 40px rgba(0,0,0,.55);
+}
+
+*{ scrollbar-width: thin; scrollbar-color: #2a2d34 transparent; }
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:#2a2d34; border-radius:10px; }
+::-webkit-scrollbar-thumb:hover{ background:#3a3e47; }
+
+html{ -webkit-tap-highlight-color: transparent; }
+
+body{
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(29,155,240,0.06), transparent 60%),
+        var(--bg);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.1px;
+}
+
+::selection{ background: rgba(29,155,240,0.35); color:#fff; }
+
+/* ---------- header ---------- */
+header{
+    background: rgba(10,11,14,0.72);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-bottom:1px solid var(--border-soft);
+    padding:13px 16px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.nova-fala-logo{ font-size:19px; letter-spacing:-0.5px; }
+
+header svg{ transition: transform .2s ease, color .2s ease; }
+header > div > div:hover svg{ color:#c8c8c8 !important; transform: translateY(-1px); }
+
+#notifBadge{
+    box-shadow: 0 0 0 2px var(--bg-elevated);
+    background: linear-gradient(135deg,#ff5c72,#ff2d55) !important;
+}
+
+#feedTabs{
+    background: rgba(10,11,14,0.72);
+    backdrop-filter: blur(14px);
+    border-bottom:1px solid var(--border-soft);
+}
+
+.feed-tab{
+    font-weight:700;
+    border-bottom:3px solid transparent;
+    border-radius: 3px 3px 0 0;
+}
+
+.feed-tab.active{
+    color:#fff;
+    border-image: var(--accent-gradient) 1;
+}
+
+/* ---------- posts / feed ---------- */
+#feed{ padding-top:6px; max-width:640px; margin:0 auto; }
+
+.post{
+    background: var(--card);
+    border-color: var(--border-soft) !important;
+    padding:16px 16px 14px;
+}
+
+.post:hover{
+    background: var(--card-2);
+}
+
+.post img:not(.feed-avatar){ border-radius:14px; }
+
+.feed-avatar, .feed-avatar-placeholder{
+    width:44px; height:44px; min-width:44px;
+    border:2px solid var(--border-soft);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.feed-avatar-placeholder, .busca-avatar-placeholder, .avatar{
+    background: var(--accent-gradient);
+}
+
+.user{ color:#fff; font-size:15px; font-weight:700; letter-spacing:-0.2px; }
+.text{ color:#d7d8db; font-size:15.5px; }
+.post .time{ color: var(--sub-2); }
+
+.actions button{
+    background: var(--card-2);
+    border:1px solid var(--border-soft);
+    color: var(--sub);
+    font-weight:600;
+    padding:7px 13px;
+}
+
+.actions button:hover{ background:#1a1d24; transform: translateY(-1px) scale(1.03); }
+.actions button:first-child{ color: var(--danger); border-color:rgba(255,92,114,0.18); background: rgba(255,92,114,0.06); }
+
+/* ---------- floating "+" ---------- */
+#plus{
+    background: var(--accent-gradient);
+    box-shadow: 0 10px 30px rgba(124,58,237,0.35), 0 6px 16px rgba(29,155,240,0.25);
+}
+
+#plus:hover{ transform: scale(1.08) rotate(90deg); }
+#plus:active{ transform: scale(0.94) rotate(90deg); }
+
+/* ---------- overlays / popups ---------- */
+.overlay, #notifOverlay, #buscaOverlay, #menuOverlay, #configOverlay{
+    background: rgba(4,5,7,0.6);
+    backdrop-filter: blur(3px);
+}
+
+#postPopup, #configBox{
+    background: var(--card);
+    border-top:1px solid var(--border);
+    box-shadow: var(--shadow-pop);
+    border-radius: 22px 22px 0 0;
+    transition: bottom .4s cubic-bezier(.19,1,.22,1);
+}
+
+#postPopup textarea{ background: var(--bg-elevated); border-color:var(--border-soft); border-radius:14px; font-size:16px; }
+
+.popupBtns button{ border-radius:12px; font-weight:700; padding:12px; }
+.postBtn{ background: var(--accent-gradient); box-shadow: 0 6px 18px rgba(29,155,240,0.3); }
+.postBtn:hover{ opacity:1; filter:brightness(1.08); }
+.cancelBtn{ background: var(--card-2); }
+
+.confirmBox{
+    background: var(--card);
+    border-color: var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-pop);
+}
+
+.confirmBtns .okBtn{ background: var(--accent-gradient); font-weight:700; }
+.confirmBtns button{ border-radius:10px; font-weight:600; }
+
+/* ---------- sidebar menu ---------- */
+#menuLateral{
+    background: var(--bg-elevated);
+    border-right-color: var(--border-soft);
+    box-shadow: var(--shadow-pop);
+    width:270px;
+}
+
+#menuLateral button{
+    background: transparent;
+    font-weight:600;
+    border:1px solid transparent;
+}
+
+#menuLateral button:hover{
+    background: var(--card-2);
+    border-color: var(--border-soft);
+}
+
+.menu-logout-btn{ border-radius:12px !important; }
+
+/* ---------- notif / busca panels ---------- */
+#notifPanel, #buscaBox{
+    background: var(--bg-elevated);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-pop);
+    border-radius: 18px;
+}
+
+.busca-resultado:hover, .notif-item:hover{ background: var(--card-2); }
+.notif-item.nao-lida{ background: rgba(29,155,240,0.07); border-left-color: var(--blue); }
+
+#buscaInput{ border-radius:12px !important; }
+
+/* ---------- config ---------- */
+.config-section-title{ color: var(--sub-2); }
+
+.contaOpcoes button, .btn-verificado-menu, .btn-suporte-menu{
+    background: transparent !important;
+    border-color: var(--border-soft) !important;
+    border-radius:12px !important;
+}
+
+.contaOpcoes button:hover, .btn-verificado-menu:hover, .btn-suporte-menu:hover{
+    background: var(--card-2) !important;
+    border-color: var(--blue) !important;
+}
+
+.temaOpcoes button{ border-radius:12px; }
+.config-input{ background: var(--bg-elevated); border-radius:12px; }
+
+/* ---------- tab bar ---------- */
+#tabBar{
+    background: rgba(10,11,14,0.85);
+    backdrop-filter: blur(16px) saturate(160%);
+    border-top-color: var(--border-soft);
+}
+
+.tab-item.active{ background: rgba(29,155,240,0.08); }
+
+/* ---------- lock screen ---------- */
+#lockScreen{ background: var(--bg); }
+#lockInput{ background: var(--bg-elevated) !important; }
+
+/* ---------- verified badge ---------- */
+.verificado svg{ filter: drop-shadow(0 0 4px rgba(29,155,240,0.5)); }
+
+/* ---------- poll ---------- */
+.pollBtn{ border-radius:12px; background: var(--card-2); border-color: var(--border-soft); }
+.pollBtn.voted{ background: rgba(29,155,240,0.1); }
+
+/* ---------- like toast ---------- */
+.like-toast{ background: var(--bg-elevated); border-color: var(--border-soft); box-shadow: var(--shadow-soft); }
+
+/* ---------- accessibility: focus ring ---------- */
+button:focus-visible, input:focus-visible, textarea:focus-visible, [onclick]:focus-visible{
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+}
+
+/* ================= TEMA CLARO — refinado ================= */
+body.claro{
+    --bg:#f7f8fa;
+    --bg-elevated:#ffffff;
+    --card:#ffffff;
+    --card-2:#f2f3f5;
+    --border:#e6e7eb;
+    --border-soft:#ececef;
+    --text:#14161a;
+    --sub:#6b6f76;
+    --sub-2:#9a9da3;
+}
+
+body.claro header, body.claro #feedTabs, body.claro #tabBar{
+    background: rgba(255,255,255,0.78);
+}
+
+body.claro .post{ background: var(--card); }
+body.claro .post:hover{ background:#fafbfc; }
+body.claro .user{ color:#14161a; }
+body.claro .text{ color:#2c2f34; }
+body.claro .actions button{ background:#f2f3f5; color:#5b5f66; border-color:#e6e7eb; }
+body.claro .actions button:first-child{ color:var(--danger); background:rgba(255,92,114,0.06); }
+body.claro #menuLateral, body.claro #notifPanel, body.claro #buscaBox, body.claro #postPopup, body.claro #configBox, body.claro .confirmBox{
+    background:#ffffff; border-color:#e6e7eb; color:#14161a;
+}
+body.claro #postPopup textarea, body.claro .config-input, body.claro .confirmBox textarea{
+    background:#f7f8fa; color:#14161a; border-color:#e6e7eb;
+}
+body.claro .comment{ background:#f2f3f5; color:#2c2f34; }
+body.claro .reply{ background:#eceef1; color:#4b4f56; }
+body.claro .contaOpcoes button, body.claro .btn-verificado-menu, body.claro .btn-suporte-menu{
+    color:#2c2f34 !important; border-color:#e6e7eb !important;
+}
+body.claro .tab-label{ color:#9a9da3; }
+body.claro ::-webkit-scrollbar-thumb{ background:#d8dade; }
+
+/* ---------- small screens ---------- */
+@media (max-width:380px){
+    .nova-fala-logo{ font-size:17px; }
+    #plus{ width:52px; height:52px; bottom:76px; right:16px; }
+}
+
+#feed{
+    padding:14px 12px 120px;
+    max-width:640px;
+    margin:0 auto;
+}
+
+.post{
+    border-radius:18px;
+    padding:16px 16px 12px;
+    margin-bottom:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,0.02) inset, 0 6px 18px rgba(0,0,0,0.18);
+    transition:border-color .25s, box-shadow .25s, transform .2s;
+}
+
+.post:hover{
+    box-shadow:0 1px 0 rgba(255,255,255,0.02) inset, 0 10px 26px rgba(0,0,0,0.28);
+    transform:translateY(-1px);
+}
+
+.post-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:2px;
+}
+
+.feed-avatar, .feed-avatar-placeholder{
+    width:42px;height:42px;min-width:42px;
+    border-radius:50%;
+    cursor:pointer;
+    transition:transform .2s;
+}
+
+.feed-avatar:hover, .feed-avatar-placeholder:hover{
+    transform:scale(1.05);
+}
+
+.user{
+    font-size:14.5px;
+    cursor:pointer;
+    transition:opacity .2s;
+}
+
+.user:hover{ opacity:0.8; }
+
+.text{
+    margin-top:8px;
+    font-size:15.5px;
+    line-height:1.5;
+    letter-spacing:0.1px;
+}
+
+.post img:not(.feed-avatar){
+    margin-top:12px;
+    border-radius:16px;
+    border:1px solid var(--border-soft, #181a20);
+}
+
+.actions{
+    margin-top:14px;
+    padding-top:10px;
+    border-top:1px solid var(--border-soft, #181a20);
+    gap:8px;
+}
+
+.actions button{
+    border-radius:22px;
+    padding:7px 14px;
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:0.2px;
+}
+
+.actions button:hover{
+    transform:translateY(-1px);
+}
+
+#feedTabs{
+    backdrop-filter:blur(10px) saturate(150%);
+    -webkit-backdrop-filter:blur(10px) saturate(150%);
+    background:rgba(15,15,15,0.82);
+}
+
+.feed-tab{
+    letter-spacing:0.3px;
 }

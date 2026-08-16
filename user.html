@@ -7,6 +7,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Bebas+Neue&family=Dancing+Script:wght@700&family=Edu+AU+VIC+WA+NT+Pre:wght@700&family=Exo+2:wght@700&family=Lobster&family=Monoton&family=Orbitron:wght@700&family=Pacifico&family=Permanent+Marker&family=Press+Start+2P&family=Rajdhani:wght@700&family=Righteous&family=Russo+One&family=Satisfy&family=Sigmar+One&family=Special+Elite&family=Titan+One&family=Ubuntu:wght@700&family=VT323&family=Yellowtail&family=Zilla+Slab:wght@700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -15,21 +16,44 @@
 <style>
 body{
     margin:0;
-    font-family:system-ui;
-    background:#0b0b0b;
-    color:#e8e8e8;
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(29,155,240,0.06), transparent 60%),
+        #08090b;
+    color:#f1f2f4;
     padding-bottom: 70px;
+    -webkit-font-smoothing:antialiased;
 }
+*{ scrollbar-width:thin; scrollbar-color:#2a2d34 transparent; }
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-thumb{ background:#2a2d34; border-radius:10px; }
+::selection{ background:rgba(29,155,240,0.35); color:#fff; }
 
 header{
-    padding:14px;
-    border-bottom:1px solid #222;
-    font-size:18px;
-    font-weight:bold;
+    padding:13px 16px;
+    background: rgba(10,11,14,0.72);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-bottom:1px solid #1e2128;
+    font-size:17px;
+    font-weight:700;
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:12px;
+    position:sticky;
+    top:0;
+    z-index:20;
 }
+header span[onclick]{
+    width:32px;height:32px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:10px;
+    background:#15171d;
+    border:1px solid #1e2128;
+    transition:.2s;
+    font-size:14px;
+}
+header span[onclick]:hover{ background:#1a1d24; border-color:#1d9bf0; }
 
 #perfil{
     padding:20px;
@@ -37,18 +61,23 @@ header{
 }
 
 .avatar{
-    width:90px;
-    height:90px;
+    width:96px;
+    height:96px;
     border-radius:50%;
-    background:#1da1f2;
+    background:linear-gradient(135deg,#1d9bf0,#7c3aed);
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:30px;
+    font-size:32px;
+    font-weight:700;
     margin:auto;
     overflow:hidden;
     cursor:pointer;
+    border:3px solid #15171d;
+    box-shadow:0 0 0 1px #1e2128, 0 8px 24px rgba(0,0,0,.4);
+    transition:transform .2s;
 }
+.avatar:hover{ transform:scale(1.03); }
 
 .avatar img{
     width:100%;
@@ -67,8 +96,9 @@ header{
 }
 
 .nome{
-    font-size:20px;
-    font-weight:bold;
+    font-size:21px;
+    font-weight:800;
+    letter-spacing:-0.3px;
 }
 
 /* Badge verificado SVG */
@@ -95,8 +125,8 @@ header{
     cursor:pointer;
     padding:10px 18px 10px;
     border-radius:16px;
-    border:1px solid #252525;
-    background:#141414;
+    border:1px solid #1e2128;
+    background:#111318;
     transition:background 0.18s, border-color 0.18s, transform 0.13s;
     -webkit-tap-highlight-color:transparent;
     min-width:96px;
@@ -104,26 +134,26 @@ header{
 }
 
 .stat-item:hover{
-    border-color:#1da1f2;
-    background:#181818;
+    border-color:#1d9bf0;
+    background:#15171d;
 }
 
 .stat-item:active{
     transform:scale(0.91);
-    background:rgba(29,161,242,0.1);
-    border-color:#1da1f2;
+    background:rgba(29,155,240,0.1);
+    border-color:#1d9bf0;
 }
 
 .stat-num{
     font-size:19px;
     font-weight:700;
-    color:#e8e8e8;
+    color:#f1f2f4;
     line-height:1;
 }
 
 .stat-label{
     font-size:11px;
-    color:#777;
+    color:#8b8f98;
     letter-spacing:0.3px;
 }
 
@@ -133,7 +163,7 @@ header{
     bottom:6px;
     right:9px;
     font-size:13px;
-    color:#1da1f2;
+    color:#1d9bf0;
     opacity:0.65;
     line-height:1;
     transition:opacity 0.2s;
@@ -142,46 +172,53 @@ header{
 .stat-item:hover::after{ opacity:1; }
 
 .stat-dot{
-    color:#2a2a2a;
+    color:#2a2d34;
     font-size:22px;
 }
 
 button{
     margin-top:14px;
-    padding:10px 16px;
+    padding:10px 18px;
     border:none;
     border-radius:20px;
-    background:#1da1f2;
+    background:linear-gradient(135deg,#1d9bf0,#7c3aed);
     color:white;
     cursor:pointer;
-    font-weight:bold;
+    font-weight:700;
+    box-shadow:0 6px 18px rgba(29,155,240,0.3);
+    transition:transform .15s, opacity .2s;
 }
+button:hover{ opacity:.92; }
+button:active{ transform:scale(0.96); }
 
 button.seguindo{
     background:#2ee6a6;
     color:#000;
+    box-shadow:none;
 }
 
 #posts{ padding:10px; }
 
 .post{
-    background:#121212;
-    border:1px solid #1f1f1f;
-    border-radius:12px;
-    padding:10px;
-    margin-bottom:10px;
+    background:#111318;
+    border:1px solid #1e2128;
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:12px;
     word-break:break-word;
     overflow-wrap:anywhere;
     white-space:pre-wrap;
+    transition:background .15s;
 }
+.post:hover{ background:#15171d; }
 
-.post a{ color:#4da6ff; text-decoration:none; }
+.post a{ color:#1d9bf0; text-decoration:none; }
 .post a:hover{ text-decoration:underline; }
 
 .post img{
     width:100%;
-    border-radius:10px;
-    margin-top:8px;
+    border-radius:12px;
+    margin-top:10px;
 }
 
 /* ===== MODAL BALÃO ===== */
@@ -202,8 +239,8 @@ button.seguindo{
     bottom:-100%;
     left:0;
     right:0;
-    background:linear-gradient(180deg,#181818 0%,#111 100%);
-    border-top:1px solid #2a2a2a;
+    background:#111318;
+    border-top:1px solid #1e2128;
     border-radius:24px 24px 0 0;
     z-index:501;
     transition:bottom 0.38s cubic-bezier(0.34,1.45,0.64,1);
@@ -261,7 +298,7 @@ button.seguindo{
     width:48px;
     height:48px;
     border-radius:50%;
-    background:linear-gradient(135deg,#1da1f2,#0d8ddb);
+    background:linear-gradient(135deg,#1d9bf0,#7c3aed);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -367,8 +404,8 @@ button.seguindo{
     position:fixed;
     bottom:-100%;
     left:0;right:0;
-    background:linear-gradient(180deg,#181818 0%,#111 100%);
-    border-top:1px solid #2a2a2a;
+    background:#111318;
+    border-top:1px solid #1e2128;
     border-radius:24px 24px 0 0;
     z-index:601;
     transition:bottom 0.38s cubic-bezier(0.34,1.45,0.64,1);
@@ -453,7 +490,7 @@ button.seguindo{
     cursor:pointer;transition:all 0.2s;
     margin-top:0;
 }
-.perso-salvar{ background:#1da1f2;color:white; }
+.perso-salvar{ background:#1d9bf0;color:white; }
 .perso-salvar:hover{ opacity:0.85; }
 .perso-cancelar{ background:#1c1c1c;color:#bbb; }
 .perso-cancelar:hover{ background:#2a2a2a; }
@@ -526,7 +563,7 @@ button.seguindo{
 .font-card:active{ transform:scale(0.94); }
 .font-card:hover{ border-color:#333; background:#1a1a1a; }
 .font-card.selecionada{
-    border-color:#1da1f2;
+    border-color:#1d9bf0;
     background:rgba(29,161,242,0.08);
 }
 .font-card.selecionada::after{
@@ -535,7 +572,7 @@ button.seguindo{
     top:5px;
     right:8px;
     font-size:11px;
-    color:#1da1f2;
+    color:#1d9bf0;
     font-weight:700;
 }
 .font-card-amostra{
@@ -569,8 +606,10 @@ button.seguindo{
     left: 0;
     right: 0;
     height: 62px;
-    background: #0f0f0f;
-    border-top: 1px solid #1f1f1f;
+    background: rgba(10,11,14,0.85);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border-top: 1px solid #1e2128;
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -597,10 +636,9 @@ button.seguindo{
     transform: scale(0.88);
 }
 
-.tab-icon {
-    font-size: 22px;
-    line-height: 1;
-    transition: transform 0.2s ease;
+.tab-icon-svg {
+    color: #555;
+    transition: color 0.2s, transform 0.2s ease;
 }
 
 .tab-label {
@@ -611,11 +649,16 @@ button.seguindo{
     transition: color 0.2s;
 }
 
-.tab-item.active .tab-label {
-    color: #1da1f2;
+.tab-item.active{
+    background: rgba(29,155,240,0.08);
 }
 
-.tab-item.active .tab-icon {
+.tab-item.active .tab-label {
+    color: #1d9bf0;
+}
+
+.tab-item.active .tab-icon-svg {
+    color: #1d9bf0;
     transform: scale(1.12);
 }
 
@@ -626,7 +669,7 @@ button.seguindo{
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: #1da1f2;
+    background: #1d9bf0;
     animation: tabDotIn 0.25s ease both;
 }
 
@@ -657,7 +700,7 @@ button.seguindo{
         <span class="nome" id="nome"></span>
         <span class="badge-verificado" id="badgePerfil" style="display:none;">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="12" fill="#1da1f2"/>
+                <circle cx="12" cy="12" r="12" fill="#1d9bf0"/>
                 <path d="M6.5 12.5L10 16L17.5 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </span>
@@ -665,7 +708,7 @@ button.seguindo{
 
     <div id="bioEl" style="margin-top:6px;font-size:14px;color:#aaa;max-width:300px;margin-left:auto;margin-right:auto;word-break:break-word;"></div>
     <div id="editBioBtn" style="display:none;margin-top:4px;">
-        <span onclick="editarBio()" style="font-size:12px;color:#1da1f2;cursor:pointer;">✏️ Editar bio</span>
+        <span onclick="editarBio()" style="font-size:12px;color:#1d9bf0;cursor:pointer;">✏️ Editar bio</span>
     </div>
 
     <div class="stats">
@@ -739,7 +782,7 @@ button.seguindo{
         <div class="perso-grupo">
             <div class="perso-label">Cor de fundo do botão Seguir</div>
             <div class="perso-row">
-                <input type="color" id="persoCorBtnSeguir" value="#1da1f2">
+                <input type="color" id="persoCorBtnSeguir" value="#1d9bf0">
                 <span style="font-size:12px;color:#666;">Fundo</span>
             </div>
             <div class="perso-swatches" id="swatchesBtnSeguir"></div>
@@ -792,19 +835,19 @@ button.seguindo{
 <!-- ================= TAB BAR ================= -->
 <nav id="tabBar">
     <div class="tab-item" id="tab-feed" onclick="window.location.href='index.html'">
-        <span class="tab-icon">🏠</span>
+        <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span class="tab-label">Feed</span>
     </div>
     <div class="tab-item" id="tab-chat" onclick="irParaChat()">
-        <span class="tab-icon">💬</span>
+        <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="tab-label">Chat</span>
     </div>
     <div class="tab-item" id="tab-veez" onclick="window.location.href='veez.html'">
-        <span class="tab-icon">🐇</span>
+        <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         <span class="tab-label">Rapidoz</span>
     </div>
     <div class="tab-item active" id="tab-perfil">
-        <span class="tab-icon">👤</span>
+        <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="tab-label">Perfil</span>
     </div>
 </nav>
@@ -834,7 +877,7 @@ function eVerificado(nome) {
 }
 
 const SVG_BADGE = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="12" fill="#1da1f2"/>
+    <circle cx="12" cy="12" r="12" fill="#1d9bf0"/>
     <path d="M6.5 12.5L10 16L17.5 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
@@ -989,7 +1032,7 @@ function atualizarBotao(){
             } else {
                 btnSeguir.innerText = "Seguir";
                 btnSeguir.classList.remove("seguindo");
-                btnSeguir.style.background = ap.corBtnSeguir || "#1da1f2";
+                btnSeguir.style.background = ap.corBtnSeguir || "#1d9bf0";
                 btnSeguir.style.color = ap.corBtnSeguirTexto || "#ffffff";
             }
         });
@@ -1106,8 +1149,6 @@ function irParaPerfil(username) {
     setTimeout(() => location.reload(), 390);
 }
 
-/* ================= POSTS ================= */
-
 function carregarPosts(){
     db.ref("posts")
     .orderByChild("user")
@@ -1165,7 +1206,7 @@ function editarPost(postKey, textoAtual) {
     let textarea = document.createElement("textarea");
     textarea.value = textoAtual;
     textarea.style.cssText = "width:100%;min-height:110px;background:#111;border:1px solid #2a2a2a;color:#e8e8e8;border-radius:12px;padding:12px;font-size:14px;font-family:system-ui;resize:vertical;outline:none;box-sizing:border-box;line-height:1.5;";
-    textarea.onfocus = () => textarea.style.borderColor = "#1da1f2";
+    textarea.onfocus = () => textarea.style.borderColor = "#1d9bf0";
     textarea.onblur  = () => textarea.style.borderColor = "#2a2a2a";
 
     let contador = document.createElement("div");
@@ -1183,7 +1224,7 @@ function editarPost(postKey, textoAtual) {
 
     let btnSalvar = document.createElement("button");
     btnSalvar.innerText = "Salvar";
-    btnSalvar.style.cssText = "flex:1;padding:11px;border-radius:10px;border:none;background:#1da1f2;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:0;";
+    btnSalvar.style.cssText = "flex:1;padding:11px;border-radius:10px;border:none;background:#1d9bf0;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:0;";
     btnSalvar.onclick = () => {
         let novoTexto = textarea.value.trim();
         if(!novoTexto){ alert("O post não pode ficar vazio."); return; }
@@ -1204,10 +1245,7 @@ function editarPost(postKey, textoAtual) {
     document.body.appendChild(overlay);
     setTimeout(() => textarea.focus(), 100);
 }
-
-/* ================= PERSONALIZAR PERFIL ================= */
-
-// Lista de fontes com label, família CSS e categoria
+    
 const FONTES = [
     { label:"Padrão",         css:"system-ui",                    cat:"" },
     { label:"Arial",          css:"'Arial', sans-serif",          cat:"sans" },
@@ -1275,10 +1313,10 @@ function selecionarFonte(css) {
 // Paletas de cores rápidas
 const PALETAS = {
     fundo: ["#0b0b0b","#111827","#1a0a2e","#0a1a0a","#1a0a0a","#0a0a1a","#1a1000","#ffffff","#f0f0f0","#1e1e2e"],
-    nome:  ["#e8e8e8","#ffffff","#1da1f2","#2ee6a6","#f59e0b","#ef4444","#a855f7","#ec4899","#f97316","#fbbf24"],
-    bio:   ["#aaaaaa","#888888","#666666","#ffffff","#1da1f2","#2ee6a6","#f59e0b","#ef4444","#a855f7","#ec4899"],
-    btnSeguir:   ["#1da1f2","#a855f7","#ef4444","#f59e0b","#2ee6a6","#ec4899","#000000","#ffffff","#1e293b","#f97316"],
-    btnSeguindo: ["#2ee6a6","#1da1f2","#a855f7","#f59e0b","#ef4444","#ec4899","#e8e8e8","#ffffff","#fbbf24","#4ade80"]
+    nome:  ["#e8e8e8","#ffffff","#1d9bf0","#2ee6a6","#f59e0b","#ef4444","#a855f7","#ec4899","#f97316","#fbbf24"],
+    bio:   ["#aaaaaa","#888888","#666666","#ffffff","#1d9bf0","#2ee6a6","#f59e0b","#ef4444","#a855f7","#ec4899"],
+    btnSeguir:   ["#1d9bf0","#a855f7","#ef4444","#f59e0b","#2ee6a6","#ec4899","#000000","#ffffff","#1e293b","#f97316"],
+    btnSeguindo: ["#2ee6a6","#1d9bf0","#a855f7","#f59e0b","#ef4444","#ec4899","#e8e8e8","#ffffff","#fbbf24","#4ade80"]
 };
 
 function criarSwatches(containerId, colorInputId, paleta) {
@@ -1325,7 +1363,7 @@ function aplicarPersonalizacao(dados) {
         }
     }
 }
-
+    
 function carregarPersonalizacao() {
     aparenciasDB.ref("aparencias/" + perfil).on("value", snap => {
         if (snap.exists()) {
@@ -1340,7 +1378,7 @@ function abrirPersonalizar() {
         document.getElementById("persoCorFundo").value = salvo.corFundo || "#0b0b0b";
         document.getElementById("persoCorBio").value = salvo.corBio || "#aaaaaa";
         document.getElementById("persoCorNome").value = salvo.corNome || "#e8e8e8";
-        document.getElementById("persoCorBtnSeguir").value = salvo.corBtnSeguir || "#1da1f2";
+        document.getElementById("persoCorBtnSeguir").value = salvo.corBtnSeguir || "#1d9bf0";
         document.getElementById("persoCorBtnSeguirTexto").value = salvo.corBtnSeguirTexto || "#ffffff";
         document.getElementById("persoCorBtnSeguindo").value = salvo.corBtnSeguindo || "#2ee6a6";
         document.getElementById("persoCorBtnSeguindoTexto").value = salvo.corBtnSeguindoTexto || "#000000";

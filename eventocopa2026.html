@@ -3,748 +3,717 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>COPA PACK 2026</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
+<title>Copa do Mundo 2026 ⚽</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
+:root {
+  --bg: #06090f;
+  --surface: #0d1220;
+  --surface2: #111826;
+  --border: #1c2540;
+  --text: #e2e8f4;
+  --muted: #4a5878;
+  --muted2: #7a8baa;
+  --gold: #f0c040;
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --brazil: #009c3b;
+  --brazil2: #FFDF00;
 }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-body{
-background:
-linear-gradient(180deg,#014421 0%,#03160f 100%);
-color:white;
-overflow-x:hidden;
-min-height:100vh;
-}
-
-/* FUNDO */
-
-body::before{
-content:"";
-position:fixed;
-inset:0;
-background:
-radial-gradient(circle at top,#00ff9955 0%,transparent 30%),
-radial-gradient(circle at bottom right,#ffe60033 0%,transparent 35%);
-z-index:-1;
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
 }
 
 /* HEADER */
-
-header{
-padding:20px;
-display:flex;
-justify-content:space-between;
-align-items:center;
+header {
+  padding: 0 20px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(6,9,15,0.97);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
-
-.logo{
-font-size:1.5rem;
-font-weight:800;
-line-height:1;
+.back-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted2);
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  transition: all 0.18s;
+  flex-shrink: 0;
 }
-
-.logo span{
-color:#ffe600;
+.back-btn:hover { background: var(--surface); color: var(--text); }
+.header-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text);
+  letter-spacing: 0.01em;
 }
-
-.top-info{
-display:flex;
-gap:10px;
+.header-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.live-pill {
+  margin-left: auto;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #fc6060;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex; align-items: center; gap: 5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
-
-.box{
-background:rgba(255,255,255,.08);
-padding:12px 15px;
-border-radius:18px;
-border:1px solid rgba(255,255,255,.1);
-font-weight:700;
-backdrop-filter:blur(10px);
+.live-dot {
+  width: 6px; height: 6px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: blink 1.2s ease-in-out infinite;
 }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
 /* HERO */
+.hero {
+  background: linear-gradient(160deg, #06090f 0%, #0a1020 50%, #07111a 100%);
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.hero-glow {
+  position: absolute;
+  top: -80px; left: 50%; transform: translateX(-50%);
+  width: 400px; height: 300px;
+  background: radial-gradient(ellipse, rgba(240,192,64,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-label::before, .hero-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240,192,64,0.3), transparent);
+}
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(28px, 6vw, 38px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.hero-title span {
+  display: block;
+  background: linear-gradient(135deg, #f0c040 0%, #ffd080 40%, #e8a820 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-hosts {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 22px;
+  letter-spacing: 4px;
+}
+.hero-meta {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 16px;
+}
+.hero-stat {
+  text-align: center;
+}
+.hero-stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold);
+}
+.hero-stat-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+.hero-divider { width: 1px; background: var(--border); }
 
-.hero{
-margin:0 20px;
-padding:25px;
-border-radius:35px;
-background:
-linear-gradient(145deg,
-rgba(255,255,255,.08),
-rgba(255,255,255,.03));
-border:1px solid rgba(255,255,255,.1);
-box-shadow:0 15px 40px rgba(0,0,0,.35);
-position:relative;
-overflow:hidden;
+/* COUNTDOWN */
+.countdown-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.countdown-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.countdown-timer {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.cd-unit {
+  text-align: center;
+}
+.cd-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold);
+  min-width: 34px;
+  display: block;
+}
+.cd-label {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cd-sep {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--muted);
+  margin-bottom: 12px;
+  animation: blink 1s ease-in-out infinite;
 }
 
-.hero::before{
-content:"";
-position:absolute;
-width:250px;
-height:250px;
-background:#ffe60022;
-border-radius:50%;
-top:-120px;
-right:-80px;
-filter:blur(50px);
+/* TABS */
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); font-weight: 600; }
+
+/* CONTENT */
+.content { padding: 16px 16px 60px; max-width: 700px; margin: 0 auto; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* BRASIL CARD */
+.brasil-section {
+  background: linear-gradient(135deg, #061a0c 0%, #0a2010 60%, #071510 100%);
+  border: 1px solid rgba(0,156,59,0.3);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.brasil-section::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(255,223,0,0.06) 0%, transparent 70%);
+}
+.brasil-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.brasil-flag { font-size: 28px; }
+.brasil-info h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #4ade80;
+}
+.brasil-info p {
+  font-size: 11px;
+  color: #2a6040;
+  margin-top: 2px;
+}
+.brasil-badge {
+  margin-left: auto;
+  background: rgba(0,156,59,0.15);
+  border: 1px solid rgba(0,156,59,0.3);
+  color: #4ade80;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
-.badge{
-display:inline-block;
-padding:8px 14px;
-background:linear-gradient(90deg,#ffe600,#ffb300);
-color:black;
-border-radius:50px;
-font-weight:700;
-font-size:.8rem;
-margin-bottom:15px;
+/* JOGOS DO BRASIL */
+.brasil-games { display: flex; flex-direction: column; gap: 8px; }
+.br-game {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(0,156,59,0.15);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.br-game-date {
+  flex-shrink: 0;
+  text-align: center;
+  min-width: 36px;
+}
+.br-game-day {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--brazil2);
+  line-height: 1;
+}
+.br-game-month {
+  font-size: 9px;
+  color: #2a6040;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.br-game-divider { width: 1px; background: rgba(0,156,59,0.2); height: 36px; flex-shrink: 0; }
+.br-game-main { flex: 1; min-width: 0; }
+.br-game-teams {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.br-game-vs { color: var(--muted); font-size: 11px; font-weight: 400; }
+.br-game-meta {
+  font-size: 11px;
+  color: #2a6040;
+  margin-top: 3px;
+  display: flex; gap: 8px; align-items: center;
+}
+.br-game-meta span { color: var(--muted2); }
+.br-game-time {
+  flex-shrink: 0;
+  text-align: right;
+}
+.br-game-hour {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brazil2);
+}
+.br-game-tz { font-size: 10px; color: #2a6040; }
+
+/* SECTION TITLE */
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title-accent { color: var(--gold); }
+
+/* GROUP CARD */
+.group-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.group-header {
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+.group-letter {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold);
+}
+.group-teams-preview {
+  font-size: 11px;
+  color: var(--muted2);
+  flex: 1;
+  padding: 0 10px;
+}
+.group-arrow {
+  font-size: 11px;
+  color: var(--muted);
+  transition: transform 0.25s;
+}
+.group-arrow.open { transform: rotate(180deg); }
+.group-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.group-body.open { max-height: 600px; }
+
+/* STANDINGS TABLE */
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.standings-table th {
+  padding: 7px 10px;
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+}
+.standings-table th.num { text-align: center; }
+.standings-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(28,37,64,0.5);
+  color: var(--text);
+}
+.standings-table td.num { text-align: center; color: var(--muted2); }
+.standings-table tr:last-child td { border-bottom: none; }
+.team-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.team-flag-sm { font-size: 16px; flex-shrink: 0; }
+.team-name-sm { font-weight: 500; }
+.classify-bar {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  margin-right: 2px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.bar-green { background: var(--green); }
+.bar-blue { background: var(--blue); }
+.bar-muted { background: var(--border); }
+
+/* JOGOS POR RODADA */
+.games-mini { padding: 0 2px 10px; }
+.game-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(28,37,64,0.4);
+  gap: 6px;
+  font-size: 12px;
+}
+.game-row:last-child { border-bottom: none; }
+.game-date-mini {
+  font-size: 10px;
+  color: var(--muted);
+  flex-shrink: 0;
+  min-width: 34px;
+}
+.game-teams-mini {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text);
+  font-weight: 500;
+}
+.game-vs-mini { color: var(--muted); font-size: 10px; font-weight: 400; }
+.game-time-mini {
+  font-size: 11px;
+  color: var(--muted2);
+  flex-shrink: 0;
+}
+.game-city-mini {
+  font-size: 10px;
+  color: var(--muted);
+  flex-shrink: 0;
+  text-align: right;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rodada-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 12px 4px;
+  background: rgba(0,0,0,0.15);
 }
 
-.hero h1{
-font-size:2rem;
-line-height:1.1;
-margin-bottom:15px;
+/* HIGHLIGHTS do brasil nas tabelas */
+.is-brasil { background: rgba(0,156,59,0.05); }
+.is-brasil .team-name-sm { color: #4ade80; }
+
+/* INFO CARDS */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+.info-card-icon { font-size: 20px; margin-bottom: 6px; }
+.info-card-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+.info-card-label {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.hero p{
-color:#d4ffe5;
-line-height:1.6;
-font-size:.95rem;
+/* FASES */
+.fases-list { display: flex; flex-direction: column; gap: 0; }
+.fase-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  gap: 12px;
+}
+.fase-row:first-child { border-radius: 10px 10px 0 0; }
+.fase-row:last-child { border-bottom: none; border-radius: 0 0 10px 10px; }
+.fase-icon { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
+.fase-info { flex: 1; }
+.fase-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.fase-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.fase-count {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
 }
 
-.buttons{
-display:flex;
-gap:15px;
-margin-top:25px;
+/* SEDES */
+.sedes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.sede-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.sede-flag { font-size: 18px; margin-bottom: 4px; }
+.sede-city {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.sede-stadium {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.sede-capacity {
+  font-size: 10px;
+  color: var(--gold);
+  margin-top: 4px;
 }
 
-button{
-border:none;
-cursor:pointer;
-transition:.3s;
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 18px;
+  border-radius: 30px;
+  font-size: 13px;
+  z-index: 999;
+  opacity: 0;
+  transition: all 0.28s;
+  white-space: nowrap;
+  pointer-events: none;
 }
-
-.open-btn{
-flex:1;
-padding:16px;
-border-radius:20px;
-background:
-linear-gradient(90deg,#ffe600,#ffb300);
-font-weight:800;
-font-size:1rem;
-color:black;
-box-shadow:0 10px 25px rgba(255,200,0,.35);
-}
-
-.reset-btn{
-width:60px;
-border-radius:20px;
-background:rgba(255,255,255,.08);
-color:white;
-font-size:1.2rem;
-border:1px solid rgba(255,255,255,.1);
-}
-
-button:hover{
-transform:translateY(-5px);
-}
-
-/* PACK */
-
-.section-title{
-padding:30px 20px 15px;
-font-size:1.3rem;
-font-weight:700;
-}
-
-.pack{
-padding:0 20px;
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:15px;
-}
-
-/* CARD */
-
-.card{
-border-radius:28px;
-overflow:hidden;
-background:
-linear-gradient(180deg,#ffe600 0%,#c59c00 100%);
-box-shadow:
-0 12px 25px rgba(0,0,0,.4),
-0 0 15px rgba(255,230,0,.2);
-animation:show .7s ease;
-position:relative;
-}
-
-@keyframes show{
-from{
-opacity:0;
-transform:scale(.7) rotateY(90deg);
-}
-to{
-opacity:1;
-transform:scale(1) rotateY(0deg);
-}
-}
-
-.card-image{
-height:230px;
-background-size:cover;
-background-position:center top;
-position:relative;
-}
-
-.overlay{
-position:absolute;
-inset:0;
-background:
-linear-gradient(to top,
-rgba(0,0,0,.95),
-rgba(0,0,0,.1));
-}
-
-.rating{
-position:absolute;
-top:12px;
-left:12px;
-font-size:2rem;
-font-weight:800;
-z-index:2;
-text-shadow:0 0 10px black;
-}
-
-.shirt{
-position:absolute;
-top:14px;
-right:14px;
-padding:6px 10px;
-border-radius:12px;
-background:#ffffff22;
-font-size:.8rem;
-font-weight:700;
-z-index:2;
-backdrop-filter:blur(8px);
-}
-
-.rarity{
-position:absolute;
-bottom:70px;
-left:14px;
-padding:6px 10px;
-border-radius:10px;
-font-size:.7rem;
-font-weight:700;
-z-index:2;
-}
-
-.legendary{
-background:gold;
-color:black;
-}
-
-.epic{
-background:#c000ff;
-}
-
-.rare{
-background:#0066ff;
-}
-
-.common{
-background:#555;
-}
-
-.name{
-position:absolute;
-bottom:18px;
-left:14px;
-font-weight:700;
-font-size:1rem;
-z-index:2;
-}
-
-.country{
-position:absolute;
-bottom:42px;
-left:14px;
-font-size:.75rem;
-color:#ffe600;
-z-index:2;
-}
-
-.card-bottom{
-padding:14px;
-background:#092116;
-}
-
-.stats{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:10px;
-}
-
-.stat{
-background:rgba(255,255,255,.08);
-padding:10px;
-border-radius:14px;
-text-align:center;
-}
-
-.stat h3{
-font-size:1rem;
-}
-
-.stat span{
-font-size:.65rem;
-color:#caffdd;
-}
-
-/* COLLECTION */
-
-.collection{
-padding:0 20px 30px;
-display:flex;
-flex-direction:column;
-gap:12px;
-}
-
-.item{
-background:rgba(255,255,255,.06);
-padding:15px;
-border-radius:18px;
-border:1px solid rgba(255,255,255,.08);
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.item p{
-font-size:.8rem;
-color:#c8ffe0;
-}
-
-.ovr{
-background:#ffe600;
-padding:8px 12px;
-border-radius:12px;
-font-weight:800;
-color:black;
-}
-
-/* FOOTER */
-
-footer{
-padding:30px 20px;
-text-align:center;
-color:#c7ffdf;
-font-size:.85rem;
-}
-
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
 <header>
-
-<div class="logo">
-COPA <span>PACK</span><br>
-2026
-</div>
-
-<div class="top-info">
-
-<div class="box">
-🪙 <span id="coins">500</span>
-</div>
-
-<div class="box">
-🏆 <span id="score">0</span>
-</div>
-
-</div>
-
+  <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+  <div>
+    <div class="header-title">Copa do Mundo 2026</div>
+    <div class="header-sub">EUA · México · Canadá</div>
+  </div>
+  <div class="live-pill"><span class="live-dot"></span>Em breve</div>
 </header>
 
-<section class="hero">
-
-<div class="badge">
-⚽ WORLD CUP EVENT
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-label">FIFA World Cup™</div>
+  <div class="hero-title">
+    <span>Copa do Mundo</span>
+    <span>2026</span>
+  </div>
+  <div class="hero-hosts">🇺🇸 🇲🇽 🇨🇦</div>
+  <div class="hero-meta">
+    <div class="hero-stat">
+      <div class="hero-stat-val">48</div>
+      <div class="hero-stat-label">Seleções</div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">104</div>
+      <div class="hero-stat-label">Jogos</div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">39</div>
+      <div class="hero-stat-label">Dias</div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">16</div>
+      <div class="hero-stat-label">Cidades</div>
+    </div>
+  </div>
 </div>
 
-<h1>
-Monte sua coleção da Copa 2026
-</h1>
-
-<p>
-Abra pacotes com 4 jogadores reais,
-consiga cartas lendárias e aumente sua pontuação geral.
-</p>
-
-<div class="buttons">
-
-<button class="open-btn" onclick="openPack()">
-ABRIR PACOTE
-</button>
-
-<button class="reset-btn" onclick="resetGame()">
-🗑
-</button>
-
+<!-- COUNTDOWN -->
+<div class="countdown-wrap">
+  <div>
+    <div class="countdown-label">Abertura: 11 Jun · Azteca</div>
+  </div>
+  <div class="countdown-timer">
+    <div class="cd-unit"><span class="cd-num" id="cdDays">--</span><span class="cd-label">dias</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cdHours">--</span><span class="cd-label">hrs</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cdMins">--</span><span class="cd-label">min</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cdSecs">--</span><span class="cd-label">seg</span></div>
+  </div>
 </div>
 
-</section>
-
-<div class="section-title">
-🎁 Último Pacote
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('brasil')">🇧🇷 Brasil</div>
+  <div class="tab" onclick="switchTab('grupos')">Grupos</div>
+  <div class="tab" onclick="switchTab('fases')">Fases</div>
+  <div class="tab" onclick="switchTab('sedes')">Sedes</div>
 </div>
 
-<div class="pack" id="pack"></div>
-
-<div class="section-title">
-🏆 Sua Coleção
-</div>
-
-<div class="collection" id="collection"></div>
-
-<footer>
-COPA PACK 2026 © Sem prêmios reais.
-</footer>
-
-<script>
-
-const players = [
-
-{
-name:"Neymar Jr",
-country:"Brasil",
-number:10,
-rating:97,
-pace:95,
-shoot:96,
-pass:95,
-rarity:"legendary",
-image:"https://images2.minutemediacdn.com/image/upload/c_crop,w_8256,h_4644,x_0,y_429/c_fill,w_1200,ar_1:1,f_auto,q_auto,g_auto/images/GettyImages/mmsport/90min_en_international_web/01gmdxj7g5z0sq9k2w2z.jpg"
-},
-
-{
-name:"Lionel Messi",
-country:"Argentina",
-number:10,
-rating:99,
-pace:90,
-shoot:99,
-pass:99,
-rarity:"legendary",
-image:"https://cdn.britannica.com/34/242834-050-3A0391C4/Lionel-Messi-Argentina-2022-FIFA-World-Cup.jpg"
-},
-
-{
-name:"Cristiano Ronaldo",
-country:"Portugal",
-number:7,
-rating:98,
-pace:91,
-shoot:99,
-pass:88,
-rarity:"legendary",
-image:"https://static.independent.co.uk/2022/11/24/17/newFile.jpg"
-},
-
-{
-name:"Kylian Mbappé",
-country:"França",
-number:10,
-rating:97,
-pace:99,
-shoot:95,
-pass:87,
-rarity:"epic",
-image:"https://assets.goal.com/images/v3/blt6ec7dbddd0f6f53c/GOAL%20-%20Blank%20WEB%20-%20Facebook%20(14).jpg"
-},
-
-{
-name:"Vinicius Jr",
-country:"Brasil",
-number:7,
-rating:95,
-pace:98,
-shoot:90,
-pass:86,
-rarity:"epic",
-image:"https://assets.goal.com/images/v3/blt8d2bb98c2f3d5b93/GettyImages-2158043017.jpg"
-},
-
-{
-name:"Erling Haaland",
-country:"Noruega",
-number:9,
-rating:96,
-pace:93,
-shoot:99,
-pass:80,
-rarity:"epic",
-image:"https://img.a.transfermarkt.technology/portrait/big/418560-1656179352.jpg"
-},
-
-{
-name:"Jude Bellingham",
-country:"Inglaterra",
-number:5,
-rating:93,
-pace:89,
-shoot:87,
-pass:91,
-rarity:"rare",
-image:"https://assets.goal.com/images/v3/blt9f1ef4fa2b0d8c11/GettyImages-2158041560.jpg"
-},
-
-{
-name:"Lamine Yamal",
-country:"Espanha",
-number:19,
-rating:92,
-pace:96,
-shoot:85,
-pass:88,
-rarity:"rare",
-image:"https://assets.goal.com/images/v3/bltca4b4a0b3cfbfc7f/GettyImages-2160095014.jpg"
-}
-
-];
-
-let collection =
-JSON.parse(localStorage.getItem("cupCollection")) || [];
-
-let coins =
-JSON.parse(localStorage.getItem("cupCoins")) || 500;
-
-let score =
-JSON.parse(localStorage.getItem("cupScore")) || 0;
-
-updateUI();
-renderCollection();
-
-function getRandomPlayer(){
-
-let rarityChance = Math.random();
-
-let pool = [];
-
-if(rarityChance < 0.08){
-
-pool = players.filter(p=>p.rarity==="legendary");
-
-}else if(rarityChance < 0.35){
-
-pool = players.filter(p=>p.rarity==="epic");
-
-}else if(rarityChance < 0.70){
-
-pool = players.filter(p=>p.rarity==="rare");
-
-}else{
-
-pool = players.filter(p=>p.rarity==="common");
-
-if(pool.length===0){
-pool = players;
-}
-
-}
-
-return pool[Math.floor(Math.random()*pool.length)];
-
-}
-
-function openPack(){
-
-if(coins < 100){
-alert("Moedas insuficientes!");
-return;
-}
-
-coins -= 100;
-
-const pack = document.getElementById("pack");
-
-pack.innerHTML = "";
-
-let packPlayers = [];
-
-while(packPlayers.length < 4){
-
-let player = getRandomPlayer();
-
-if(!packPlayers.find(p=>p.name === player.name)){
-
-packPlayers.push(player);
-
-collection.push(player);
-
-score += player.rating;
-
-}
-
-}
-
-packPlayers.forEach(player=>{
-
-pack.innerHTML += `
-
-<div class="card">
-
-<div class="card-image"
-style="background-image:url('${player.image}')">
-
-<div class="overlay"></div>
-
-<div class="rating">
-${player.rating}
-</div>
-
-<div class="shirt">
-👕 ${player.number}
-</div>
-
-<div class="rarity ${player.rarity}">
-${player.rarity.toUpperCase()}
-</div>
-
-<div class="country">
-${player.country}
-</div>
-
-<div class="name">
-${player.name}
-</div>
-
-</div>
-
-<div class="card-bottom">
-
-<div class="stats">
-
-<div class="stat">
-<h3>${player.pace}</h3>
-<span>PACE</span>
-</div>
-
-<div class="stat">
-<h3>${player.shoot}</h3>
-<span>CHUTE</span>
-</div>
-
-<div class="stat">
-<h3>${player.pass}</h3>
-<span>PASSE</span>
-</div>
-
-<div class="stat">
-<h3>${player.rating}</h3>
-<span>OVR</span>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
-});
-
-localStorage.setItem(
-"cupCollection",
-JSON.stringify(collection)
-);
-
-localStorage.setItem(
-"cupCoins",
-JSON.stringify(coins)
-);
-
-localStorage.setItem(
-"cupScore",
-JSON.stringify(score)
-);
-
-updateUI();
-renderCollection();
-
-}
-
-function renderCollection(){
-
-const div =
-document.getElementById("collection");
-
-div.innerHTML = "";
-
-collection.forEach(player=>{
-
-div.innerHTML += `
-
-<div class="item">
-
-<div>
-
-<h3>
-${player.name}
-</h3>
-
-<p>
-${player.country} • Camisa ${player.number}
-</p>
-
-</div>
-
-<div class="ovr">
-${player.rating}
-</div>
-
-</div>
-
-`;
-
-});
-
-}
-
-function updateUI(){
-
-document.getElementById("coins").innerText = coins;
-document.getElementById("score").innerText = score;
-
-}
-
-function resetGame(){
-
-localStorage.clear();
-
-collection = [];
-coins = 500;
-score = 0;
-
-document.getElementById("pack").innerHTML = "";
-
-updateUI();
-renderCollection();
-
-}
-
-</script>
-
-</body>
-</html>
+<div class="content">
+
+  <!-- ===== ABA BRASIL ===== -->
+  <div class="section active" id="tab-brasil">
+
+    <div class="brasil-section">
+      <div class="brasil-header">
+        <span class="brasil-flag">🇧🇷</span>
+        <div class="brasil-info">
+          <h2>Seleção Brasileira</h2>
+          <p>Grupo C · Pentacampeã · Favorita ao título</p>
+        </div>
+        <div class="brasil-badge">Grupo C</div>
+      </div>
+
+      <div class="section-title" style="margin-bottom:10px">
+        <span>Fase de Grupos</span>
+      </div>
+
+      <div class="brasil-games">
+        <div class="br-game">
+          <div class="br-game-date"><div class="br-game-day">13</div><div class="br-game-month">jun</div></div>
+          <div class="br-game-divider"></div>
+          <div class="br-game-main">
+            <div class="br-game-teams">🇧🇷 Brasil <span class="br-game-vs">vs</span> Marrocos 🇲🇦</div>
+            <div class="br-game-meta">MetLife Stadium · <span>Nova York/NJ</span> · 1ª rodada</div>
+          </div>
+          <div class="br-game-time"><div class="br-game-hour">19h</div><div class="br-game-tz">Brasília</div></div>
+        </div>
+        <div class="br-game">
+          <div class="br-game-date"><div class="br-game-day">19</div><div class="br-game-month">jun</div></div>
+          <div class="br-game-divider"></div>
+          <div class="br-game-main">
+            <div class="br-game-teams">🇧🇷 Brasil <span class="br-game-vs">vs</span> Haiti 🇭🇹</div>
+            <div class="br-game-meta">Lincoln Financial Field · <span>Filadélfia</span> · 2ª rodada</div>
+          </div>
+          <div class="br-game-time"><div class="br-game-hour">22h</div><div class="br-game-tz">Brasília</div></div>
+        </div>
+        <div class="br-game">
+          <div class="br-game-date"><div class="br-game-day">24</div><div class="br-game-month">jun</div></div>
+          <div class="br-game-divider"></div>
+          <div class="br-game-main">
+            <div class="br-game-teams">🇧🇷 Brasil <span class="br-game-vs">vs</span> Escócia 🏴󠁧󠁢󠁳󠁣󠁴󠁿</div>
+            <div class="br-game-meta">Hard Rock Stadium · <span>Miami</span> · 3ª rodada</div>
+          </div>
+          <div class="br-game-time"><div class="br-game-hour">19h</div><div class="br-game-tz">Brasília</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grupo C completo -->
+    

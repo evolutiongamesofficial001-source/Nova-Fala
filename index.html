@@ -8,32 +8,84 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
 
+<!-- SPRITE SHEET (apenas macaquinho do spoiler) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="sprite-monkey" viewBox="0 0 36 36">
+    <!-- Rosto -->
+    <ellipse cx="18" cy="20" rx="13" ry="12" fill="#C68642"/>
+    <!-- Orelhas -->
+    <ellipse cx="5" cy="20" rx="5" ry="5" fill="#C68642"/>
+    <ellipse cx="5" cy="20" rx="3" ry="3" fill="#F0A060"/>
+    <ellipse cx="31" cy="20" rx="5" ry="5" fill="#C68642"/>
+    <ellipse cx="31" cy="20" rx="3" ry="3" fill="#F0A060"/>
+    <!-- Topo da cabeça -->
+    <ellipse cx="18" cy="11" rx="10" ry="8" fill="#8B5E3C"/>
+    <!-- Franja -->
+    <ellipse cx="18" cy="14" rx="10" ry="5" fill="#C68642"/>
+    <!-- Mãos cobrindo olhos -->
+    <ellipse cx="10" cy="19" rx="7" ry="6" fill="#8B5E3C"/>
+    <ellipse cx="26" cy="19" rx="7" ry="6" fill="#8B5E3C"/>
+    <!-- Dedos esquerda -->
+    <rect x="4" y="14" width="3" height="5" rx="2" fill="#8B5E3C"/>
+    <rect x="7" y="13" width="3" height="5" rx="2" fill="#8B5E3C"/>
+    <rect x="10" y="13" width="3" height="5" rx="2" fill="#8B5E3C"/>
+    <rect x="13" y="14" width="3" height="5" rx="2" fill="#8B5E3C"/>
+    <!-- Dedos direita -->
+    <rect x="19" y="14" width="3" height="5" rx="2" fill="#8B5E3C"/>
+    <rect x="22" y="13" width="3" height="5" rx="2" fill="#8B5E3C"/>
+    <rect x="25" y="13" width="3" height="5" rx="2" fill="#8B5E3C"/>
+    <rect x="28" y="14" width="3" height="5" rx="2" fill="#8B5E3C"/>
+    <!-- Bochechas -->
+    <ellipse cx="10" cy="24" rx="4" ry="3" fill="#F0A060"/>
+    <ellipse cx="26" cy="24" rx="4" ry="3" fill="#F0A060"/>
+    <!-- Nariz -->
+    <ellipse cx="18" cy="22" rx="3" ry="2" fill="#8B5E3C"/>
+    <circle cx="17" cy="22" r="1" fill="#5C3A1E"/>
+    <circle cx="19" cy="22" r="1" fill="#5C3A1E"/>
+    <!-- Boca -->
+    <path d="M14 26 Q18 29 22 26" stroke="#5C3A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
 <header>
     <div style="display:flex;align-items:center;gap:10px;">
-        <div onclick="abrirMenu()" style="cursor:pointer;font-size:22px;">☰</div>
+        <div onclick="abrirMenu()" style="cursor:pointer;font-size:22px;color:#888;padding:4px;" title="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect y="4" width="24" height="2" rx="1"/><rect y="11" width="24" height="2" rx="1"/><rect y="18" width="24" height="2" rx="1"/></svg>
+        </div>
         <span class="nova-fala-logo">Nova-Fala</span>
     </div>
     
     <div style="display:flex;align-items:center;gap:8px;">
-        <div onclick="abrirBusca()" style="cursor:pointer;font-size:20px;" title="Buscar usuários">🔍</div>
-        <!-- BOTÃO NOTIFICAÇÃO -->
-        <div id="notifBtn" onclick="toggleNotificacoes()" style="cursor:pointer;font-size:20px;position:relative;" title="Notificações">
-            🔔
-            <span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ff6b81;color:white;font-size:10px;font-weight:bold;border-radius:50%;width:16px;height:16px;display:none;align-items:center;justify-content:center;line-height:1;">0</span>
+        <div onclick="abrirBusca()" style="cursor:pointer;color:#888;padding:4px;" title="Buscar usuários">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div id="notifBtn" onclick="toggleNotificacoes()" style="cursor:pointer;color:#888;padding:4px;position:relative;" title="Notificações">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span id="notifBadge" style="display:none;position:absolute;top:-2px;right:-2px;background:#ff6b81;color:white;font-size:10px;font-weight:bold;border-radius:50%;width:16px;height:16px;align-items:center;justify-content:center;line-height:1;">0</span>
         </div>
     </div>
 </header>
+
+<!-- ================= FEED TABS ================= -->
+<div id="feedTabs">
+    <button class="feed-tab active" id="tab-foryou" onclick="setFeedTab('foryou')">For You</button>
+    <button class="feed-tab" id="tab-all" onclick="setFeedTab('all')">All</button>
+    <button class="feed-tab" id="tab-following" onclick="setFeedTab('following')">Following</button>
+</div>
 
 <!-- ================= PAINEL NOTIFICAÇÕES ================= -->
 <div id="notifOverlay" onclick="fecharNotificacoes()" style="display:none;position:fixed;inset:0;background:#0009;z-index:500;"></div>
 <div id="notifPanel" style="display:none;position:fixed;top:56px;right:8px;width:320px;max-width:95vw;background:#111;border:1px solid #222;border-radius:14px;z-index:501;animation:fade .2s;overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1f1f1f;">
-        <span style="font-weight:bold;font-size:15px;color:#e8e8e8;">🔔 Notificações</span>
+        <span style="font-weight:bold;font-size:15px;color:#e8e8e8;">Notificações</span>
         <div style="display:flex;gap:10px;align-items:center;">
             <span onclick="marcarTodasLidas()" style="cursor:pointer;font-size:11px;color:#1da1f2;">Marcar lidas</span>
             <span onclick="fecharNotificacoes()" style="cursor:pointer;color:#888;font-size:18px;">✕</span>
@@ -46,7 +98,7 @@
 <div id="buscaOverlay" onclick="fecharBusca()" style="display:none;position:fixed;inset:0;background:#0009;z-index:500;"></div>
 <div id="buscaBox" style="display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);width:90%;max-width:400px;background:#111;border:1px solid #222;border-radius:14px;padding:16px;z-index:501;animation:fade .2s;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:18px;">🔍</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="buscaInput" type="text" placeholder="Buscar usuário..." oninput="buscarUsuarios(this.value)"
             style="flex:1;background:#0c0c0c;border:1px solid #333;border-radius:8px;padding:9px 12px;color:white;font-size:14px;outline:none;">
         <span onclick="fecharBusca()" style="cursor:pointer;color:#888;font-size:18px;line-height:1;">✕</span>
@@ -63,7 +115,9 @@
 
 <div id="feed"></div>
 
-<div id="plus" onclick="abrirPost()">+</div>
+<div id="plus" onclick="abrirPost()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+</div>
 
 <div class="overlay" id="overlay" onclick="fecharPost()"></div>
 
@@ -72,11 +126,27 @@
 
     <textarea id="postText" placeholder="O que está acontecendo?" maxlength="1000"></textarea>
 
+    <!-- ================= HASHTAG INFO ================= -->
+    <div id="hashtagArea" style="position:relative;">
+        <button id="hashtagInfoBtn" onclick="toggleHashtagInfo()" style="background:none;border:none;color:#555;font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;margin-top:4px;transition:color 0.2s;" title="Hashtags opcionais">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            hashtags
+        </button>
+        <div id="hashtagInfoBox" style="display:none;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:10px;padding:12px 14px;margin-top:4px;font-size:12px;color:#888;line-height:1.6;animation:fade .2s;">
+            <div style="color:#bbb;font-size:13px;font-weight:600;margin-bottom:4px;">Hashtags (opcional)</div>
+            Adicione hashtags ao final do seu post para categorizar o conteúdo.<br>
+            Exemplo: <span style="color:#1da1f2;">#noticias #arte #tecnologia</span><br>
+            <span style="color:#555;font-size:11px;">As hashtags ajudam outros usuários a encontrar seu post.</span>
+        </div>
+    </div>
+
     <!-- ================= ENQUETE ================= -->
     <div id="pollBox" style="margin-top:10px;">
-        <button onclick="togglePoll()">📊 Criar enquete</button>
+        <button onclick="togglePoll()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Criar enquete
+        </button>
 
-        <!-- opções -->
         <div id="pollOptions" style="display:none;margin-top:10px;">
             <input type="text" class="pollInput" placeholder="Opção 1">
             <input type="text" class="pollInput" placeholder="Opção 2">
@@ -85,7 +155,6 @@
             <input type="text" class="pollInput" placeholder="Opção 5">
         </div>
 
-        <!-- tempo -->
         <div id="pollTimeBox" style="margin-top:8px;display:none;">
             <select id="pollTime">
                 <option value="3600000">1 hora</option>
@@ -96,18 +165,26 @@
             </select>
         </div>
     </div>
-    <!-- ================= FIM ENQUETE ================= -->
 
     <!-- upload -->
     <label class="uploadBox">
         <input type="file" id="fotoInput" accept="image/*" hidden>
-        <div id="uploadVisual">📷 Escolher foto</div>
+        <div id="uploadVisual">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Escolher foto
+        </div>
     </label>
 
     <!-- SPOILER TOGGLE -->
     <label id="spoilerLabel" style="display:none;align-items:center;gap:8px;margin-top:10px;cursor:pointer;user-select:none;">
         <input type="checkbox" id="spoilerCheck" style="width:16px;height:16px;accent-color:#1da1f2;cursor:pointer;">
-        <span style="font-size:13px;color:#aaa;">🙈 Marcar foto como <b style="color:#f59e0b;">spoiler</b></span>
+        <span style="font-size:13px;color:#aaa;">Marcar foto como <b style="color:#f59e0b;">spoiler</b></span>
+    </label>
+
+    <!-- SENSITIVE CONTENT TOGGLE -->
+    <label id="sensitiveLabel" style="display:none;align-items:center;gap:8px;margin-top:8px;cursor:pointer;user-select:none;">
+        <input type="checkbox" id="sensitiveCheck" style="width:16px;height:16px;accent-color:#e05555;cursor:pointer;">
+        <span style="font-size:13px;color:#aaa;">Marcar foto como <b style="color:#e05555;">conteúdo sensível</b></span>
     </label>
 
     <img id="previewImg" style="display:none;">
@@ -159,13 +236,27 @@
         <span onclick="fecharMenu()">✕</span>
     </div>
 
-    <button onclick="abrirConfig()">⚙️ Configurações</button>
-    <button onclick="abrirMeuPerfil()">👤 Meu Perfil</button>
-    <button onclick="abrirSAR()">🤖 S.A.R</button>
-     <button onclick="abrirverificar()">Vereficação</button>
-    <!-- BOTÃO SAIR MOVIDO PARA A BARRA LATERAL -->
+    <button onclick="abrirConfig()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Configurações
+    </button>
+    <button onclick="abrirMeuPerfil()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Meu Perfil
+    </button>
+    <button onclick="abrirSAR()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        S.A.R
+    </button>
+    <button onclick="abrirverificar()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Verificação
+    </button>
     <div style="flex:1;"></div>
-    <button class="menu-logout-btn" onclick="logout()">🚪 Sair da conta</button>
+    <button class="menu-logout-btn" onclick="logout()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair da conta
+    </button>
 </div>
 
 <!-- ================= CONFIG ================= -->
@@ -177,29 +268,74 @@
         <span onclick="fecharConfig()">✕</span>
     </div>
 
-    <b>Tema</b>
+    <div class="config-section-title">Tema</div>
     <div class="temaOpcoes">
-        <button id="btnEscuro" onclick="setTema('escuro')">🌙 Escuro</button>
-        <button id="btnClaro" onclick="setTema('claro')">☀️ Claro</button>
+        <button id="btnEscuro" onclick="setTema('escuro')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            Escuro
+        </button>
+        <button id="btnClaro" onclick="setTema('claro')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            Claro
+        </button>
+    </div>
+
+    <div class="config-section-title" style="margin-top:20px;">Segurança</div>
+    <div class="contaOpcoes">
+        <button onclick="abrirConfigSenha()" id="btnSenhaConfig">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span id="btnSenhaTexto">Definir senha de acesso</span>
+        </button>
+    </div>
+
+    <!-- Área da senha (inline) -->
+    <div id="senhaArea" style="display:none;margin-top:12px;background:#0c0c0c;border:1px solid #2a2a2a;border-radius:12px;padding:14px;">
+        <div style="font-size:13px;color:#aaa;margin-bottom:10px;">Senha numérica (4–6 dígitos)</div>
+        <input id="senhaInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••"
+            style="width:100%;padding:12px;background:#151515;border:1px solid #333;border-radius:9px;color:white;font-size:20px;letter-spacing:8px;text-align:center;outline:none;margin-bottom:8px;"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <input id="senhaConfirmInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Confirmar"
+            style="width:100%;padding:12px;background:#151515;border:1px solid #333;border-radius:9px;color:white;font-size:20px;letter-spacing:8px;text-align:center;outline:none;margin-bottom:12px;"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <div style="display:flex;gap:8px;">
+            <button onclick="salvarSenha()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#1da1f2;color:white;font-size:14px;cursor:pointer;font-weight:600;">Salvar</button>
+            <button onclick="removerSenha()" id="btnRemoverSenha" style="display:none;flex:1;padding:10px;border-radius:8px;border:1px solid #3d1515;background:#1a0e0e;color:#e05555;font-size:14px;cursor:pointer;">Remover</button>
+        </div>
+        <div id="senhaMsg" style="font-size:12px;text-align:center;margin-top:8px;color:#555;"></div>
+
+        <div id="bioArea" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid #222;">
+            <button onclick="ativarBiometria()" id="btnBio" style="width:100%;padding:10px;border-radius:8px;border:1px solid #1a3d55;background:#0e1a22;color:#1da1f2;font-size:13px;cursor:pointer;font-weight:600;">Ativar desbloqueio por impressão digital</button>
+        </div>
     </div>
 </div>
 
-<!-- ================= TAB BAR ================= -->
+<!-- ================= LOCK SCREEN ================= -->
+<div id="lockScreen" style="display:none;position:fixed;inset:0;background:#0b0b0b;z-index:9998;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+    <span class="nova-fala-logo" style="font-size:28px;">Nova-Fala</span>
+    <div style="font-size:14px;color:#555;">Digite sua senha para continuar</div>
+    <input id="lockInput" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••"
+        style="padding:14px;background:#151515;border:1px solid #333;border-radius:12px;color:white;font-size:24px;letter-spacing:10px;text-align:center;outline:none;width:180px;"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')verificarSenha()">
+    <button onclick="verificarSenha()" style="padding:12px 36px;border-radius:10px;border:none;background:#1da1f2;color:white;font-size:15px;font-weight:bold;cursor:pointer;">Entrar</button>
+    <button onclick="entrarComBiometria()" id="btnLockBio" style="display:none;padding:10px 28px;border-radius:10px;border:1px solid #1a3d55;background:#0e1a22;color:#1da1f2;font-size:13px;font-weight:600;cursor:pointer;">Usar impressão digital</button>
+    <div id="lockMsg" style="font-size:12px;color:#e05555;min-height:16px;"></div>
+</div>
+
 <nav id="tabBar">
     <div class="tab-item active" id="tab-feed" onclick="irParaFeed()">
-        <span class="tab-icon">🏠</span>
+        <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span class="tab-label">Feed</span>
     </div>
     <div class="tab-item" id="tab-chat" onclick="abrirchat()">
-        <span class="tab-icon">💬</span>
+        <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="tab-label">Chat</span>
     </div>
     <div class="tab-item" id="tab-veez" onclick="irParaVeez()">
-        <span class="tab-icon">🐇</span>
-        <span class="tab-label">Rapidoz</span>
+        <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 7 8 6 5 6c0 5 3 6.5 7 6z"/><path d="M12 12c0-4.5 3.5-6 7-6 0 5-3 6.5-7 6z"/></svg>
+        <span class="tab-label">Planta</span>
     </div>
     <div class="tab-item" id="tab-perfil" onclick="abrirMeuPerfil()">
-        <span class="tab-icon">👤</span>
+        <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="tab-label">Perfil</span>
     </div>
 </nav>
@@ -223,7 +359,6 @@ function setTabAtiva(id) {
     if (el) el.classList.add('active');
 }
 
-// Marca aba correta ao carregar
 document.addEventListener('DOMContentLoaded', () => {
     setTabAtiva('tab-feed');
 });

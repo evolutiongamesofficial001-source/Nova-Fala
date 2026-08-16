@@ -319,6 +319,7 @@ fotoInput.addEventListener("change", () => {
         uploadVisual.innerText = "✅ Foto selecionada";
         uploadVisual.classList.add("selected");
         document.getElementById("spoilerLabel").style.display = "flex";
+        document.getElementById("sensitiveLabel").style.display = "flex";
 
         const reader = new FileReader();
         reader.onload = e => {
@@ -332,6 +333,8 @@ fotoInput.addEventListener("change", () => {
         previewImg.style.display = "none";
         document.getElementById("spoilerLabel").style.display = "none";
         document.getElementById("spoilerCheck").checked = false;
+        document.getElementById("sensitiveLabel").style.display = "none";
+        document.getElementById("sensitiveCheck").checked = false;
     }
 });
 
@@ -387,6 +390,7 @@ function postar() {
 
     function salvarPost() {
         let isSpoiler = document.getElementById("spoilerCheck") && document.getElementById("spoilerCheck").checked;
+        let isSensitive = document.getElementById("sensitiveCheck") && document.getElementById("sensitiveCheck").checked;
         let post = {
             user: user,
             text: texto,
@@ -394,6 +398,7 @@ function postar() {
             time: Date.now(),
             photoBase64: fotoBase64 || null,
             spoiler: (fotoBase64 && isSpoiler) ? true : null,
+            sensivel: (fotoBase64 && isSensitive) ? true : null,
             poll: pollData || null
         };
 
@@ -422,6 +427,8 @@ function postar() {
         previewImg.style.display = "none";
         document.getElementById("spoilerLabel").style.display = "none";
         document.getElementById("spoilerCheck").checked = false;
+        document.getElementById("sensitiveLabel").style.display = "none";
+        document.getElementById("sensitiveCheck").checked = false;
         previewImg.src = "";
 
         let spoilerEl = document.getElementById("spoilerCheck");
@@ -473,7 +480,6 @@ function curtir(id) {
 }
 
 /* ================= COMENTÁRIOS ================= */
-
 async function comentar(id, donoPost) {
     // Verificar se o usuário logado está bloqueado pelo dono do post
     if (donoPost && donoPost !== user) {
@@ -700,8 +706,8 @@ function renderSpoilerImg(container, src) {
     overlay.style.cssText = "position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border-radius:10px;cursor:pointer;";
 
     let icon = document.createElement("div");
-    icon.style.cssText = "font-size:32px;filter:drop-shadow(0 2px 6px #000a);";
-    icon.innerText = "🙈";
+    icon.style.cssText = "filter:drop-shadow(0 2px 6px #000a);";
+    icon.innerHTML = '<svg class="monkey-sprite" width="40" height="40"><use href="#sprite-monkey"/></svg>';
 
     let btn = document.createElement("button");
     btn.innerText = "⚠️ Spoiler";
@@ -722,6 +728,51 @@ function renderSpoilerImg(container, src) {
     btn.onclick = revelar;
 
     overlay.appendChild(icon);
+    overlay.appendChild(btn);
+    wrapper.appendChild(img);
+    wrapper.appendChild(overlay);
+    container.appendChild(wrapper);
+}
+
+function renderSensitiveImg(container, src) {
+    let wrapper = document.createElement("div");
+    wrapper.style.cssText = "position:relative;display:inline-block;width:100%;";
+
+    let img = document.createElement("img");
+    img.src = src;
+    img.style.cssText = "width:100%;border-radius:10px;display:block;filter:blur(28px) brightness(0.45);transition:filter 0.4s ease;";
+
+    let overlay = document.createElement("div");
+    overlay.style.cssText = "position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border-radius:10px;cursor:pointer;background:rgba(20,0,0,0.15);";
+
+    let icon = document.createElement("div");
+    icon.style.cssText = "filter:drop-shadow(0 2px 6px #000a);";
+    icon.innerHTML = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#e05555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+
+    let label = document.createElement("div");
+    label.style.cssText = "font-size:12px;color:#e0a0a0;text-align:center;max-width:240px;line-height:1.5;";
+    label.innerText = "Esta imagem pode conter conteúdo sensível.";
+
+    let btn = document.createElement("button");
+    btn.innerText = "Ver mesmo assim";
+    btn.style.cssText = "background:rgba(224,85,85,0.18);border:1.5px solid #e05555;color:#ff8a8a;font-size:13px;font-weight:700;padding:8px 22px;border-radius:20px;cursor:pointer;letter-spacing:0.5px;backdrop-filter:blur(4px);transition:background 0.2s;margin:0;";
+    btn.onmouseenter = () => btn.style.background = "rgba(224,85,85,0.32)";
+    btn.onmouseleave = () => btn.style.background = "rgba(224,85,85,0.18)";
+
+    let revealed = false;
+    function revelar(e) {
+        e.stopPropagation();
+        if (revealed) { abrirImagem(src); return; }
+        revealed = true;
+        img.style.filter = "none";
+        overlay.style.display = "none";
+    }
+
+    overlay.onclick = revelar;
+    btn.onclick = revelar;
+
+    overlay.appendChild(icon);
+    overlay.appendChild(label);
     overlay.appendChild(btn);
     wrapper.appendChild(img);
     wrapper.appendChild(overlay);
@@ -780,19 +831,19 @@ function renderPost(id, p, fotosMap) {
             <div class="actions">
                 <button id="like-${id}" onclick="curtir('${id}')"
                     style="${isLiked ? 'color:#ff6b81;border-color:#2a1a1e;' : ''}">
-                    <span class="emoji">❤️</span> ${p.likes || 0}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="emoji" style="margin-right:4px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ${p.likes || 0}
                 </button>
 
                 <button onclick="comentar('${id}','${p.user}')">
-                    <span class="emoji">💬</span> comentar
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="emoji" style="margin-right:4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> comentar
                 </button>
 
                 ${p.user === user ? `
                 <button onclick="editarPost('${id}')">
-                    <span class="emoji">✎</span> Editar
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar
                 </button>
                 <button onclick="deletarPost('${id}')">
-                    <span class="emoji">🗑️</span> Deletar
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg> Deletar
                 </button>` : ""}
             </div>
 
@@ -807,7 +858,9 @@ function renderPost(id, p, fotosMap) {
         // Render imagem
         if (p.photoBase64) {
             let container = document.getElementById("img-" + id);
-            if (p.spoiler) {
+            if (p.sensivel) {
+                renderSensitiveImg(container, p.photoBase64);
+            } else if (p.spoiler) {
                 renderSpoilerImg(container, p.photoBase64);
             } else {
                 let img = document.createElement("img");
@@ -821,45 +874,7 @@ function renderPost(id, p, fotosMap) {
     });
 }
 function carregarFeed() {
-    feed.innerHTML = "";
-
-    // Mostrar loading
-    const loadingEl = document.getElementById("feedLoading");
-    if (loadingEl) { loadingEl.style.display = "flex"; }
-
-    db.ref("posts")
-        .orderByChild("time")
-        .limitToLast(15)
-        .once("value", snap => {
-            // Esconder loading
-            if (loadingEl) { loadingEl.style.display = "none"; }
-
-            let posts = [];
-            snap.forEach(child => {
-                posts.push({ id: child.key, data: child.val() });
-            });
-
-            posts.sort((a, b) => b.data.time - a.data.time);
-
-            // Pré-buscar fotos de perfil de todos de uma vez para maior velocidade
-            let nomesUnicos = [...new Set(posts.map(p => p.data.user).filter(Boolean))];
-            let fotosPromise = Promise.all(
-                nomesUnicos.map(nome =>
-                    db.ref("fotosPerfil/" + nome).once("value").then(s => [nome, s.val()])
-                )
-            ).then(entries => Object.fromEntries(entries));
-
-            fotosPromise.then(fotosMap => {
-                posts.forEach(p => renderPost(p.id, p.data, fotosMap));
-            });
-        });
-
-    db.ref("posts").on("child_changed", snap => {
-        let id = snap.key;
-        let p = snap.val();
-        let btn = document.getElementById("like-" + id);
-        if (btn) btn.innerHTML = `<span class="emoji">❤️</span> ${p.likes || 0}`;
-    });
+    carregarFeedFiltrado();
 }
 
 function deletarPost(id) {
@@ -874,7 +889,6 @@ function deletarPost(id) {
         carregarFeed();
     });
 }
-
 async function editarPost(id) {
     let atual = document.getElementById("text-" + id).innerText;
     let novo = await customPrompt("Editar post:\n\n" + atual);
@@ -976,7 +990,6 @@ function soltarCoracoes(botao) {
         setTimeout(() => heart.remove(), 1000);
     }
 }
-
 function renderEnquete(postId, poll) {
     let container = document.getElementById("poll-" + postId);
     if (!container) return;
@@ -1050,7 +1063,6 @@ function limparEnqueteExpirada(postId) {
     });
 }
 
-/* ================= ENQUETE — VOTAR ================= */
 function votarEnquete(postId, index) {
     let ref = db.ref("posts/" + postId);
 
@@ -1093,9 +1105,6 @@ function votarEnquete(postId, index) {
         renderEnquete(postId, poll);
     });
 }
-
-/* ================= BUSCA DE USUÁRIOS ================= */
-
 function abrirBusca() {
     document.getElementById("buscaOverlay").style.display = "block";
     document.getElementById("buscaBox").style.display = "block";
@@ -1357,3 +1366,281 @@ escutarNotificacoes();
 carregarBloqueados();
 carregarUsuariosExistentes(); // pré-carregar para @menções
 carregarFeed();
+
+let feedTabAtual = 'foryou';
+let followingList = new Set();
+
+function setFeedTab(tab) {
+    feedTabAtual = tab;
+    document.querySelectorAll('.feed-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    carregarFeedFiltrado();
+}
+
+function carregarFollowing(callback) {
+    let nomeKey = user.replace(/[.#$[\]]/g, '_');
+    db.ref('seguindo/' + nomeKey).once('value').then(snap => {
+        followingList.clear();
+        if (snap.exists()) {
+            snap.forEach(child => followingList.add(child.key));
+        }
+        if (callback) callback();
+    });
+}
+
+function carregarFeedFiltrado() {
+    feed.innerHTML = '';
+    const loadingEl = document.getElementById('feedLoading');
+    if (loadingEl) loadingEl.style.display = 'flex';
+
+    db.ref('posts')
+        .orderByChild('time')
+        .limitToLast(50)
+        .once('value', snap => {
+            if (loadingEl) loadingEl.style.display = 'none';
+
+            let posts = [];
+            snap.forEach(child => {
+                posts.push({ id: child.key, data: child.val() });
+            });
+
+            posts.sort((a, b) => b.data.time - a.data.time);
+
+            // Filtrar por tab
+            if (feedTabAtual === 'following') {
+                posts = posts.filter(p => followingList.has(p.data.user) || p.data.user === user);
+            }
+            // 'foryou' e 'all' mostram todos os posts sem filtro
+            // 'foryou' pode no futuro ter algoritmo; por ora = 'all'
+
+            let nomesUnicos = [...new Set(posts.map(p => p.data.user).filter(Boolean))];
+            let fotosPromise = Promise.all(
+                nomesUnicos.map(nome =>
+                    db.ref('fotosPerfil/' + nome).once('value').then(s => [nome, s.val()])
+                )
+            ).then(entries => Object.fromEntries(entries));
+
+            fotosPromise.then(fotosMap => {
+                if (posts.length === 0) {
+                    feed.innerHTML = '<div style="text-align:center;color:#555;padding:40px 20px;font-size:14px;">Nenhum post aqui ainda.</div>';
+                    return;
+                }
+                posts.forEach(p => renderPost(p.id, p.data, fotosMap));
+            });
+        });
+
+    db.ref('posts').on('child_changed', snap => {
+        let id = snap.key;
+        let p = snap.val();
+        let btn = document.getElementById('like-' + id);
+        if (btn) btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="margin-right:4px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ${p.likes || 0}`;
+    });
+}
+
+function toggleHashtagInfo() {
+    let box = document.getElementById('hashtagInfoBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+/* ================= SENHA DE ACESSO ================= */
+
+function verificarSenhaAtiva() {
+    let senha = localStorage.getItem('appSenha');
+    if (senha) {
+        let lock = document.getElementById('lockScreen');
+        if (lock) {
+            lock.style.display = 'flex';
+            let btnBio = document.getElementById('btnLockBio');
+            if (btnBio) btnBio.style.display = localStorage.getItem('bioCredId') ? 'block' : 'none';
+            setTimeout(() => document.getElementById('lockInput').focus(), 200);
+        }
+    }
+}
+
+/* ================= BIOMETRIA (WEBAUTHN) ================= */
+
+function bufParaB64(buf) {
+    return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+
+function b64ParaBuf(b64) {
+    let bin = atob(b64);
+    let buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    return buf.buffer;
+}
+
+async function biometriaDisponivel() {
+    if (!window.PublicKeyCredential || !PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
+    try {
+        return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    } catch (e) {
+        return false;
+    }
+}
+
+async function atualizarAreaBiometria() {
+    let area = document.getElementById('bioArea');
+    if (!area) return;
+    let temSenha = !!localStorage.getItem('appSenha');
+    let disponivel = temSenha && await biometriaDisponivel();
+    area.style.display = disponivel ? 'block' : 'none';
+    if (!disponivel) return;
+    let btn = document.getElementById('btnBio');
+    if (localStorage.getItem('bioCredId')) {
+        btn.innerText = 'Impressão digital ativada';
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'default';
+    } else {
+        btn.innerText = 'Ativar desbloqueio por impressão digital';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+    }
+}
+
+async function ativarBiometria() {
+    let disponivel = await biometriaDisponivel();
+    if (!disponivel) {
+        alert('Biometria não disponível neste dispositivo.');
+        return;
+    }
+    try {
+        let userId = new Uint8Array(16);
+        crypto.getRandomValues(userId);
+        let challenge = new Uint8Array(32);
+        crypto.getRandomValues(challenge);
+        let cred = await navigator.credentials.create({
+            publicKey: {
+                challenge: challenge,
+                rp: { name: 'Nova-Fala' },
+                user: { id: userId, name: user || 'usuario', displayName: user || 'usuario' },
+                pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+                authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
+                timeout: 60000
+            }
+        });
+        localStorage.setItem('bioCredId', bufParaB64(cred.rawId));
+        atualizarAreaBiometria();
+        let msg = document.getElementById('senhaMsg');
+        if (msg) { msg.style.color = '#2ee6a6'; msg.innerText = 'Impressão digital ativada com sucesso!'; }
+    } catch (e) {
+        alert('Não foi possível ativar a impressão digital.');
+    }
+}
+
+async function entrarComBiometria() {
+    let credId = localStorage.getItem('bioCredId');
+    if (!credId) return;
+    try {
+        let challenge = new Uint8Array(32);
+        crypto.getRandomValues(challenge);
+        await navigator.credentials.get({
+            publicKey: {
+                challenge: challenge,
+                allowCredentials: [{ id: b64ParaBuf(credId), type: 'public-key' }],
+                userVerification: 'required',
+                timeout: 60000
+            }
+        });
+        let lock = document.getElementById('lockScreen');
+        lock.style.display = 'none';
+        document.getElementById('lockInput').value = '';
+        document.getElementById('lockMsg').innerText = '';
+    } catch (e) {
+        document.getElementById('lockMsg').innerText = 'Falha na verificação biométrica.';
+    }
+}
+
+function verificarSenha() {
+    let senha = localStorage.getItem('appSenha');
+    let input = document.getElementById('lockInput').value;
+    let msg = document.getElementById('lockMsg');
+
+    if (input === senha) {
+        let lock = document.getElementById('lockScreen');
+        lock.style.display = 'none';
+        document.getElementById('lockInput').value = '';
+        msg.innerText = '';
+    } else {
+        msg.innerText = 'Senha incorreta. Tente novamente.';
+        document.getElementById('lockInput').value = '';
+        document.getElementById('lockInput').focus();
+        // Shake no input
+        let inp = document.getElementById('lockInput');
+        inp.style.animation = 'none';
+        inp.offsetHeight;
+        inp.style.animation = 'lockShake 0.4s ease';
+    }
+}
+
+function abrirConfigSenha() {
+    let area = document.getElementById('senhaArea');
+    let isOpen = area.style.display !== 'none';
+    area.style.display = isOpen ? 'none' : 'block';
+
+    let btnRemover = document.getElementById('btnRemoverSenha');
+    if (localStorage.getItem('appSenha')) {
+        document.getElementById('btnSenhaTexto').innerText = 'Alterar senha de acesso';
+        btnRemover.style.display = 'block';
+    } else {
+        document.getElementById('btnSenhaTexto').innerText = 'Definir senha de acesso';
+        btnRemover.style.display = 'none';
+    }
+
+    document.getElementById('senhaInput').value = '';
+    document.getElementById('senhaConfirmInput').value = '';
+    document.getElementById('senhaMsg').innerText = '';
+    atualizarAreaBiometria();
+}
+
+function salvarSenha() {
+    let s1 = document.getElementById('senhaInput').value;
+    let s2 = document.getElementById('senhaConfirmInput').value;
+    let msg = document.getElementById('senhaMsg');
+
+    if (!/^\d{4,6}$/.test(s1)) {
+        msg.style.color = '#e05555';
+        msg.innerText = 'A senha deve ter 4 a 6 dígitos numéricos.';
+        return;
+    }
+    if (s1 !== s2) {
+        msg.style.color = '#e05555';
+        msg.innerText = 'As senhas não coincidem.';
+        return;
+    }
+
+    localStorage.setItem('appSenha', s1);
+    msg.style.color = '#2ee6a6';
+    msg.innerText = 'Senha salva com sucesso!';
+    document.getElementById('btnSenhaTexto').innerText = 'Alterar senha de acesso';
+    document.getElementById('btnRemoverSenha').style.display = 'block';
+
+    document.getElementById('senhaInput').value = '';
+    document.getElementById('senhaConfirmInput').value = '';
+    atualizarAreaBiometria();
+}
+
+function removerSenha() {
+    customConfirm('Deseja remover a senha de acesso?').then(ok => {
+        if (!ok) return;
+        localStorage.removeItem('appSenha');
+        localStorage.removeItem('bioCredId');
+        let msg = document.getElementById('senhaMsg');
+        msg.style.color = '#888';
+        msg.innerText = 'Senha removida.';
+        document.getElementById('btnSenhaTexto').innerText = 'Definir senha de acesso';
+        document.getElementById('btnRemoverSenha').style.display = 'none';
+        document.getElementById('senhaArea').style.display = 'none';
+        atualizarAreaBiometria();
+    });
+}
+
+// Verificar senha ao carregar (se definida)
+document.addEventListener('DOMContentLoaded', () => {
+    verificarSenhaAtiva();
+    carregarFollowing(() => {
+        // seguindo carregado — feed tab já inicia em 'foryou' pelo carregarFeed original
+    });
+});
