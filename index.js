@@ -1642,5 +1642,8 @@ document.addEventListener('DOMContentLoaded', () => {
     verificarSenhaAtiva();
     carregarFollowing(() => {
         // seguindo carregado — feed tab já inicia em 'foryou' pelo carregarFeed original
+        carregarStories();
     });
+    // reavalia expiração dos stories periodicamente enquanto o app está aberto
+    setInterval(carregarStories, 5 * 60 * 1000);
 });

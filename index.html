@@ -108,6 +108,46 @@
     </div>
 </div>
 
+<!-- ================= STORIES BAR ================= -->
+<div id="storiesBar"></div>
+
+<input type="file" id="storyInput" accept="image/*,video/*" hidden>
+
+<!-- ================= STORY EDITOR ================= -->
+<div id="storyEditor">
+    <div class="story-editor-topbar">
+        <span onclick="fecharStoryEditor()">✕</span>
+        <button class="story-editor-publish" id="btnPublicarStory" onclick="publicarStory()">Publicar</button>
+    </div>
+    <div class="story-editor-stage" id="storyEditorStage">
+        <div class="story-editor-loading" id="storyEditorLoading">Publicando...</div>
+    </div>
+    <div class="story-editor-toolbar">
+        <button onclick="adicionarStickerTexto()">🔤 Texto</button>
+        <button onclick="adicionarStickerHora()">🕐 Hora</button>
+        <button onclick="adicionarStickerTemperatura()">🌡️ Temperatura</button>
+        <button onclick="adicionarStickerLocalizacao()">📍 Localização</button>
+    </div>
+</div>
+
+<!-- ================= STORY VIEWER ================= -->
+<div id="storyViewer">
+    <div class="story-progress-row" id="storyProgressRow"></div>
+    <div class="story-viewer-header">
+        <div class="story-viewer-avatar" id="storyViewerAvatar"></div>
+        <div>
+            <div class="story-viewer-name" id="storyViewerName"></div>
+            <div class="story-viewer-time" id="storyViewerTime"></div>
+        </div>
+        <span class="story-viewer-delete" id="storyViewerDelete" onclick="excluirStoryAtual()" style="display:none;">🗑️</span>
+        <span class="story-viewer-close" onclick="fecharStoryViewer()">✕</span>
+    </div>
+    <div class="story-media-stage" id="storyMediaStage">
+        <div class="story-tap-zone story-tap-prev" onclick="storyAnterior()"></div>
+        <div class="story-tap-zone story-tap-next" onclick="storyProximo()"></div>
+    </div>
+</div>
+
 <div id="feedLoading" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:14px;">
     <div class="feed-spinner"></div>
     <div style="font-size:13px;color:#666;letter-spacing:0.3px;">Carregando posts...</div>
@@ -341,6 +381,7 @@
 </nav>
 
 <script src="index.js"></script>
+<script src="stories.js"></script>
 <script>
 // ================= TAB BAR HELPERS =================
 function irParaFeed() {
