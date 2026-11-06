@@ -391,6 +391,57 @@ button.seguindo{
     transform:scale(1.08);
 }
 
+/* ===== BOTÃO COMPARTILHAR PERFIL ===== */
+.btn-compartilhar{
+    position:absolute;
+    top:12px;
+    left:14px;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.15);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:all 0.2s;
+    color:white;
+    font-size:15px;
+    backdrop-filter:blur(6px);
+}
+.btn-compartilhar:hover{
+    background:rgba(255,255,255,0.16);
+    transform:scale(1.08);
+}
+
+/* ===== TOAST (feedback rápido, ex: link copiado) ===== */
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translateX(-50%) translateY(20px);
+    background:#1a1d24;
+    border:1px solid #262a33;
+    color:#f1f2f4;
+    padding:11px 18px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    z-index:900;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+}
+.toast.mostrar{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+}
+
 /* ===== PAINEL PERSONALIZAR ===== */
 #personalizarOverlay{
     position:fixed;
@@ -594,6 +645,190 @@ button.seguindo{
     font-family:system-ui;
 }
 
+/* ===== META INFO (localização / site) no perfil ===== */
+.perfil-meta{
+    margin-top:8px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:4px 14px;
+    font-size:13px;
+    color:#8b8f98;
+}
+.perfil-meta-item{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+}
+.perfil-meta-item svg{ width:14px;height:14px;flex-shrink:0; }
+.perfil-meta-item a{ color:#1d9bf0; text-decoration:none; }
+.perfil-meta-item a:hover{ text-decoration:underline; }
+
+/* ===== PAINEL PERSONALIZAR — CABEÇALHO + ABAS ===== */
+.perso-header{
+    padding:14px 20px 0;
+    border-bottom:1px solid #1f1f1f;
+}
+.perso-titulo{
+    border-bottom:none;
+    padding:0 0 14px;
+    text-align:left;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size:17px;
+}
+.perso-titulo .perso-titulo-icone{
+    width:30px;height:30px;
+    border-radius:9px;
+    background:linear-gradient(135deg,#1d9bf0,#7c3aed);
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;
+    flex-shrink:0;
+}
+.perso-fechar{
+    margin-left:auto;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:#1a1d24;
+    border:1px solid #262a33;
+    display:flex;align-items:center;justify-content:center;
+    color:#8b8f98;
+    cursor:pointer;
+    font-size:14px;
+    transition:.15s;
+    flex-shrink:0;
+}
+.perso-fechar:hover{ background:#232730; color:#fff; }
+
+.perso-tabs{
+    display:flex;
+    gap:4px;
+    padding:0 20px;
+    background:#0d0e11;
+    border-bottom:1px solid #1f1f1f;
+    overflow-x:auto;
+    scrollbar-width:none;
+}
+.perso-tabs::-webkit-scrollbar{ display:none; }
+.perso-tab{
+    flex:1;
+    min-width:max-content;
+    padding:12px 14px 11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font-size:13px;
+    font-weight:600;
+    color:#6b7078;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    transition:color .18s, border-color .18s;
+    white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+}
+.perso-tab span.perso-tab-emoji{ font-size:14px; }
+.perso-tab:hover{ color:#c7cad1; }
+.perso-tab.ativa{
+    color:#1d9bf0;
+    border-color:#1d9bf0;
+}
+
+.perso-tabpanel{ display:none; flex-direction:column; gap:18px; }
+.perso-tabpanel.ativa{ display:flex; }
+
+/* ===== ABA PERFIL: avatar + campos de texto ===== */
+.perso-avatar-editor{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:4px 0 2px;
+}
+.perso-avatar-preview{
+    width:64px;height:64px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#1d9bf0,#7c3aed);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:700;color:#fff;
+    overflow:hidden;
+    flex-shrink:0;
+    border:2px solid #1e2128;
+    position:relative;
+    cursor:pointer;
+}
+.perso-avatar-preview img{ width:100%;height:100%;object-fit:cover; }
+.perso-avatar-preview::after{
+    content:"📷";
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+    opacity:0;
+    transition:opacity .15s;
+}
+.perso-avatar-preview:hover::after{ opacity:1; }
+.perso-avatar-acoes{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+.perso-avatar-btn{
+    padding:7px 14px;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    text-align:center;
+    transition:.15s;
+    border:1px solid #262a33;
+}
+.perso-avatar-btn.trocar{ background:#1a1d24; color:#e8e8e8; }
+.perso-avatar-btn.trocar:hover{ background:#232730; border-color:#1d9bf0; }
+.perso-avatar-btn.remover{ background:transparent; color:#ef4444; border-color:transparent; }
+.perso-avatar-btn.remover:hover{ background:rgba(239,68,68,0.1); }
+
+.perso-input, .perso-textarea{
+    width:100%;
+    box-sizing:border-box;
+    padding:11px 13px;
+    border-radius:10px;
+    border:1px solid #262a33;
+    background:#0f1013;
+    color:#f1f2f4;
+    font-size:14px;
+    font-family:inherit;
+    outline:none;
+    transition:border-color .15s, background .15s;
+}
+.perso-input:focus, .perso-textarea:focus{
+    border-color:#1d9bf0;
+    background:#111318;
+}
+.perso-textarea{ resize:none; min-height:78px; line-height:1.4; }
+.perso-input-icone{
+    position:relative;
+}
+.perso-input-icone svg{
+    position:absolute;
+    left:12px; top:50%;
+    transform:translateY(-50%);
+    width:15px;height:15px;
+    color:#5b5f68;
+    pointer-events:none;
+}
+.perso-input-icone input{ padding-left:36px; }
+.perso-contador{
+    align-self:flex-end;
+    font-size:11px;
+    color:#5b5f68;
+    margin-top:2px;
+}
+.perso-contador.perto{ color:#f59e0b; }
+.perso-contador.limite{ color:#ef4444; }
+
 @keyframes fadeIn{
     from{opacity:0;}
     to{opacity:1;}
@@ -677,6 +912,8 @@ button.seguindo{
     from { transform: scale(0); opacity: 0; }
     to   { transform: scale(1); opacity: 1; }
 }
+
+/* ================= FIM ================= */
 </style>
 </head>
 
@@ -693,6 +930,11 @@ button.seguindo{
     <!-- Botão lápis personalizar - só aparece no próprio perfil -->
     <div id="btnPersonalizar" class="btn-personalizar" onclick="abrirPersonalizar()" style="display:none;" title="Personalizar perfil">✏️</div>
 
+    <!-- Botão compartilhar perfil -->
+    <div id="btnCompartilhar" class="btn-compartilhar" onclick="compartilharPerfil()" title="Compartilhar perfil">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    </div>
+
     <div class="avatar" id="avatar" onclick="trocarFoto()"></div>
 
     <!-- Nome + badge verificado -->
@@ -707,8 +949,11 @@ button.seguindo{
     </div>
 
     <div id="bioEl" style="margin-top:6px;font-size:14px;color:#aaa;max-width:300px;margin-left:auto;margin-right:auto;word-break:break-word;"></div>
-    <div id="editBioBtn" style="display:none;margin-top:4px;">
-        <span onclick="editarBio()" style="font-size:12px;color:#1d9bf0;cursor:pointer;">✏️ Editar bio</span>
+
+    <div class="perfil-meta" id="perfilMeta"></div>
+
+    <div id="editBioBtn" style="display:none;margin-top:8px;">
+        <span onclick="abrirPersonalizar('perfil')" style="font-size:12px;color:#1d9bf0;cursor:pointer;font-weight:600;">✏️ Editar perfil</span>
     </div>
 
     <div class="stats">
@@ -743,86 +988,149 @@ button.seguindo{
 <div id="personalizarOverlay" onclick="fecharPersonalizar()"></div>
 <div id="personalizarBox">
     <div class="perso-handle"></div>
-    <div class="perso-titulo">✏️ Personalizar Perfil</div>
+
+    <div class="perso-header">
+        <div class="perso-titulo">
+            <span class="perso-titulo-icone">✏️</span>
+            Editar perfil
+            <span class="perso-fechar" onclick="fecharPersonalizar()" title="Fechar">✕</span>
+        </div>
+    </div>
+
+    <div class="perso-tabs">
+        <div class="perso-tab ativa" data-tab="perfil" onclick="trocarTabPerso('perfil')"><span class="perso-tab-emoji">🙂</span>Perfil</div>
+        <div class="perso-tab" data-tab="cores" onclick="trocarTabPerso('cores')"><span class="perso-tab-emoji">🎨</span>Cores</div>
+        <div class="perso-tab" data-tab="fonte" onclick="trocarTabPerso('fonte')"><span class="perso-tab-emoji">🖋️</span>Fonte</div>
+    </div>
+
     <div class="perso-corpo">
 
-        <!-- SEÇÃO: CORES -->
-        <div class="perso-secao">🎨 Cores</div>
+        <!-- ===== ABA: PERFIL (informações) ===== -->
+        <div class="perso-tabpanel ativa" id="tabPerfil">
 
-        <div class="perso-grupo">
-            <div class="perso-label">Cor de fundo do perfil</div>
-            <div class="perso-row">
-                <input type="color" id="persoCorFundo" value="#0b0b0b">
-                <span style="font-size:12px;color:#666;">Toque para escolher</span>
+            <div class="perso-avatar-editor">
+                <div class="perso-avatar-preview" id="persoAvatarPreview" onclick="trocarFoto()" title="Trocar foto"></div>
+                <div class="perso-avatar-acoes">
+                    <div class="perso-avatar-btn trocar" onclick="trocarFoto()">Trocar foto</div>
+                    <div class="perso-avatar-btn remover" onclick="removerFotoPerfil()">Remover foto</div>
+                </div>
             </div>
-            <div class="perso-swatches" id="swatchesFundo"></div>
-        </div>
 
-        <div class="perso-grupo">
-            <div class="perso-label">Cor do nome</div>
-            <div class="perso-row">
-                <input type="color" id="persoCorNome" value="#e8e8e8">
-                <span style="font-size:12px;color:#666;">Cor do nome exibido</span>
+            <div class="perso-grupo">
+                <div class="perso-label">Nome de exibição</div>
+                <input class="perso-input" id="persoNomeExibicao" type="text" maxlength="30" placeholder="Ex: Ana Souza">
+                <div class="perso-contador" id="persoContadorNome">0/30</div>
             </div>
-            <div class="perso-swatches" id="swatchesNome"></div>
-        </div>
 
-        <div class="perso-grupo">
-            <div class="perso-label">Cor do texto da bio</div>
-            <div class="perso-row">
-                <input type="color" id="persoCorBio" value="#aaaaaa">
-                <span style="font-size:12px;color:#666;">Cor da bio</span>
+            <div class="perso-grupo">
+                <div class="perso-label">Bio</div>
+                <textarea class="perso-textarea" id="persoBio" maxlength="150" placeholder="Fale um pouco sobre você..."></textarea>
+                <div class="perso-contador" id="persoContadorBio">0/150</div>
             </div>
-            <div class="perso-swatches" id="swatchesBio"></div>
-        </div>
 
-        <!-- SEÇÃO: BOTÃO SEGUIR -->
-        <div class="perso-secao" style="margin-top:8px;">🔵 Botão Seguir / Seguindo</div>
-
-        <div class="perso-grupo">
-            <div class="perso-label">Cor de fundo do botão Seguir</div>
-            <div class="perso-row">
-                <input type="color" id="persoCorBtnSeguir" value="#1d9bf0">
-                <span style="font-size:12px;color:#666;">Fundo</span>
+            <div class="perso-grupo">
+                <div class="perso-label">Localização</div>
+                <div class="perso-input-icone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <input class="perso-input" id="persoLocalizacao" type="text" maxlength="40" placeholder="Ex: São Paulo, Brasil">
+                </div>
             </div>
-            <div class="perso-swatches" id="swatchesBtnSeguir"></div>
-        </div>
 
-        <div class="perso-grupo">
-            <div class="perso-label">Cor do texto do botão Seguir</div>
-            <div class="perso-row">
-                <input type="color" id="persoCorBtnSeguirTexto" value="#ffffff">
-                <span style="font-size:12px;color:#666;">Texto</span>
+            <div class="perso-grupo">
+                <div class="perso-label">Site / link</div>
+                <div class="perso-input-icone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    <input class="perso-input" id="persoSite" type="text" maxlength="60" placeholder="Ex: meusite.com">
+                </div>
             </div>
+
         </div>
 
-        <div class="perso-grupo">
-            <div class="perso-label">Cor de fundo do botão Seguindo</div>
-            <div class="perso-row">
-                <input type="color" id="persoCorBtnSeguindo" value="#2ee6a6">
-                <span style="font-size:12px;color:#666;">Fundo quando já segue</span>
+        <!-- ===== ABA: CORES ===== -->
+        <div class="perso-tabpanel" id="tabCores">
+
+            <div class="perso-secao">🎨 Perfil</div>
+
+            <div class="perso-grupo">
+                <div class="perso-label">Cor de fundo do perfil</div>
+                <div class="perso-row">
+                    <input type="color" id="persoCorFundo" value="#0b0b0b">
+                    <span style="font-size:12px;color:#666;">Toque para escolher</span>
+                </div>
+                <div class="perso-swatches" id="swatchesFundo"></div>
             </div>
-            <div class="perso-swatches" id="swatchesBtnSeguindo"></div>
-        </div>
 
-        <div class="perso-grupo">
-            <div class="perso-label">Cor do texto do botão Seguindo</div>
-            <div class="perso-row">
-                <input type="color" id="persoCorBtnSeguindoTexto" value="#000000">
-                <span style="font-size:12px;color:#666;">Texto quando já segue</span>
+            <div class="perso-grupo">
+                <div class="perso-label">Cor do nome</div>
+                <div class="perso-row">
+                    <input type="color" id="persoCorNome" value="#e8e8e8">
+                    <span style="font-size:12px;color:#666;">Cor do nome exibido</span>
+                </div>
+                <div class="perso-swatches" id="swatchesNome"></div>
             </div>
+
+            <div class="perso-grupo">
+                <div class="perso-label">Cor do texto da bio</div>
+                <div class="perso-row">
+                    <input type="color" id="persoCorBio" value="#aaaaaa">
+                    <span style="font-size:12px;color:#666;">Cor da bio</span>
+                </div>
+                <div class="perso-swatches" id="swatchesBio"></div>
+            </div>
+
+            <!-- SEÇÃO: BOTÃO SEGUIR -->
+            <div class="perso-secao" style="margin-top:8px;">🔵 Botão Seguir / Seguindo</div>
+
+            <div class="perso-grupo">
+                <div class="perso-label">Cor de fundo do botão Seguir</div>
+                <div class="perso-row">
+                    <input type="color" id="persoCorBtnSeguir" value="#1d9bf0">
+                    <span style="font-size:12px;color:#666;">Fundo</span>
+                </div>
+                <div class="perso-swatches" id="swatchesBtnSeguir"></div>
+            </div>
+
+            <div class="perso-grupo">
+                <div class="perso-label">Cor do texto do botão Seguir</div>
+                <div class="perso-row">
+                    <input type="color" id="persoCorBtnSeguirTexto" value="#ffffff">
+                    <span style="font-size:12px;color:#666;">Texto</span>
+                </div>
+            </div>
+
+            <div class="perso-grupo">
+                <div class="perso-label">Cor de fundo do botão Seguindo</div>
+                <div class="perso-row">
+                    <input type="color" id="persoCorBtnSeguindo" value="#2ee6a6">
+                    <span style="font-size:12px;color:#666;">Fundo quando já segue</span>
+                </div>
+                <div class="perso-swatches" id="swatchesBtnSeguindo"></div>
+            </div>
+
+            <div class="perso-grupo">
+                <div class="perso-label">Cor do texto do botão Seguindo</div>
+                <div class="perso-row">
+                    <input type="color" id="persoCorBtnSeguindoTexto" value="#000000">
+                    <span style="font-size:12px;color:#666;">Texto quando já segue</span>
+                </div>
+            </div>
+
         </div>
 
-        <!-- SEÇÃO: FONTES -->
-        <div class="perso-secao" style="margin-top:8px;">🖋️ Fonte do nome e bio</div>
-        <div class="perso-grupo">
-            <div id="fontGrid" class="font-grid"></div>
-        </div>
+        <!-- ===== ABA: FONTE ===== -->
+        <div class="perso-tabpanel" id="tabFonte">
 
-        <!-- PREVIEW -->
-        <div class="perso-grupo">
-            <div class="perso-label">Pré-visualização</div>
-            <div class="perso-preview-text" id="persoPreview">@SeuNome — bio aqui...</div>
+            <div class="perso-secao">🖋️ Fonte do nome e bio</div>
+            <div class="perso-grupo">
+                <div id="fontGrid" class="font-grid"></div>
+            </div>
+
+            <!-- PREVIEW -->
+            <div class="perso-grupo">
+                <div class="perso-label">Pré-visualização</div>
+                <div class="perso-preview-text" id="persoPreview">@SeuNome — bio aqui...</div>
+            </div>
+
         </div>
 
     </div>
@@ -831,6 +1139,9 @@ button.seguindo{
         <button class="perso-salvar" onclick="salvarPersonalizar()">Salvar</button>
     </div>
 </div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <!-- ================= TAB BAR ================= -->
 <nav id="tabBar">
@@ -948,11 +1259,41 @@ function carregarBio() {
 }
 
 function editarBio() {
-    let atual = document.getElementById("bioEl").innerText;
-    let nova = prompt("Editar bio (máx. 150 caracteres):", atual === "Toque em ✏️ para adicionar uma bio" ? "" : atual);
-    if (nova === null) return;
-    nova = nova.trim().substring(0, 150);
-    db.ref("bios/" + user).set(nova || null);
+    // Mantido por compatibilidade: agora a bio é editada dentro do painel "Editar perfil".
+    abrirPersonalizar('perfil');
+}
+
+/* ================= INFORMAÇÕES DO PERFIL (nome de exibição, localização, site) ================= */
+
+function carregarInfoPerfil() {
+    db.ref("perfilInfo/" + perfil).on("value", snap => {
+        let dados = snap.exists() ? snap.val() : {};
+        let nomeEl = document.getElementById("nome");
+
+        if (dados.nomeExibicao) {
+            nomeEl.innerHTML = dados.nomeExibicao + '<span style="display:block;font-size:12px;font-weight:600;color:#8b8f98;margin-top:1px;">@' + perfil + '</span>';
+        } else {
+            nomeEl.innerText = "@" + perfil;
+        }
+
+        let meta = document.getElementById("perfilMeta");
+        let partes = [];
+        if (dados.localizacao) {
+            partes.push('<span class="perfil-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>' + escaparHtml(dados.localizacao) + '</span>');
+        }
+        if (dados.site) {
+            let href = /^https?:\/\//i.test(dados.site) ? dados.site : "https://" + dados.site;
+            partes.push('<span class="perfil-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><a href="' + href + '" target="_blank" rel="noopener noreferrer">' + escaparHtml(dados.site) + '</a></span>');
+        }
+        meta.innerHTML = partes.join("");
+    });
+}
+
+function escaparHtml(texto) {
+    return String(texto)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
 }
 
 /* ================= FOTO PERFIL ================= */
@@ -992,12 +1333,52 @@ fotoPerfilInput.addEventListener("change", ()=>{
 function carregarFotoPerfil(){
     db.ref("fotosPerfil/" + perfil).on("value", snap=>{
         let avatar = document.getElementById("avatar");
+        let persoPreview = document.getElementById("persoAvatarPreview");
         if(snap.exists()){
             avatar.innerHTML = `<img src="${snap.val()}">`;
+            if (persoPreview) persoPreview.innerHTML = `<img src="${snap.val()}">`;
         } else {
             avatar.innerText = perfil.charAt(0).toUpperCase();
+            if (persoPreview) persoPreview.innerText = perfil.charAt(0).toUpperCase();
         }
     });
+}
+
+function removerFotoPerfil(){
+    if (user !== perfil) return;
+    if (!confirm("Remover sua foto de perfil?")) return;
+    db.ref("fotosPerfil/" + user).remove();
+}
+
+/* ================= COMPARTILHAR PERFIL ================= */
+
+function mostrarToast(mensagem) {
+    let toast = document.getElementById("toast");
+    toast.innerText = mensagem;
+    toast.classList.add("mostrar");
+    clearTimeout(window.__toastTimeout);
+    window.__toastTimeout = setTimeout(() => toast.classList.remove("mostrar"), 2400);
+}
+
+function compartilharPerfil() {
+    let url = window.location.origin + window.location.pathname + "?perfil=" + encodeURIComponent(perfil);
+
+    if (navigator.share) {
+        navigator.share({
+            title: "@" + perfil,
+            text: "Dá uma olhada no perfil de @" + perfil,
+            url: url
+        }).catch(() => {}); // usuário cancelou o compartilhamento, ignora
+        return;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url)
+            .then(() => mostrarToast("🔗 Link do perfil copiado!"))
+            .catch(() => prompt("Copie o link do perfil:", url));
+    } else {
+        prompt("Copie o link do perfil:", url);
+    }
 }
 
 /* ================= SEGUIR ================= */
@@ -1372,7 +1753,38 @@ function carregarPersonalizacao() {
     });
 }
 
-function abrirPersonalizar() {
+/* ===== ABAS do painel "Editar perfil" ===== */
+function trocarTabPerso(tab) {
+    document.querySelectorAll(".perso-tab").forEach(t => t.classList.toggle("ativa", t.dataset.tab === tab));
+    document.querySelectorAll(".perso-tabpanel").forEach(p => p.classList.remove("ativa"));
+    let mapa = { perfil:"tabPerfil", cores:"tabCores", fonte:"tabFonte" };
+    document.getElementById(mapa[tab]).classList.add("ativa");
+}
+
+function atualizarContador(inputId, contadorId, max) {
+    let val = document.getElementById(inputId).value.length;
+    let el = document.getElementById(contadorId);
+    el.innerText = val + "/" + max;
+    el.classList.toggle("perto", val >= max * 0.85 && val < max);
+    el.classList.toggle("limite", val >= max);
+}
+
+function abrirPersonalizar(abaInicial) {
+    // Carrega bio + informações do perfil (nome de exibição, localização, site)
+    let bioAtualProm = db.ref("bios/" + user).once("value");
+    let infoProm = db.ref("perfilInfo/" + user).once("value");
+
+    Promise.all([bioAtualProm, infoProm]).then(([bioSnap, infoSnap]) => {
+        document.getElementById("persoBio").value = bioSnap.exists() ? bioSnap.val() : "";
+        let info = infoSnap.exists() ? infoSnap.val() : {};
+        document.getElementById("persoNomeExibicao").value = info.nomeExibicao || "";
+        document.getElementById("persoLocalizacao").value = info.localizacao || "";
+        document.getElementById("persoSite").value = info.site || "";
+
+        atualizarContador("persoBio", "persoContadorBio", 150);
+        atualizarContador("persoNomeExibicao", "persoContadorNome", 30);
+    });
+
     aparenciasDB.ref("aparencias/" + user).once("value").then(snap => {
         let salvo = snap.exists() ? snap.val() : {};
         document.getElementById("persoCorFundo").value = salvo.corFundo || "#0b0b0b";
@@ -1395,6 +1807,8 @@ function abrirPersonalizar() {
 
         atualizarPreview();
     });
+
+    trocarTabPerso(abaInicial || "perfil");
 
     document.getElementById("personalizarOverlay").style.display = "block";
     setTimeout(() => document.getElementById("personalizarBox").classList.add("aberto"), 10);
@@ -1419,7 +1833,18 @@ function atualizarPreview() {
 }
 
 function salvarPersonalizar() {
-    let dados = {
+    let novaBio = document.getElementById("persoBio").value.trim().substring(0, 150);
+    let novoNomeExibicao = document.getElementById("persoNomeExibicao").value.trim().substring(0, 30);
+    let novaLocalizacao = document.getElementById("persoLocalizacao").value.trim().substring(0, 40);
+    let novoSite = document.getElementById("persoSite").value.trim().substring(0, 60);
+
+    let infoPerfil = {
+        nomeExibicao: novoNomeExibicao || null,
+        localizacao:  novaLocalizacao || null,
+        site:         novoSite || null
+    };
+
+    let dadosAparencia = {
         corFundo:              document.getElementById("persoCorFundo").value,
         corBio:                document.getElementById("persoCorBio").value,
         corNome:               document.getElementById("persoCorNome").value,
@@ -1429,9 +1854,14 @@ function salvarPersonalizar() {
         corBtnSeguindoTexto:   document.getElementById("persoCorBtnSeguindoTexto").value,
         fonte:                 fonteAtual
     };
-    aparenciasDB.ref("aparencias/" + user).set(dados).then(() => {
+
+    Promise.all([
+        db.ref("bios/" + user).set(novaBio || null),
+        db.ref("perfilInfo/" + user).set(infoPerfil),
+        aparenciasDB.ref("aparencias/" + user).set(dadosAparencia)
+    ]).then(() => {
         fecharPersonalizar();
-    });
+    }).catch(err => alert("Erro ao salvar: " + err.message));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1439,11 +1869,18 @@ document.addEventListener("DOMContentLoaded", () => {
         let el = document.getElementById(id);
         if (el) el.addEventListener("input", atualizarPreview);
     });
+
+    let campoNome = document.getElementById("persoNomeExibicao");
+    if (campoNome) campoNome.addEventListener("input", () => atualizarContador("persoNomeExibicao", "persoContadorNome", 30));
+
+    let campoBio = document.getElementById("persoBio");
+    if (campoBio) campoBio.addEventListener("input", () => atualizarContador("persoBio", "persoContadorBio", 150));
 });
 
 /* ================= INIT ================= */
 
 carregarBio();
+carregarInfoPerfil();
 carregarFotoPerfil();
 atualizarBotao();
 carregarSeguidores();

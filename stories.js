@@ -3,45 +3,66 @@
    Mídia fica no Supabase Storage. Metadados ficam no Firebase (db).
    ===================================================================== */
 
-/* ---------- CONFIG SUPABASE ---------- */
-// Preencha com os dados do seu projeto Supabase.
-const SUPABASE_URL = "https://xtnzuxdocisjivpezamp.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_02upIohbM1UyEGBGj-7HgA_kRwCxpio";
-// Nome do bucket criado no Supabase Storage (Storage > Buckets).
-// Se você deu outro nome ao bucket, troque aqui.
-const SUPABASE_BUCKET = "stories";
+/* ---------- CONFIG APPWRITE ---------- */
+// Preencha ENDPOINT e PROJECT_ID (Appwrite Console > seu projeto > Settings).
+// O ENDPOINT normalmente é algo como "https://cloud.appwrite.io/v1" (ou o
+// endereço regional que aparece no seu Console, ex: "https://fra.cloud.appwrite.io/v1").
+const APPWRITE_ENDPOINT = "SEU_ENDPOINT";
+const APPWRITE_PROJECT_ID = "SEU_PROJECT_ID";
+const APPWRITE_BUCKET_ID = "6a850c230009a8891af4";
+// Obs: você me passou o mesmo ID pra "database" e "bucket". O upload de
+// mídia usa só o Bucket ID (Storage) — deixei ele aqui. Se esse valor for
+// na verdade o ID do Database, confira em Console > Storage o ID certo do
+// bucket e troque a linha acima.
+//
+// IMPORTANTE — permissões do bucket: como não usamos login do Appwrite
+// (o app usa o login próprio do Nova-Fala), o bucket precisa permitir
+// acesso do papel "Any": Console > Storage > seu bucket > Settings >
+// Permissions > adicione "Any" com Create, Read e Delete marcados.
+// Sem isso o upload vai falhar com erro 401.
 
 const STORY_DURACAO_MS = 24 * 60 * 60 * 1000; // 24 horas
 const STORY_TEMPO_IMAGEM_MS = 6000; // tempo que cada foto fica na tela
 
-/* ---------- SUPABASE STORAGE (via REST, sem SDK) ---------- */
+/* ---------- APPWRITE STORAGE (via REST, sem SDK) ---------- */
 
-function supabaseUpload(path, fileOrBlob, contentType) {
-    return fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_BUCKET}/${path}`, {
-        method: "POST",
-        headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-            "Content-Type": contentType || fileOrBlob.type || "application/octet-stream",
-            "x-upsert": "true"
-        },
-        body: fileOrBlob
-    }).then(r => {
-        if (!r.ok) throw new Error("Falha ao enviar arquivo para o Supabase (" + r.status + ")");
-        return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/${path}`;
-    });
+function appwriteConfigurado() {
+    return APPWRITE_ENDPOINT && APPWRITE_ENDPOINT !== "SEU_ENDPOINT"
+        && APPWRITE_PROJECT_ID && APPWRITE_PROJECT_ID !== "SEU_PROJECT_ID";
 }
 
-function supabaseDelete(paths) {
-    if (!paths || !paths.length) return Promise.resolve();
-    return fetch(`${SUPABASE_URL}/storage/v1/object/${SUPABASE_BUCKET}`, {
+function appwriteUpload(fileOrBlob) {
+    if (!appwriteConfigurado()) {
+        return Promise.reject(new Error(
+            "Appwrite não configurado. Preencha APPWRITE_ENDPOINT e APPWRITE_PROJECT_ID no topo do stories.js."
+        ));
+    }
+    let formData = new FormData();
+    formData.append("fileId", "unique()");
+    formData.append("file", fileOrBlob);
+
+    return fetch(`${APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_ID}/files`, {
+        method: "POST",
+        headers: { "X-Appwrite-Project": APPWRITE_PROJECT_ID },
+        body: formData
+    }).then(r => {
+        if (!r.ok) {
+            return r.json().catch(() => null).then(d => {
+                throw new Error((d && d.message) || ("Falha ao enviar arquivo (" + r.status + ")"));
+            });
+        }
+        return r.json();
+    }).then(data => ({
+        url: `${APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_ID}/files/${data.$id}/view?project=${APPWRITE_PROJECT_ID}`,
+        fileId: data.$id
+    }));
+}
+
+function appwriteDelete(fileId) {
+    if (!fileId || !appwriteConfigurado()) return Promise.resolve();
+    return fetch(`${APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_ID}/files/${fileId}`, {
         method: "DELETE",
-        headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ prefixes: paths })
+        headers: { "X-Appwrite-Project": APPWRITE_PROJECT_ID }
     }).catch(() => {});
 }
 
@@ -77,9 +98,10 @@ function carregarStories() {
 
         // limpeza best-effort dos expirados (não bloqueia a renderização)
         if (expirados.length) {
-            let paths = expirados.filter(e => e.data.storagePath).map(e => e.data.storagePath);
-            supabaseDelete(paths);
-            expirados.forEach(e => db.ref("stories/" + e.id).remove());
+            expirados.forEach(e => {
+                if (e.data.appwriteFileId) appwriteDelete(e.data.appwriteFileId);
+                db.ref("stories/" + e.id).remove();
+            });
         }
 
         // filtrar: só o próprio usuário + quem eu sigo
@@ -122,8 +144,10 @@ function renderStoriesBar() {
     selfItem.className = "story-item";
     selfItem.innerHTML = `
         <div class="story-ring ${temStoryPropria ? (usuarioTemStoryNaoVista(user) ? "" : "seen") : "self-empty"}">
-            <div class="story-avatar-wrap" id="storyAvatar-self">
-                <span>${user.charAt(0).toUpperCase()}</span>
+            <div class="story-avatar-wrap">
+                <div class="story-avatar-inner" id="storyAvatar-self">
+                    <span>${user.charAt(0).toUpperCase()}</span>
+                </div>
                 <div class="story-add-badge" onclick="event.stopPropagation();abrirCriarStory()">+</div>
             </div>
         </div>
@@ -362,8 +386,6 @@ function publicarStory() {
     loading.classList.add("show");
 
     let id = db.ref("stories").push().key;
-    let extensao = (storyArquivo.name.split(".").pop() || (storyTipoMidia === "video" ? "mp4" : "jpg")).toLowerCase();
-    let path = `${user}/${id}.${extensao}`;
 
     let preparar;
     if (storyTipoMidia === "image" && storyStickers.length > 0) {
@@ -373,14 +395,14 @@ function publicarStory() {
     }
 
     preparar
-        .then(blob => supabaseUpload(path, blob, storyTipoMidia === "image" ? "image/jpeg" : storyArquivo.type))
-        .then(mediaUrl => {
+        .then(blob => appwriteUpload(blob))
+        .then(resultado => {
             let agora = Date.now();
             return db.ref("stories/" + id).set({
                 user: user,
                 mediaType: storyTipoMidia,
-                mediaUrl: mediaUrl,
-                storagePath: path,
+                mediaUrl: resultado.url,
+                appwriteFileId: resultado.fileId,
                 createdAt: agora,
                 expiresAt: agora + STORY_DURACAO_MS
             });
@@ -395,7 +417,7 @@ function publicarStory() {
             console.error(err);
             btn.disabled = false;
             loading.classList.remove("show");
-            alert("Não foi possível publicar o story. Tente novamente.");
+            alert("Não foi possível publicar o story: " + (err && err.message ? err.message : "tente novamente."));
         });
 }
 
@@ -595,7 +617,7 @@ function excluirStoryAtual() {
         if (!ok) return;
         pausarStoryTimer();
         db.ref("stories/" + story.id).remove();
-        if (story.data.storagePath) supabaseDelete([story.data.storagePath]);
+        if (story.data.appwriteFileId) appwriteDelete(story.data.appwriteFileId);
         storyProximo();
         carregarStories();
     });
