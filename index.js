@@ -1630,14 +1630,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ================= STORIES (24h) ================= */
-// OPCIONAL: sem URL, os stories ficam no Firebase (vídeo até 20 MB). Com a URL do stories-drive.gs, vão para o Google Drive.
+// OPCIONAL: sem URL, os stories ficam no Firebase (vídeo até 50 MB). Com a URL do stories-drive.gs, vão para o Google Drive.
 const STORY_DRIVE_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
 
 const STORY_MAX_VIDEO_SEG = 90;                 // 1min30
 const STORY_MAX_BYTES     = 200 * 1024 * 1024;  // 200 MB
 const STORY_DURACAO_MS    = 24 * 60 * 60 * 1000;
 const STORY_FOTO_MS       = 6000;
-const STORY_MAX_FB        = 20 * 1024 * 1024;   // vídeo máx. no modo sem Drive (Firebase)
+const STORY_MAX_FB        = 50 * 1024 * 1024;   // vídeo máx. no modo sem Drive (Firebase)
 const STORY_CHUNK         = 500000;             // caracteres base64 por pedaço
 const storyMidiaCache     = {};
 
@@ -1964,7 +1964,7 @@ $s('storyFile').addEventListener('change', async e => {
     if (!tipo) { alert('Escolha uma foto ou um vídeo.'); return; }
     if (f.size > STORY_MAX_BYTES) { alert('Arquivo muito grande (máximo 200 MB).'); return; }
     if (tipo === 'video' && !storyConfigurado() && f.size > STORY_MAX_FB) {
-        alert('Sem o Google Drive configurado, o vídeo pode ter até 20 MB. Esse tem ' + Math.round(f.size / 1048576) + ' MB.');
+        alert('Sem o Google Drive configurado, o vídeo pode ter até ' + Math.round(STORY_MAX_FB / 1048576) + ' MB. Esse tem ' + Math.round(f.size / 1048576) + ' MB.');
         return;
     }
 
