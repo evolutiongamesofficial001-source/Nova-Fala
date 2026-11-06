@@ -219,13 +219,17 @@ function fecharImagem() {
 
 // Cache de usuários existentes para validar @menções
 let cacheUsuariosExistentes = null;
+const storyNomesOriginais = new Set();
 
 function carregarUsuariosExistentes() {
     if (cacheUsuariosExistentes) return Promise.resolve(cacheUsuariosExistentes);
     return db.ref("posts").orderByChild("user").once("value").then(snap => {
         let nomes = new Set();
         snap.forEach(child => {
-            if (child.val().user) nomes.add(child.val().user.toLowerCase());
+            if (child.val().user) {
+                nomes.add(child.val().user.toLowerCase());
+                storyNomesOriginais.add(child.val().user);
+            }
         });
         cacheUsuariosExistentes = nomes;
         return nomes;
@@ -338,6 +342,86 @@ fotoInput.addEventListener("change", () => {
     }
 });
 
+/* ================= S.A.R (IA) EM POSTS E COMENTÁRIOS ================= */
+// Rota 15 da API. Ajuste aqui se a rota/host for diferente.
+const SAR_API_URL = "/15";
+const SAR_API_KEY = "rdv_tHcmv4NP8HSTN8Y0uCBGHRojm3QJyE6P0JxZO00XKII62YoCq2aU"; // <-- COLOQUE SUA CHAVE AQUI
+const SAR_NOME = "S.A.R";
+const SAR_REGEX = /(^|[^\w])@sar(?![\w])/i;
+
+function mencionouSAR(texto) {
+    return SAR_REGEX.test(texto || "");
+}
+
+function mostrarSARPensando(postId) {
+    let tentativas = 0;
+    let el = null;
+    function tentar() {
+        let box = document.getElementById("c" + postId);
+        if (box) {
+            el = document.createElement("div");
+            el.className = "comment sar-comment sar-pensando";
+            el.innerHTML = `<span class="square-snake" role="status"><span aria-hidden="true">█</span><span aria-hidden="true">▓</span><span aria-hidden="true">▒</span><span aria-hidden="true">░</span><span class="sr-only">Loading</span></span> <span><b style="color:#1da1f2;">@${SAR_NOME}</b> está pensando...</span>`;
+            box.appendChild(el);
+        } else if (++tentativas < 10) {
+            setTimeout(tentar, 500);
+        }
+    }
+    tentar();
+    return () => { if (el) el.remove(); tentativas = 99; };
+}
+
+async function chamarAPISAR(pergunta, contexto) {
+    const res = await fetch(SAR_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensagem: pergunta, contexto: contexto || "", usuario: user })
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const tipo = res.headers.get("content-type") || "";
+    if (tipo.includes("application/json")) {
+        const d = await res.json();
+        return d.resposta || d.response || d.reply || d.text || d.message || "";
+    }
+    return await res.text();
+}
+
+// Responde como comentário, igual o Grok no X
+async function responderComoSAR(postId, texto, contextoPost) {
+    if (user === SAR_NOME) return;
+    const pergunta = texto.replace(/@sar\b/ig, "").trim() || "Comente sobre este post.";
+    const parar = mostrarSARPensando(postId);
+    let resposta = "";
+    try {
+        resposta = (await chamarAPISAR(pergunta, contextoPost)).trim();
+    } catch (e) {
+        console.error("S.A.R:", e);
+        resposta = "Não consegui responder agora. Tente novamente em instantes.";
+    }
+    parar();
+    if (!resposta) return;
+
+    db.ref("comments/" + postId).push({
+        user: SAR_NOME,
+        text: resposta,
+        ia: true,
+        time: Date.now()
+    });
+
+    db.ref("posts/" + postId + "/user").once("value").then(snap => {
+        let dono = snap.val();
+        if (dono && dono !== SAR_NOME) {
+            enviarNotificacao(dono, {
+                tipo: "comentario",
+                de: SAR_NOME,
+                postId: postId,
+                texto: resposta.substring(0, 80),
+                time: Date.now()
+            });
+        }
+    });
+}
+
 /* ================= POST ================= */
 
 function postar() {
@@ -403,6 +487,8 @@ function postar() {
         };
 
         db.ref("posts/" + id).set(post);
+
+        if (mencionouSAR(texto)) responderComoSAR(id, texto, "");
 
         // Detectar @menções no post
         let mencoes = extrairMencoes(texto);
@@ -526,6 +612,10 @@ async function comentar(id, donoPost) {
         text: c,
         time: Date.now()
     });
+
+    if (mencionouSAR(c)) {
+        db.ref("posts/" + id + "/text").once("value").then(s => responderComoSAR(id, c, s.val() || ""));
+    }
 }
 
 async function responder(postId, commentId, donoPost) {
@@ -594,7 +684,7 @@ function carregarComentarios(id, div, donoPost) {
 
     function criarElComentario(c, cid) {
         let el = document.createElement("div");
-        el.className = "comment";
+        el.className = "comment" + (c.ia ? " sar-comment" : "");
         el.dataset.cid = cid;
         el.id = "comment-el-" + cid;
 
@@ -935,11 +1025,6 @@ function fecharConfig() {
     document.getElementById("configBox").style.bottom = "-300px";
 }
 
-function abrirSAR() {
-    fecharMenu();
-    setTimeout(() => { location.href = "IA.html"; }, 200);
-}
-
 function abrirchat() {
     fecharMenu();
     setTimeout(() => { location.href = "chat.html"; }, 200);
@@ -949,30 +1034,6 @@ function abrirverificar() {
     fecharMenu();
     setTimeout(() => { location.href = "verificado.html"; }, 200);
 }
-function atualizarBotoesAtivos() {
-    document.getElementById("btnEscuro").classList.remove("ativo");
-    document.getElementById("btnClaro").classList.remove("ativo");
-
-    let tema = localStorage.getItem("tema") || "escuro";
-    if (tema === "claro") {
-        document.getElementById("btnClaro").classList.add("ativo");
-    } else {
-        document.getElementById("btnEscuro").classList.add("ativo");
-    }
-}
-
-function setTema(tipo) {
-    localStorage.setItem("tema", tipo);
-
-    if (tipo === "claro") {
-        document.body.classList.add("claro");
-    } else {
-        document.body.classList.remove("claro");
-    }
-
-    atualizarBotoesAtivos();
-}
-
 /* ================= PARTÍCULAS DE LIKE ================= */
 function soltarCoracoes(botao) {
     let rect = botao.getBoundingClientRect();
@@ -1204,7 +1265,7 @@ function tempoRelativo(ts) {
 }
 
 function iconeNotif(tipo) {
-    return { comentario: "💬", resposta: "↩️", mencao: "📣", chat: "✉️" }[tipo] || "🔔";
+    return { comentario: "💬", resposta: "↩️", mencao: "📣", chat: "✉️", story_tag: "🏷️" }[tipo] || "🔔";
 }
 
 function textoNotif(n) {
@@ -1213,6 +1274,7 @@ function textoNotif(n) {
     if (n.tipo === "resposta")   return `${nome} respondeu seu comentário`;
     if (n.tipo === "mencao")     return `${nome} mencionou você`;
     if (n.tipo === "chat")       return `${nome} enviou uma mensagem`;
+    if (n.tipo === "story_tag")  return `${nome} marcou você em um story`;
     return `${nome} interagiu com você`;
 }
 
@@ -1222,6 +1284,10 @@ let notifPainelAberto = false;
 function atualizarBadge(total) {
     let badge = document.getElementById("notifBadge");
     if (!badge) return;
+    if (localStorage.getItem('notifSilenciada') === '1') {
+        badge.style.display = "none";
+        return;
+    }
     if (total > 0) {
         badge.style.display = "flex";
         badge.innerText = total > 99 ? "99+" : total;
@@ -1361,7 +1427,6 @@ postText.addEventListener("input", () => {
     contador.innerText = postText.value.length + " / 1000";
 });
 
-setTema(localStorage.getItem("tema") || "escuro");
 escutarNotificacoes();
 carregarBloqueados();
 carregarUsuariosExistentes(); // pré-carregar para @menções
@@ -1409,9 +1474,16 @@ function carregarFeedFiltrado() {
             // Filtrar por tab
             if (feedTabAtual === 'following') {
                 posts = posts.filter(p => followingList.has(p.data.user) || p.data.user === user);
+            } else if (feedTabAtual === 'foryou') {
+                // Ranqueia por relevância: recência + engajamento + afinidade
+                // com autores e hashtags que o usuário já curtiu, e prioridade
+                // leve para quem ele segue.
+                let interesses = calcularInteresses(posts);
+                posts = posts
+                    .map(p => ({ ...p, _score: calcularScoreForYou(p, interesses) }))
+                    .sort((a, b) => b._score - a._score);
             }
-            // 'foryou' e 'all' mostram todos os posts sem filtro
-            // 'foryou' pode no futuro ter algoritmo; por ora = 'all'
+            // 'all' mostra tudo em ordem cronológica
 
             let nomesUnicos = [...new Set(posts.map(p => p.data.user).filter(Boolean))];
             let fotosPromise = Promise.all(
@@ -1442,208 +1514,899 @@ function toggleHashtagInfo() {
     box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
-/* ================= SENHA DE ACESSO ================= */
+/* ================= USUÁRIOS BLOQUEADOS (PAINEL) ================= */
 
-function verificarSenhaAtiva() {
-    let senha = localStorage.getItem('appSenha');
-    if (senha) {
-        let lock = document.getElementById('lockScreen');
-        if (lock) {
-            lock.style.display = 'flex';
-            let btnBio = document.getElementById('btnLockBio');
-            if (btnBio) btnBio.style.display = localStorage.getItem('bioCredId') ? 'block' : 'none';
-            setTimeout(() => document.getElementById('lockInput').focus(), 200);
+function abrirBloqueadosPanel() {
+    fecharMenu();
+    fecharConfig();
+    document.getElementById('bloqueadosOverlay').style.display = 'block';
+    document.getElementById('bloqueadosBox').style.display = 'block';
+    renderBloqueadosLista();
+}
+
+function fecharBloqueadosPanel() {
+    document.getElementById('bloqueadosOverlay').style.display = 'none';
+    document.getElementById('bloqueadosBox').style.display = 'none';
+}
+
+function renderBloqueadosLista() {
+    let lista = document.getElementById('bloqueadosLista');
+    lista.innerHTML = '';
+
+    if (usuariosBloqueados.size === 0) {
+        lista.innerHTML = '<div style="color:#555;font-size:13px;text-align:center;padding:10px 0;">Você não bloqueou ninguém ainda.</div>';
+        return;
+    }
+
+    usuariosBloqueados.forEach(nomeKey => {
+        let item = document.createElement('div');
+        item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:#161616;border:1px solid #222;border-radius:10px;padding:10px 12px;';
+        item.innerHTML = `
+            <span style="font-size:13px;color:#ddd;">@${nomeKey}</span>
+            <button onclick="desbloquearUsuario('${nomeKey}')" style="background:#1c1c1c;border:1px solid #333;color:#1da1f2;font-size:12px;padding:6px 10px;border-radius:8px;cursor:pointer;">Desbloquear</button>
+        `;
+        lista.appendChild(item);
+    });
+}
+
+/* ================= SOBRE ================= */
+
+function abrirSobre() {
+    fecharMenu();
+    fecharConfig();
+    document.getElementById('sobreOverlay').style.display = 'block';
+    document.getElementById('sobreBox').style.display = 'block';
+}
+
+function fecharSobre() {
+    document.getElementById('sobreOverlay').style.display = 'none';
+    document.getElementById('sobreBox').style.display = 'none';
+}
+
+/* ================= SILENCIAR NOTIFICAÇÕES ================= */
+
+function atualizarBotaoSilenciar() {
+    let btn = document.getElementById('btnSilenciarTexto');
+    if (!btn) return;
+    let silenciado = localStorage.getItem('notifSilenciada') === '1';
+    btn.innerText = silenciado ? 'Ativar notificações' : 'Silenciar notificações';
+}
+
+function toggleSilenciarNotificacoes() {
+    let silenciado = localStorage.getItem('notifSilenciada') === '1';
+    if (silenciado) {
+        localStorage.removeItem('notifSilenciada');
+    } else {
+        localStorage.setItem('notifSilenciada', '1');
+        let badge = document.getElementById('notifBadge');
+        if (badge) badge.style.display = 'none';
+    }
+    atualizarBotaoSilenciar();
+}
+
+/* ================= ALGORITMO "FOR YOU" ================= */
+
+function extrairHashtags(texto) {
+    if (!texto) return [];
+    let matches = texto.match(/#[a-zA-Z0-9À-ÿ_]+/g) || [];
+    return matches.map(h => h.toLowerCase());
+}
+
+function calcularInteresses(posts) {
+    let autoresCurtidos = {};
+    let hashtagsCurtidas = {};
+
+    posts.forEach(p => {
+        let curtiuEsse = p.data.likedBy && p.data.likedBy[user];
+        if (curtiuEsse) {
+            autoresCurtidos[p.data.user] = (autoresCurtidos[p.data.user] || 0) + 1;
+            extrairHashtags(p.data.text).forEach(h => {
+                hashtagsCurtidas[h] = (hashtagsCurtidas[h] || 0) + 1;
+            });
         }
-    }
-}
-
-/* ================= BIOMETRIA (WEBAUTHN) ================= */
-
-function bufParaB64(buf) {
-    return btoa(String.fromCharCode(...new Uint8Array(buf)));
-}
-
-function b64ParaBuf(b64) {
-    let bin = atob(b64);
-    let buf = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
-    return buf.buffer;
-}
-
-async function biometriaDisponivel() {
-    if (!window.PublicKeyCredential || !PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
-    try {
-        return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    } catch (e) {
-        return false;
-    }
-}
-
-async function atualizarAreaBiometria() {
-    let area = document.getElementById('bioArea');
-    if (!area) return;
-    let temSenha = !!localStorage.getItem('appSenha');
-    let disponivel = temSenha && await biometriaDisponivel();
-    area.style.display = disponivel ? 'block' : 'none';
-    if (!disponivel) return;
-    let btn = document.getElementById('btnBio');
-    if (localStorage.getItem('bioCredId')) {
-        btn.innerText = 'Impressão digital ativada';
-        btn.disabled = true;
-        btn.style.opacity = '0.6';
-        btn.style.cursor = 'default';
-    } else {
-        btn.innerText = 'Ativar desbloqueio por impressão digital';
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
-    }
-}
-
-async function ativarBiometria() {
-    let disponivel = await biometriaDisponivel();
-    if (!disponivel) {
-        alert('Biometria não disponível neste dispositivo.');
-        return;
-    }
-    try {
-        let userId = new Uint8Array(16);
-        crypto.getRandomValues(userId);
-        let challenge = new Uint8Array(32);
-        crypto.getRandomValues(challenge);
-        let cred = await navigator.credentials.create({
-            publicKey: {
-                challenge: challenge,
-                rp: { name: 'Nova-Fala' },
-                user: { id: userId, name: user || 'usuario', displayName: user || 'usuario' },
-                pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
-                authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
-                timeout: 60000
-            }
-        });
-        localStorage.setItem('bioCredId', bufParaB64(cred.rawId));
-        atualizarAreaBiometria();
-        let msg = document.getElementById('senhaMsg');
-        if (msg) { msg.style.color = '#2ee6a6'; msg.innerText = 'Impressão digital ativada com sucesso!'; }
-    } catch (e) {
-        alert('Não foi possível ativar a impressão digital.');
-    }
-}
-
-async function entrarComBiometria() {
-    let credId = localStorage.getItem('bioCredId');
-    if (!credId) return;
-    try {
-        let challenge = new Uint8Array(32);
-        crypto.getRandomValues(challenge);
-        await navigator.credentials.get({
-            publicKey: {
-                challenge: challenge,
-                allowCredentials: [{ id: b64ParaBuf(credId), type: 'public-key' }],
-                userVerification: 'required',
-                timeout: 60000
-            }
-        });
-        let lock = document.getElementById('lockScreen');
-        lock.style.display = 'none';
-        document.getElementById('lockInput').value = '';
-        document.getElementById('lockMsg').innerText = '';
-    } catch (e) {
-        document.getElementById('lockMsg').innerText = 'Falha na verificação biométrica.';
-    }
-}
-
-function verificarSenha() {
-    let senha = localStorage.getItem('appSenha');
-    let input = document.getElementById('lockInput').value;
-    let msg = document.getElementById('lockMsg');
-
-    if (input === senha) {
-        let lock = document.getElementById('lockScreen');
-        lock.style.display = 'none';
-        document.getElementById('lockInput').value = '';
-        msg.innerText = '';
-    } else {
-        msg.innerText = 'Senha incorreta. Tente novamente.';
-        document.getElementById('lockInput').value = '';
-        document.getElementById('lockInput').focus();
-        // Shake no input
-        let inp = document.getElementById('lockInput');
-        inp.style.animation = 'none';
-        inp.offsetHeight;
-        inp.style.animation = 'lockShake 0.4s ease';
-    }
-}
-
-function abrirConfigSenha() {
-    let area = document.getElementById('senhaArea');
-    let isOpen = area.style.display !== 'none';
-    area.style.display = isOpen ? 'none' : 'block';
-
-    let btnRemover = document.getElementById('btnRemoverSenha');
-    if (localStorage.getItem('appSenha')) {
-        document.getElementById('btnSenhaTexto').innerText = 'Alterar senha de acesso';
-        btnRemover.style.display = 'block';
-    } else {
-        document.getElementById('btnSenhaTexto').innerText = 'Definir senha de acesso';
-        btnRemover.style.display = 'none';
-    }
-
-    document.getElementById('senhaInput').value = '';
-    document.getElementById('senhaConfirmInput').value = '';
-    document.getElementById('senhaMsg').innerText = '';
-    atualizarAreaBiometria();
-}
-
-function salvarSenha() {
-    let s1 = document.getElementById('senhaInput').value;
-    let s2 = document.getElementById('senhaConfirmInput').value;
-    let msg = document.getElementById('senhaMsg');
-
-    if (!/^\d{4,6}$/.test(s1)) {
-        msg.style.color = '#e05555';
-        msg.innerText = 'A senha deve ter 4 a 6 dígitos numéricos.';
-        return;
-    }
-    if (s1 !== s2) {
-        msg.style.color = '#e05555';
-        msg.innerText = 'As senhas não coincidem.';
-        return;
-    }
-
-    localStorage.setItem('appSenha', s1);
-    msg.style.color = '#2ee6a6';
-    msg.innerText = 'Senha salva com sucesso!';
-    document.getElementById('btnSenhaTexto').innerText = 'Alterar senha de acesso';
-    document.getElementById('btnRemoverSenha').style.display = 'block';
-
-    document.getElementById('senhaInput').value = '';
-    document.getElementById('senhaConfirmInput').value = '';
-    atualizarAreaBiometria();
-}
-
-function removerSenha() {
-    customConfirm('Deseja remover a senha de acesso?').then(ok => {
-        if (!ok) return;
-        localStorage.removeItem('appSenha');
-        localStorage.removeItem('bioCredId');
-        let msg = document.getElementById('senhaMsg');
-        msg.style.color = '#888';
-        msg.innerText = 'Senha removida.';
-        document.getElementById('btnSenhaTexto').innerText = 'Definir senha de acesso';
-        document.getElementById('btnRemoverSenha').style.display = 'none';
-        document.getElementById('senhaArea').style.display = 'none';
-        atualizarAreaBiometria();
     });
+
+    return { autoresCurtidos, hashtagsCurtidas };
 }
 
-// Verificar senha ao carregar (se definida)
+function calcularScoreForYou(p, interesses) {
+    let horasDesdePost = (Date.now() - p.data.time) / 3600000;
+    let scoreRecencia = Math.max(0, 48 - horasDesdePost) * 0.8;
+    let scoreEngajamento = Math.log((p.data.likes || 0) + 1) * 4;
+    let scoreAutor = (interesses.autoresCurtidos[p.data.user] || 0) * 8;
+    let scoreSeguindo = followingList.has(p.data.user) ? 6 : 0;
+
+    let scoreHashtag = 0;
+    extrairHashtags(p.data.text).forEach(h => {
+        scoreHashtag += (interesses.hashtagsCurtidas[h] || 0) * 5;
+    });
+
+    return scoreRecencia + scoreEngajamento + scoreAutor + scoreSeguindo + scoreHashtag;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    verificarSenhaAtiva();
-    carregarFollowing(() => {
-        // seguindo carregado — feed tab já inicia em 'foryou' pelo carregarFeed original
-        carregarStories();
-    });
-    // reavalia expiração dos stories periodicamente enquanto o app está aberto
-    setInterval(carregarStories, 5 * 60 * 1000);
+    atualizarBotaoSilenciar();
+    carregarFollowing(() => iniciarStories());
 });
+
+/* ================= STORIES (24h) ================= */
+// OPCIONAL: sem URL, os stories ficam no Firebase (vídeo até 20 MB). Com a URL do stories-drive.gs, vão para o Google Drive.
+const STORY_DRIVE_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
+
+const STORY_MAX_VIDEO_SEG = 90;                 // 1min30
+const STORY_MAX_BYTES     = 200 * 1024 * 1024;  // 200 MB
+const STORY_DURACAO_MS    = 24 * 60 * 60 * 1000;
+const STORY_FOTO_MS       = 6000;
+const STORY_MAX_FB        = 20 * 1024 * 1024;   // vídeo máx. no modo sem Drive (Firebase)
+const STORY_CHUNK         = 500000;             // caracteres base64 por pedaço
+const storyMidiaCache     = {};
+
+const $s = id => document.getElementById(id);
+const storyKey = n => n.replace(/[.#$[\]]/g, '_');
+const storyUrlFoto    = id => `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=w1600`;
+const storyUrlFotoAlt = id => `https://drive.google.com/uc?export=view&id=${encodeURIComponent(id)}`;
+const storyUrlVideo   = id => `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`;
+const storyUrlPreview = id => `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`;
+
+let storiesPorUsuario = {};   // nome -> [story] (só quem eu sigo + eu)
+let storyFila = [];           // ordem de exibição na barra
+let storyFotos = {};          // cache de fotos de perfil
+let storiesRef = null;
+let storyEd = null;           // estado do editor
+let storyVw = null;           // estado do visualizador
+
+/* ---------- helpers ---------- */
+
+function storyConfigurado() { return /^https:\/\//.test(STORY_DRIVE_URL); }
+
+function storyVistos() {
+    try { return JSON.parse(localStorage.getItem('storiesVistos') || '{}'); } catch (e) { return {}; }
+}
+function storyMarcarVisto(id) {
+    const v = storyVistos();
+    if (v[id]) return;
+    v[id] = Date.now();
+    try { localStorage.setItem('storiesVistos', JSON.stringify(v)); } catch (e) {}
+}
+function storyTemNovo(nome) {
+    const v = storyVistos();
+    return (storiesPorUsuario[nome] || []).some(s => !v[s.id]);
+}
+
+function storyFormatarHora(ts, f) {
+    const d = new Date(ts);
+    const h = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    if (f === 1) return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + h;
+    return h;
+}
+function storyFormatarDur(seg) {
+    seg = Math.round(seg);
+    return Math.floor(seg / 60) + ':' + String(seg % 60).padStart(2, '0');
+}
+
+function storyAvatarEl(nome, cls) {
+    const foto = storyFotos[nome];
+    let el;
+    if (foto) { el = document.createElement('img'); el.src = foto; el.alt = nome; }
+    else { el = document.createElement('div'); el.textContent = nome.charAt(0).toUpperCase(); }
+    el.className = cls;
+    return el;
+}
+
+/* ---------- Drive (via Apps Script) ---------- */
+
+async function storyDrive(payload) {
+    const r = await fetch(STORY_DRIVE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
+        body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || 'erro no Drive');
+    return j;
+}
+function storyDriveDelete(id) {
+    if (storyConfigurado() && id) storyDrive({ action: 'delete', id }).catch(() => {});
+}
+
+async function storyUploadDrive(blob, nome, onProg) {
+    const init = await storyDrive({
+        action: 'init', nome, mime: blob.type, size: blob.size, origin: location.origin
+    });
+    return new Promise((ok, err) => {
+        const x = new XMLHttpRequest();
+        x.open('PUT', init.uploadUrl);
+        x.upload.onprogress = e => { if (e.lengthComputable) onProg(Math.round(e.loaded / e.total * 100)); };
+        x.onload = () => {
+            if (x.status >= 200 && x.status < 300) {
+                try { ok(JSON.parse(x.responseText).id); }
+                catch (e) { err(new Error('resposta inválida do Drive')); }
+            } else err(new Error('o Drive respondeu ' + x.status));
+        };
+        x.onerror = () => err(new Error('falha de rede ao enviar para o Drive'));
+        x.send(blob);
+    });
+}
+
+/* ---------- modo sem Drive: salva no Firebase ---------- */
+
+function storyLerBase64(blob) {
+    return new Promise((ok, err) => {
+        const r = new FileReader();
+        r.onload = () => ok(String(r.result).split(',')[1] || '');
+        r.onerror = () => err(new Error('não consegui ler o arquivo'));
+        r.readAsDataURL(blob);
+    });
+}
+
+async function storyUploadFirebase(blob, id, onProg) {
+    const b64 = await storyLerBase64(blob);
+    const ref = fotoDB.ref('storyMidia/' + storyKey(user) + '/' + id);
+    const n = Math.ceil(b64.length / STORY_CHUNK);
+    for (let k = 0; k < n; k++) {
+        await ref.child(String(k)).set(b64.slice(k * STORY_CHUNK, (k + 1) * STORY_CHUNK));
+        onProg(Math.round((k + 1) / n * 100));
+    }
+    return n;
+}
+
+async function storyCarregarFb(s) {
+    if (storyMidiaCache[s.id]) return storyMidiaCache[s.id];
+    const snap = await fotoDB.ref('storyMidia/' + storyKey(s.user) + '/' + s.id).once('value');
+    const partes = [];
+    snap.forEach(c => { partes[Number(c.key)] = c.val(); });
+    if (!partes.length) throw new Error('mídia não encontrada');
+    const r = await fetch('data:' + (s.mime || 'application/octet-stream') + ';base64,' + partes.join(''));
+    return (storyMidiaCache[s.id] = URL.createObjectURL(await r.blob()));
+}
+
+function storyApagarMidiaFb(nome, id) {
+    fotoDB.ref('storyMidia/' + storyKey(nome) + '/' + id).remove().catch(() => {});
+}
+
+function storyComprimirFoto(url) {
+    return new Promise((ok, err) => {
+        const i = new Image();
+        i.onload = () => {
+            const max = 1440, s = Math.min(max / i.naturalWidth, max / i.naturalHeight, 1);
+            const c = document.createElement('canvas');
+            c.width = Math.round(i.naturalWidth * s);
+            c.height = Math.round(i.naturalHeight * s);
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height);
+            ctx.drawImage(i, 0, 0, c.width, c.height);
+            c.toBlob(b => b ? ok(b) : err(new Error('falha ao comprimir a foto')), 'image/jpeg', 0.85);
+        };
+        i.onerror = () => err(new Error('não consegui ler a foto'));
+        i.src = url;
+    });
+}
+
+/* ---------- barra de stories ---------- */
+
+function iniciarStories() {
+    if (storiesRef) return;
+    renderStoriesBar();
+    storiesRef = db.ref('stories');
+    let t = null;
+    storiesRef.on('value', snap => {
+        clearTimeout(t);
+        t = setTimeout(() => processarStories(snap), 150);
+    });
+}
+
+function processarStories(snap) {
+    const agora = Date.now();
+    const mapa = {};
+
+    snap.forEach(userSnap => {
+        userSnap.forEach(s => {
+            const d = s.val();
+            if (!d || !d.user) return;
+            if (!(d.expira > agora)) {                       // passou de 24h → apaga
+                s.ref.remove().catch(() => {});
+                if (d.fb) storyApagarMidiaFb(d.user, s.key);
+                if (d.user === user) storyDriveDelete(d.driveId);
+                return;
+            }
+            // só vejo story de quem eu sigo (e os meus)
+            if (d.user !== user && !followingList.has(d.user)) return;
+            if (d.user !== user && estaBloqueado(d.user)) return;
+            (mapa[d.user] = mapa[d.user] || []).push({ id: s.key, ...d });
+        });
+    });
+
+    // limpa "vistos" antigos
+    const v = storyVistos(), lim = agora - 2 * STORY_DURACAO_MS;
+    Object.keys(v).forEach(k => { if (v[k] < lim) delete v[k]; });
+    try { localStorage.setItem('storiesVistos', JSON.stringify(v)); } catch (e) {}
+
+    // ignora quem me bloqueou
+    const outros = Object.keys(mapa).filter(n => n !== user);
+    Promise.all(outros.map(n => new Promise(r => estaBlockeadoPor(n, b => r(b ? n : null)))))
+        .then(bloq => {
+            bloq.filter(Boolean).forEach(n => delete mapa[n]);
+            Object.values(mapa).forEach(l => l.sort((a, b) => a.criado - b.criado));
+            storiesPorUsuario = mapa;
+
+            const nomes = [user, ...Object.keys(mapa).filter(n => n !== user)];
+            return Promise.all(nomes.filter(n => !(n in storyFotos)).map(n =>
+                db.ref('fotosPerfil/' + storyKey(n)).once('value')
+                    .then(s => { storyFotos[n] = s.val() || null; })
+                    .catch(() => { storyFotos[n] = null; })
+            ));
+        })
+        .then(renderStoriesBar);
+}
+
+function renderStoriesBar() {
+    const bar = $s('storiesBar');
+    if (!bar) return;
+    const ultimo = n => storiesPorUsuario[n][storiesPorUsuario[n].length - 1].criado;
+    const outros = Object.keys(storiesPorUsuario)
+        .filter(n => n !== user)
+        .sort((a, b) => (storyTemNovo(b) - storyTemNovo(a)) || (ultimo(b) - ultimo(a)));
+
+    storyFila = [...(storiesPorUsuario[user] ? [user] : []), ...outros];
+
+    bar.innerHTML = '';
+    bar.appendChild(storyItem(user, true));
+    outros.forEach(n => bar.appendChild(storyItem(n, false)));
+    bar.style.display = 'flex';
+}
+
+function storyItem(nome, meu) {
+    const tem = !!storiesPorUsuario[nome];
+    const el = document.createElement('div');
+    el.className = 'story-item';
+
+    const anel = document.createElement('div');
+    anel.className = 'story-ring ' + (tem ? (storyTemNovo(nome) ? 'novo' : 'visto') : 'vazio');
+    anel.appendChild(storyAvatarEl(nome, 'story-avatar'));
+
+    if (meu) {
+        const add = document.createElement('span');
+        add.className = 'story-add';
+        add.textContent = '+';
+        add.title = 'Novo story';
+        add.addEventListener('click', e => { e.stopPropagation(); storyEscolherArquivo(); });
+        anel.appendChild(add);
+    }
+    el.appendChild(anel);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'story-nome';
+    lbl.textContent = meu ? 'Seu story' : nome;
+    el.appendChild(lbl);
+
+    el.addEventListener('click', () => tem ? abrirStoryViewer(nome) : (meu && storyEscolherArquivo()));
+    return el;
+}
+
+/* ---------- overlays (texto, hora, marcação) ---------- */
+
+function criarOverlay(ov, editor) {
+    const el = document.createElement('div');
+    el.className = 'ov ov-' + ov.t;
+    el.style.left = ov.x + '%';
+    el.style.top = ov.y + '%';
+
+    const label = document.createElement('span');
+    label.className = 'ov-label';
+    label.textContent = ov.t === 'texto' ? ov.v
+        : ov.t === 'hora' ? storyFormatarHora(ov.v, ov.f)
+        : '@' + ov.v;
+    el.appendChild(label);
+
+    if (!editor) {
+        if (ov.t === 'tag') {
+            el.classList.add('clicavel');
+            el.addEventListener('click', e => { e.stopPropagation(); abrirPerfil(ov.v); });
+        }
+        return el;
+    }
+
+    const x = document.createElement('button');
+    x.className = 'ov-x';
+    x.textContent = '✕';
+    x.addEventListener('pointerdown', e => e.stopPropagation());
+    x.addEventListener('click', e => {
+        e.stopPropagation();
+        storyEd.ov.splice(storyEd.ov.indexOf(ov), 1);
+        storyEditorRender();
+    });
+    el.appendChild(x);
+
+    storyArrastar(el, ov, $s('seFrame'), () => {
+        if (ov.t === 'texto') storyEditarTexto(ov);
+        else if (ov.t === 'hora') { ov.f = ov.f === 1 ? 0 : 1; label.textContent = storyFormatarHora(ov.v, ov.f); }
+    });
+    return el;
+}
+
+function storyArrastar(el, ov, frame, onTap) {
+    let id = null, mov = false, sx = 0, sy = 0;
+    el.addEventListener('pointerdown', e => {
+        id = e.pointerId; mov = false; sx = e.clientX; sy = e.clientY;
+        el.setPointerCapture(id);
+        e.preventDefault();
+    });
+    el.addEventListener('pointermove', e => {
+        if (e.pointerId !== id) return;
+        if (!mov && Math.hypot(e.clientX - sx, e.clientY - sy) < 6) return;
+        mov = true;
+        const r = frame.getBoundingClientRect();
+        ov.x = Math.min(96, Math.max(4, (e.clientX - r.left) / r.width * 100));
+        ov.y = Math.min(96, Math.max(4, (e.clientY - r.top) / r.height * 100));
+        el.style.left = ov.x + '%';
+        el.style.top = ov.y + '%';
+    });
+    el.addEventListener('pointerup', e => {
+        if (e.pointerId !== id) return;
+        id = null;
+        if (!mov && onTap) onTap();
+    });
+    el.addEventListener('pointercancel', () => { id = null; });
+}
+
+/* ---------- editor ---------- */
+
+function storyEscolherArquivo() {
+    $s('storyFile').click();
+}
+
+$s('storyFile').addEventListener('change', async e => {
+    const f = e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+
+    const tipo = f.type.startsWith('video/') ? 'video' : f.type.startsWith('image/') ? 'foto' : null;
+    if (!tipo) { alert('Escolha uma foto ou um vídeo.'); return; }
+    if (f.size > STORY_MAX_BYTES) { alert('Arquivo muito grande (máximo 200 MB).'); return; }
+    if (tipo === 'video' && !storyConfigurado() && f.size > STORY_MAX_FB) {
+        alert('Sem o Google Drive configurado, o vídeo pode ter até 20 MB. Esse tem ' + Math.round(f.size / 1048576) + ' MB.');
+        return;
+    }
+
+    const url = URL.createObjectURL(f);
+    try {
+        const meta = await storyLerMeta(url, tipo);
+        if (tipo === 'video' && meta.dur > STORY_MAX_VIDEO_SEG + 0.3) {
+            URL.revokeObjectURL(url);
+            alert(`O vídeo tem ${storyFormatarDur(meta.dur)} e o máximo é 1:30.`);
+            return;
+        }
+        abrirStoryEditor(f, tipo, url, meta);
+    } catch (err) {
+        URL.revokeObjectURL(url);
+        alert('Não consegui abrir esse arquivo. Se for vídeo, tente em MP4.');
+    }
+});
+
+function storyLerMeta(url, tipo) {
+    return new Promise((ok, err) => {
+        if (tipo === 'foto') {
+            const i = new Image();
+            i.onload = () => ok({ w: i.naturalWidth, h: i.naturalHeight, dur: 0 });
+            i.onerror = err; i.src = url;
+        } else {
+            const v = document.createElement('video');
+            v.preload = 'metadata';
+            v.onloadedmetadata = () => v.videoWidth ? ok({ w: v.videoWidth, h: v.videoHeight, dur: v.duration }) : err();
+            v.onerror = err; v.src = url;
+        }
+    });
+}
+
+function abrirStoryEditor(file, tipo, url, meta) {
+    storyEd = {
+        file, tipo, url, w: meta.w, h: meta.h, dur: meta.dur,
+        hora: file.lastModified || Date.now(),   // hora em que a foto/vídeo foi feito
+        ov: [], enviando: false
+    };
+    const frame = $s('seFrame');
+    frame.innerHTML = '';
+    frame.style.setProperty('--ar', meta.w / meta.h);
+
+    let m;
+    if (tipo === 'video') {
+        m = document.createElement('video');
+        m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true;
+    } else m = document.createElement('img');
+    m.className = 'story-media';
+    m.src = url;
+    frame.appendChild(m);
+
+    $s('seInfo').textContent = tipo === 'video'
+        ? `Vídeo ${storyFormatarDur(meta.dur)} de 1:30 · aparece inteiro, sem cortes`
+        : 'Toque nos botões para adicionar texto, hora ou marcar alguém';
+    storyProgresso(null);
+    $s('storyEditor').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharStoryEditor() {
+    if (!storyEd || storyEd.enviando) return;
+    const v = $s('seFrame').querySelector('video');
+    if (v) { v.pause(); v.removeAttribute('src'); }
+    URL.revokeObjectURL(storyEd.url);
+    $s('seFrame').innerHTML = '';
+    $s('storyEditor').style.display = 'none';
+    storyFecharTags();
+    document.body.style.overflow = '';
+    storyEd = null;
+}
+
+function storyEditorRender() {
+    const frame = $s('seFrame');
+    frame.querySelectorAll('.ov').forEach(n => n.remove());
+    storyEd.ov.forEach(o => frame.appendChild(criarOverlay(o, true)));
+}
+
+function storyEditarTexto(ov) {
+    const p = customPrompt('Texto do story');
+    $s('promptInput').value = ov ? ov.v : '';
+    p.then(t => {
+        if (!t) return;
+        t = t.slice(0, 120);
+        if (ov) ov.v = t;
+        else storyEd.ov.push({ t: 'texto', v: t, x: 50, y: 40 + (storyEd.ov.length % 5) * 8 });
+        storyEditorRender();
+    });
+}
+function storyAddTexto() { if (storyEd) storyEditarTexto(null); }
+
+function storyAddHora() {
+    if (!storyEd) return;
+    if (storyEd.ov.some(o => o.t === 'hora')) return;
+    storyEd.ov.push({ t: 'hora', v: storyEd.hora, f: 0, x: 50, y: 12 });
+    storyEditorRender();
+}
+
+/* marcar alguém */
+function storyAbrirTags() {
+    if (!storyEd) return;
+    $s('storyTagPicker').style.display = 'block';
+    $s('tpBusca').value = '';
+    carregarUsuariosExistentes().then(() => storyFiltrarTags(''));
+}
+function storyFecharTags() { $s('storyTagPicker').style.display = 'none'; }
+
+function storyFiltrarTags(q) {
+    q = (q || '').trim().toLowerCase();
+    const jaMarcados = new Set(storyEd.ov.filter(o => o.t === 'tag').map(o => o.v));
+    const todos = [...new Set([...followingList, ...storyNomesOriginais])].filter(n => n && n !== user);
+    todos.sort((a, b) => (followingList.has(b) - followingList.has(a)) || a.localeCompare(b));
+
+    const lista = $s('tpLista');
+    lista.innerHTML = '';
+    const achados = todos.filter(n => !jaMarcados.has(n) && n.toLowerCase().includes(q)).slice(0, 40);
+    if (!achados.length) {
+        lista.innerHTML = '<div class="tp-vazio">Ninguém encontrado.</div>';
+        return;
+    }
+    achados.forEach(n => {
+        const row = document.createElement('div');
+        row.className = 'tp-row';
+        const av = document.createElement('div');
+        av.className = 'sv-av';
+        av.appendChild(storyAvatarEl(n, 'story-avatar'));
+        const nome = document.createElement('span');
+        nome.textContent = '@' + n;
+        row.append(av, nome);
+        row.addEventListener('click', () => {
+            const k = storyEd.ov.filter(o => o.t === 'tag').length;
+            storyEd.ov.push({ t: 'tag', v: n, x: 50, y: 70 + (k % 4) * 7 });
+            storyFecharTags();
+            storyEditorRender();
+        });
+        lista.appendChild(row);
+    });
+}
+
+function storyProgresso(p, msg) {
+    const box = $s('seProgresso');
+    if (p === null) { box.style.display = 'none'; return; }
+    box.style.display = 'flex';
+    $s('seProgMsg').textContent = msg || `Enviando… ${p}%`;
+    $s('seProgBar').style.width = p + '%';
+}
+
+async function publicarStory() {
+    if (!storyEd || storyEd.enviando) return;
+
+    for (const o of storyEd.ov) {
+        if (o.t !== 'texto') continue;
+        const palavra = verificarPalavras(o.v);
+        if (palavra) { alert('❌ Palavra inapropriada detectada: ' + palavra); return; }
+    }
+
+    const e = storyEd;
+    e.enviando = true;
+    $s('sePublicar').disabled = true;
+    storyProgresso(0, 'Preparando…');
+
+    try {
+        const blob = e.tipo === 'foto' ? await storyComprimirFoto(e.url) : e.file;
+        const ext = e.tipo === 'foto' ? 'jpg' : ((e.file.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp4');
+        const arquivo = `story_${storyKey(user)}_${Date.now()}.${ext}`;
+
+        const id = db.ref('stories/' + storyKey(user)).push().key;
+        const usaDrive = storyConfigurado();
+        let driveId = null, partes = null;
+        if (usaDrive) {
+            driveId = await storyUploadDrive(blob, arquivo, p => storyProgresso(p));
+            storyProgresso(100, 'Finalizando…');
+            await storyDrive({ action: 'done', id: driveId });
+        } else {
+            partes = await storyUploadFirebase(blob, id, p => storyProgresso(p));
+        }
+
+        const ov = e.ov.map(o => {
+            const base = { t: o.t, v: o.v, x: Math.round(o.x * 10) / 10, y: Math.round(o.y * 10) / 10 };
+            if (o.t === 'hora') base.f = o.f || 0;
+            return base;
+        });
+
+        const agora = Date.now();
+        await db.ref('stories/' + storyKey(user) + '/' + id).set({
+            user, tipo: e.tipo, driveId: driveId || null,
+            fb: usaDrive ? null : true, mime: usaDrive ? null : (blob.type || null), partes,
+            ar: Math.round(e.w / e.h * 10000) / 10000,
+            dur: e.tipo === 'video' ? Math.round(e.dur) : 0,
+            ov, criado: agora, expira: agora + STORY_DURACAO_MS
+        });
+
+        ov.filter(o => o.t === 'tag').forEach(o => {
+            enviarNotificacao(o.v, { tipo: 'story_tag', de: user, time: Date.now() });
+        });
+
+        e.enviando = false;
+        $s('sePublicar').disabled = false;
+        fecharStoryEditor();
+    } catch (err) {
+        console.error('Story:', err);
+        e.enviando = false;
+        $s('sePublicar').disabled = false;
+        storyProgresso(null);
+        alert('Não foi possível publicar o story: ' + err.message);
+    }
+}
+
+/* ---------- visualizador ---------- */
+
+function abrirStoryViewer(nome) {
+    const u = storyFila.indexOf(nome);
+    if (u < 0) return;
+    storyVw = { fila: storyFila.slice(), u, i: 0, lista: [], tok: 0, raf: 0, pausado: false, carregando: false };
+    $s('storyViewer').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    storyCarregarUsuario(u);
+}
+
+function storyCarregarUsuario(u) {
+    storyVw.u = u;
+    storyVw.lista = storiesPorUsuario[storyVw.fila[u]] || [];
+    const vistos = storyVistos();
+    const i = storyVw.lista.findIndex(s => !vistos[s.id]);
+    storyVw.i = i < 0 ? 0 : i;
+    if (!storyVw.lista.length) { storyProximo(); return; }
+    storyMostrar();
+}
+
+function fecharStoryViewer() {
+    if (!storyVw) return;
+    cancelAnimationFrame(storyVw.raf);
+    storyVw.tok++;
+    storyLimparMidia();
+    $s('storyViewer').style.display = 'none';
+    document.body.style.overflow = '';
+    storyVw = null;
+    renderStoriesBar();
+}
+
+function storyLimparMidia() {
+    const frame = $s('svFrame');
+    const v = frame.querySelector('video');
+    if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+    frame.innerHTML = '';
+}
+
+function storyBarras() {
+    const box = $s('svBars');
+    box.innerHTML = '';
+    storyVw.barEls = storyVw.lista.map((_, k) => {
+        const b = document.createElement('div');
+        b.className = 'sv-bar';
+        const i = document.createElement('i');
+        i.style.width = k < storyVw.i ? '100%' : '0';
+        b.appendChild(i);
+        box.appendChild(b);
+        return i;
+    });
+}
+function storyBarra(p) {
+    const b = storyVw.barEls[storyVw.i];
+    if (b) b.style.width = Math.min(100, p * 100) + '%';
+}
+
+function storyMostrar() {
+    const vw = storyVw;
+    const s = vw.lista[vw.i];
+    cancelAnimationFrame(vw.raf);
+    const tok = ++vw.tok;
+    const vivo = () => storyVw && storyVw.tok === tok;
+
+    storyLimparMidia();
+    vw.elapsed = 0; vw.video = null; vw.pausado = false; vw.carregando = true; vw.dur = STORY_FOTO_MS;
+    $s('storyViewer').classList.remove('fb');
+    storyBarras();
+
+    $s('svNome').textContent = s.user;
+    $s('svTempo').textContent = tempoRelativo(s.criado);
+    const av = $s('svAvatar');
+    av.innerHTML = '';
+    av.appendChild(storyAvatarEl(s.user, 'story-avatar'));
+    $s('svDel').style.display = s.user === user ? 'flex' : 'none';
+    $s('svSpin').style.display = 'block';
+    storyMarcarVisto(s.id);
+
+    const frame = $s('svFrame');
+    frame.className = 'story-frame';
+    frame.style.setProperty('--ar', s.ar || 0.5625);
+
+    const pronto = () => {
+        if (!vivo() || !vw.carregando) return;
+        vw.carregando = false;
+        $s('svSpin').style.display = 'none';
+        vw.last = performance.now();
+        vw.raf = requestAnimationFrame(storyTick);
+    };
+
+    const montar = src => {
+        if (!vivo()) return;
+        if (s.tipo === 'video') {
+            const v = document.createElement('video');
+            v.className = 'story-media';
+            v.playsInline = true;
+            v.preload = 'auto';
+            v.src = src;
+            vw.video = v;
+            v.onplaying = pronto;
+            v.onended = () => { if (vivo()) storyProximo(); };
+            v.onerror = () => {
+                if (!vivo()) return;
+                if (s.fb) { vw.video = null; vw.dur = 1500; pronto(); }
+                else storyFallbackIframe(s, tok, pronto);
+            };
+            frame.appendChild(v);
+            v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+            if (!s.fb) setTimeout(() => { if (vivo() && vw.carregando) storyFallbackIframe(s, tok, pronto); }, 10000);
+        } else {
+            const img = new Image();
+            img.className = 'story-media';
+            let tentou = false;
+            img.onload = () => { if (vivo()) pronto(); };
+            img.onerror = () => {
+                if (!vivo()) return;
+                if (!tentou && !s.fb) { tentou = true; img.src = storyUrlFotoAlt(s.driveId); }
+                else { vw.dur = 1500; pronto(); }
+            };
+            img.src = src;
+            frame.appendChild(img);
+        }
+        (s.ov || []).forEach(o => frame.appendChild(criarOverlay(o, false)));
+    };
+
+    if (s.fb) storyCarregarFb(s).then(montar).catch(() => { if (vivo()) { vw.dur = 1500; pronto(); } });
+    else montar(s.tipo === 'video' ? storyUrlVideo(s.driveId) : storyUrlFoto(s.driveId));
+}
+
+// Se o <video> do Drive não tocar, usa o player do próprio Drive (mostra o vídeo inteiro também)
+function storyFallbackIframe(s, tok, pronto) {
+    const vw = storyVw;
+    if (!vw || vw.tok !== tok) return;
+    const frame = $s('svFrame');
+    const m = frame.querySelector('video');
+    if (m) { m.onerror = null; m.onended = null; m.pause(); m.remove(); }
+    const f = document.createElement('iframe');
+    f.className = 'story-media';
+    f.src = storyUrlPreview(s.driveId);
+    f.allow = 'autoplay; fullscreen';
+    frame.prepend(f);
+    frame.classList.add('fb');
+    $s('storyViewer').classList.add('fb');
+    vw.video = null;
+    vw.elapsed = 0;
+    vw.dur = (Math.max(10, s.dur || 30) + 3) * 1000;
+    vw.carregando = true;
+    pronto();
+}
+
+function storyTick(now) {
+    const vw = storyVw;
+    if (!vw) return;
+    const dt = now - vw.last;
+    vw.last = now;
+    if (!vw.carregando && !vw.pausado) {
+        let p;
+        if (vw.video) p = vw.video.duration ? vw.video.currentTime / vw.video.duration : 0;
+        else { vw.elapsed += dt; p = vw.elapsed / vw.dur; }
+        storyBarra(p);
+        if (!vw.video && p >= 1) { storyProximo(); return; }
+    }
+    vw.raf = requestAnimationFrame(storyTick);
+}
+
+function storyPausar(p) {
+    const vw = storyVw;
+    if (!vw) return;
+    vw.pausado = p;
+    vw.last = performance.now();
+    if (vw.video) { if (p) vw.video.pause(); else vw.video.play().catch(() => {}); }
+}
+
+function storyProximo() {
+    const vw = storyVw;
+    if (!vw) return;
+    if (vw.i < vw.lista.length - 1) { vw.i++; storyMostrar(); }
+    else if (vw.u < vw.fila.length - 1) storyCarregarUsuario(vw.u + 1);
+    else fecharStoryViewer();
+}
+
+function storyAnterior() {
+    const vw = storyVw;
+    if (!vw) return;
+    if (vw.i > 0) { vw.i--; storyMostrar(); }
+    else if (vw.u > 0) storyCarregarUsuario(vw.u - 1);
+    else storyMostrar();
+}
+
+function storyAbrirPerfilAtual() {
+    const s = storyVw && storyVw.lista[storyVw.i];
+    if (s) abrirPerfil(s.user);
+}
+
+async function storyApagar() {
+    const vw = storyVw;
+    const s = vw && vw.lista[vw.i];
+    if (!s || s.user !== user) return;
+    storyPausar(true);
+    const ok = await customConfirm('Apagar este story?');
+    if (!storyVw) return;
+    if (!ok) { storyPausar(false); return; }
+
+    db.ref('stories/' + storyKey(user) + '/' + s.id).remove();
+    storyDriveDelete(s.driveId);
+    if (s.fb) storyApagarMidiaFb(s.user, s.id);
+    vw.lista.splice(vw.i, 1);
+    if (!vw.lista.length) { fecharStoryViewer(); return; }
+    if (vw.i >= vw.lista.length) vw.i = vw.lista.length - 1;
+    storyMostrar();
+}
+
+// toque curto = navega · segurar = pausa
+(function () {
+    [['svPrev', () => storyAnterior()], ['svNext', () => storyProximo()]].forEach(([id, acao]) => {
+        const z = $s(id);
+        let tm = null, pausou = false;
+        const soltar = () => { clearTimeout(tm); if (pausou) { pausou = false; storyPausar(false); } };
+        z.addEventListener('pointerdown', () => {
+            pausou = false;
+            tm = setTimeout(() => { pausou = true; storyPausar(true); }, 220);
+        });
+        z.addEventListener('pointerup', () => {
+            const foiPausa = pausou;
+            soltar();
+            if (!foiPausa) acao();
+        });
+        z.addEventListener('pointerleave', soltar);
+        z.addEventListener('pointercancel', soltar);
+    });
+    document.addEventListener('keydown', e => {
+        if (!storyVw) return;
+        if (e.key === 'Escape') fecharStoryViewer();
+        else if (e.key === 'ArrowRight') storyProximo();
+        else if (e.key === 'ArrowLeft') storyAnterior();
+    });
+})();

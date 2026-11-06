@@ -81,6 +81,10 @@
     <button class="feed-tab" id="tab-following" onclick="setFeedTab('following')">Following</button>
 </div>
 
+<!-- ================= STORIES (barra) ================= -->
+<div id="storiesBar"></div>
+<input type="file" id="storyFile" accept="image/*,video/*" hidden>
+
 <!-- ================= PAINEL NOTIFICAÇÕES ================= -->
 <div id="notifOverlay" onclick="fecharNotificacoes()" style="display:none;position:fixed;inset:0;background:#0009;z-index:500;"></div>
 <div id="notifPanel" style="display:none;position:fixed;top:56px;right:8px;width:320px;max-width:95vw;background:#111;border:1px solid #222;border-radius:14px;z-index:501;animation:fade .2s;overflow:hidden;">
@@ -108,48 +112,8 @@
     </div>
 </div>
 
-<!-- ================= STORIES BAR ================= -->
-<div id="storiesBar"></div>
-
-<input type="file" id="storyInput" accept="image/*,video/*" hidden>
-
-<!-- ================= STORY EDITOR ================= -->
-<div id="storyEditor">
-    <div class="story-editor-topbar">
-        <span onclick="fecharStoryEditor()">✕</span>
-        <button class="story-editor-publish" id="btnPublicarStory" onclick="publicarStory()">Publicar</button>
-    </div>
-    <div class="story-editor-stage" id="storyEditorStage">
-        <div class="story-editor-loading" id="storyEditorLoading">Publicando...</div>
-    </div>
-    <div class="story-editor-toolbar">
-        <button onclick="adicionarStickerTexto()">🔤 Texto</button>
-        <button onclick="adicionarStickerHora()">🕐 Hora</button>
-        <button onclick="adicionarStickerTemperatura()">🌡️ Temperatura</button>
-        <button onclick="adicionarStickerLocalizacao()">📍 Localização</button>
-    </div>
-</div>
-
-<!-- ================= STORY VIEWER ================= -->
-<div id="storyViewer">
-    <div class="story-progress-row" id="storyProgressRow"></div>
-    <div class="story-viewer-header">
-        <div class="story-viewer-avatar" id="storyViewerAvatar"></div>
-        <div>
-            <div class="story-viewer-name" id="storyViewerName"></div>
-            <div class="story-viewer-time" id="storyViewerTime"></div>
-        </div>
-        <span class="story-viewer-delete" id="storyViewerDelete" onclick="excluirStoryAtual()" style="display:none;">🗑️</span>
-        <span class="story-viewer-close" onclick="fecharStoryViewer()">✕</span>
-    </div>
-    <div class="story-media-stage" id="storyMediaStage">
-        <div class="story-tap-zone story-tap-prev" onclick="storyAnterior()"></div>
-        <div class="story-tap-zone story-tap-next" onclick="storyProximo()"></div>
-    </div>
-</div>
-
 <div id="feedLoading" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:14px;">
-    <div class="feed-spinner"></div>
+    <span class="square-snake" role="status"><span aria-hidden="true">█</span><span aria-hidden="true">▓</span><span aria-hidden="true">▒</span><span aria-hidden="true">░</span><span class="sr-only">Loading</span></span>
     <div style="font-size:13px;color:#666;letter-spacing:0.3px;">Carregando posts...</div>
 </div>
 
@@ -361,6 +325,60 @@
     <div id="lockMsg" style="font-size:12px;color:#e05555;min-height:16px;"></div>
 </div>
 
+<!-- ================= STORIES: EDITOR ================= -->
+<div id="storyEditor">
+    <div class="sv-stage"><div id="seFrame" class="story-frame se-frame"></div></div>
+
+    <div class="se-top">
+        <button class="se-btn" onclick="fecharStoryEditor()" title="Cancelar">✕</button>
+        <div class="se-tools">
+            <button class="se-btn" onclick="storyAddTexto()" title="Texto" style="font-weight:700;font-size:15px;">Aa</button>
+            <button class="se-btn" onclick="storyAddHora()" title="Hora da foto">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+            </button>
+            <button class="se-btn" onclick="storyAbrirTags()" title="Marcar alguém" style="font-weight:700;font-size:17px;">@</button>
+        </div>
+        <button class="se-pub" id="sePublicar" onclick="publicarStory()">Publicar</button>
+    </div>
+
+    <div id="seInfo" class="se-info"></div>
+
+    <div id="seProgresso">
+        <div id="seProgMsg">Enviando…</div>
+        <div class="se-track"><i id="seProgBar"></i></div>
+    </div>
+</div>
+
+<div id="storyTagPicker">
+    <div class="tp-head">
+        <input id="tpBusca" type="text" placeholder="Marcar quem?" oninput="storyFiltrarTags(this.value)" autocomplete="off">
+        <button class="se-btn" onclick="storyFecharTags()">✕</button>
+    </div>
+    <div id="tpLista"></div>
+</div>
+
+<!-- ================= STORIES: VISUALIZADOR ================= -->
+<div id="storyViewer">
+    <div class="sv-stage"><div id="svFrame" class="story-frame"></div></div>
+    <div class="sv-tap" id="svPrev"></div>
+    <div class="sv-tap" id="svNext"></div>
+
+    <div id="svBars"></div>
+    <div class="sv-head">
+        <div id="svAvatar" class="sv-av"></div>
+        <div class="sv-quem" onclick="storyAbrirPerfilAtual()">
+            <b id="svNome"></b><span id="svTempo"></span>
+        </div>
+        <button id="svDel" class="sv-ico" onclick="storyApagar()" title="Apagar story" style="display:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+        <button class="sv-ico" onclick="fecharStoryViewer()" title="Fechar">✕</button>
+    </div>
+    <button class="sv-nav" style="left:8px;" onclick="storyAnterior()">‹</button>
+    <button class="sv-nav" style="right:8px;" onclick="storyProximo()">›</button>
+    <div id="svSpin" class="sv-spin"></div>
+</div>
+
 <nav id="tabBar">
     <div class="tab-item active" id="tab-feed" onclick="irParaFeed()">
         <svg class="tab-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -381,7 +399,6 @@
 </nav>
 
 <script src="index.js"></script>
-<script src="stories.js"></script>
 <script>
 // ================= TAB BAR HELPERS =================
 function irParaFeed() {
